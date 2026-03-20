@@ -14,7 +14,187 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      community_posts: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_visible: boolean | null
+          like_count: number | null
+          room_design_id: string
+          style_tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_visible?: boolean | null
+          like_count?: number | null
+          room_design_id: string
+          style_tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_visible?: boolean | null
+          like_count?: number | null
+          room_design_id?: string
+          style_tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_room_design_id_fkey"
+            columns: ["room_design_id"]
+            isOneToOne: false
+            referencedRelation: "room_designs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      furniture_items: {
+        Row: {
+          buy_url: string | null
+          category: string
+          created_at: string | null
+          file_url: string | null
+          floor_offset: number | null
+          id: string
+          name: string
+          price: number
+          real_depth: number | null
+          real_height: number | null
+          real_width: number | null
+          style_tags: string[] | null
+          thumbnail_url: string | null
+        }
+        Insert: {
+          buy_url?: string | null
+          category: string
+          created_at?: string | null
+          file_url?: string | null
+          floor_offset?: number | null
+          id: string
+          name: string
+          price?: number
+          real_depth?: number | null
+          real_height?: number | null
+          real_width?: number | null
+          style_tags?: string[] | null
+          thumbnail_url?: string | null
+        }
+        Update: {
+          buy_url?: string | null
+          category?: string
+          created_at?: string | null
+          file_url?: string | null
+          floor_offset?: number | null
+          id?: string
+          name?: string
+          price?: number
+          real_depth?: number | null
+          real_height?: number | null
+          real_width?: number | null
+          style_tags?: string[] | null
+          thumbnail_url?: string | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string | null
+          id: string
+          items: Json | null
+          status: string
+          stripe_payment_intent_id: string | null
+          total_usd: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          items?: Json | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          total_usd?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          items?: Json | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          total_usd?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      post_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_designs: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          items: Json | null
+          share_token: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          items?: Json | null
+          share_token?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          items?: Json | null
+          share_token?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
