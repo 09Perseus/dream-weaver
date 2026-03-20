@@ -173,6 +173,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_shared: boolean
           items: Json | null
           share_token: string | null
           user_id: string
@@ -181,6 +182,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_shared?: boolean
           items?: Json | null
           share_token?: string | null
           user_id: string
@@ -189,6 +191,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_shared?: boolean
           items?: Json | null
           share_token?: string | null
           user_id?: string
