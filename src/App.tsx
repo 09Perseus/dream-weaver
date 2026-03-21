@@ -68,6 +68,7 @@ const App = React.forwardRef<HTMLDivElement>((_, ref) => (
             </Layout>
           </BrowserRouter>
         </CartProvider>
+        </CurrencyProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
