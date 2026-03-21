@@ -92,6 +92,18 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [furnitures, setFurnitures] = useState<FurnitureItem[]>([]);
+  const [wallTexture, setWallTexture] = useState<THREE.Texture | null>(null);
+
+  // Load wallpaper texture on mount
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+    loader.load('/furnitures/wallpapers/japanese_bamboo_pattern.png', (texture) => {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(4, 4);
+      setWallTexture(texture);
+    });
+  }, []);
 
   // Dynamically fetch and layout the 31 JSON furniture items on component mount
   useEffect(() => {
@@ -105,26 +117,27 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
           if (!item.path && !item.name) return false;
           const fromPath = String(item.path || '').toLowerCase();
           const fromName = String(item.name || '').toLowerCase();
+          // Exclude tall_house_plant as it's missing from the public folder
+          if (fromName === 'tall_house_plant') return false;
           return fromPath.startsWith('plants/') || fromName.includes('plant');
         });
 
         // Arrange items in a 6-column grid to view them all side by side
         const items = plantItems.map((item: any, i: number) => {
           const cols = 6;
-          const spacing = 4; // 4 meters apart
-
-          const x = (i % cols) * spacing - (cols * spacing) / 2 + (spacing / 2);
-          const z = Math.floor(i / cols) * spacing - 10;
+          const cellSize = roomSize / cols; // divide room width evenly
+          
+          const x = -roomSize / 2 + (i % cols) * cellSize + cellSize / 2;
+          const z = -roomSize / 2 + Math.floor(i / cols) * cellSize + cellSize / 2;
 
           const rawScale = Number(item.scale_factor) || 1;
-          const maxModelScale = 0.35;
-          const adjustedScale = Math.min(rawScale, maxModelScale);
+          const plantScale = Math.max(0.05, Math.min(rawScale,1));
 
           return {
             id: item.name,
             path: item.path,
-            position: [x, floorY, z] as [number, number, number],
-            scale: adjustedScale,
+            position: [x, floorY + 0.01, z] as [number, number, number],
+            scale: plantScale as number,
           };
         });
 
@@ -155,9 +168,70 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
           shadow-mapSize={[1024, 1024]}
         />
 
-        <mesh receiveShadow raycast={() => null}>
-          <boxGeometry args={[roomSize, roomHeight, roomSize]} />
-          <meshStandardMaterial color="#f1f5f9" side={THREE.BackSide} />
+        {/* Floor */}
+        <mesh 
+          position={[0, -roomHeight / 2, 0]} 
+          rotation={[-Math.PI / 2, 0, 0]}
+          receiveShadow 
+          raycast={() => null}
+        >
+          <planeGeometry args={[roomSize, roomSize]} />
+          <meshStandardMaterial color="#f0f0f0" />
+        </mesh>
+
+        {/* Front Wall */}
+        <mesh 
+          position={[0, 0, roomSize / 2]}
+          raycast={() => null}
+        >
+          <planeGeometry args={[roomSize, roomHeight]} />
+          <meshStandardMaterial 
+            map={wallTexture}
+            side={THREE.BackSide} 
+            color="#ffffff"
+          />
+        </mesh>
+
+        {/* Back Wall */}
+        <mesh 
+          position={[0, 0, -roomSize / 2]}
+          rotation={[0, Math.PI, 0]}
+          raycast={() => null}
+        >
+          <planeGeometry args={[roomSize, roomHeight]} />
+          <meshStandardMaterial 
+            map={wallTexture}
+            side={THREE.BackSide} 
+            color="#ffffff"
+          />
+        </mesh>
+
+        {/* Left Wall */}
+        <mesh 
+          position={[-roomSize / 2, 0, 0]}
+          rotation={[0, Math.PI / 2, 0]}
+          raycast={() => null}
+        >
+          <planeGeometry args={[roomSize, roomHeight]} />
+          <meshStandardMaterial 
+            map={wallTexture}
+            side={THREE.BackSide} 
+            color="#ffffff"
+          />
+        </mesh>
+
+        {/* Right Wall */}
+        <mesh 
+          position={[roomSize / 2, 0, 0]}
+          rotation={[0, -Math.PI / 2, 0]}
+          raycast={() => null}
+        >
+          <planeGeometry args={[roomSize, roomHeight]} />
+          <meshStandardMaterial 
+            map={wallTexture}
+            side={THREE.BackSide} 
+            color="#ffffff"
+          />
         </mesh>
 
         <gridHelper

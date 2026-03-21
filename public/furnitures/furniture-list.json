@@ -114,18 +114,6 @@
       "scale_factor": 0.001
     },
     {
-      "name": "tall_house_plant",
-      "path": "Plants/tall_house_plant.glb",
-      "keywords": [
-        "tall_house_plant",
-        "tall",
-        "house"
-      ],
-      "description": "Tall indoor houseplant",
-      "dimension": "2.6199 x 2.1198 x 5.4497",
-      "scale_factor": 0.2752
-    },
-    {
       "name": "majesty_palm_plant",
       "path": "Plants/majesty_palm_plant.glb",
       "keywords": [
@@ -135,7 +123,7 @@
       ],
       "description": "Large majesty palm plant",
       "dimension": "3.6161 x 3.1515 x 6.6979",
-      "scale_factor": 0.2986
+      "scale_factor": 0.5
     },
     {
       "name": "house_palm_plant",
@@ -147,7 +135,7 @@
       ],
       "description": "Medium indoor palm plant",
       "dimension": "1.9415 x 2.0834 x 2.3076",
-      "scale_factor": 0.52
+      "scale_factor": 0.7
     },
     {
       "name": "aglaonema_plant",
@@ -158,7 +146,7 @@
       ],
       "description": "Aglaonema leafy indoor plant",
       "dimension": "7.3080 x 7.3785 x 7.2346",
-      "scale_factor": 0.0829
+      "scale_factor": 2
     },
     {
       "name": "low-poly_snake_plant",
@@ -169,7 +157,7 @@
       ],
       "description": "Low poly snake plant",
       "dimension": "5.2044 x 16.2732 x 10.3294",
-      "scale_factor": 0.0871
+      "scale_factor": 0.2
     },
     {
       "name": "airport_plant",
