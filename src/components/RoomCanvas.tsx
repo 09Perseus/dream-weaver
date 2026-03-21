@@ -260,12 +260,20 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
           camera={{ position: [12, 8, 12], fov: 50 }}
           onPointerMissed={() => setSelectedId(null)}
           gl={{
-            powerPreference: 'high-performance',
+            powerPreference: 'default',
             antialias: true,
             failIfMajorPerformanceCaveat: false,
+            preserveDrawingBuffer: true,
           }}
           onCreated={({ gl }) => {
-            if (!gl) console.warn('WebGL context unavailable');
+            const canvas = gl.domElement;
+            canvas.addEventListener('webglcontextlost', (e) => {
+              e.preventDefault();
+              console.warn('WebGL context lost, will attempt restore');
+            });
+            canvas.addEventListener('webglcontextrestored', () => {
+              console.log('WebGL context restored');
+            });
           }}
         >
           <ambientLight intensity={0.5} />
