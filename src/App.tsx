@@ -1,3 +1,4 @@
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -17,14 +18,19 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = React.forwardRef<HTMLDivElement>((_, ref) => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <CartProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Layout>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <Layout ref={ref}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/room/:id" element={<RoomView />} />
@@ -41,6 +47,8 @@ const App = () => (
       </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+));
+
+App.displayName = "App";
 
 export default App;
