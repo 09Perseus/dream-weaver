@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback, Suspense, Component, type ReactNode } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { useGenerateRoom, getDisplaySize } from "@/hooks/useGenerateRoom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -67,16 +67,37 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
     .replace(/\/\//g, "/");
 
   const { scene } = useGLTF(`/furnitures/${cleanPath}`);
-  const cloned = scene.clone();
 
-  const box = new THREE.Box3().setFromObject(cloned);
-  const size = box.getSize(new THREE.Vector3());
-  const longestSide = Math.max(size.x, size.y, size.z);
-  const scale = longestSide > 0 ? displaySize / longestSide : 1;
-  cloned.scale.setScalar(scale);
+  const cloned = useMemo(() => {
+    const c = scene.clone();
 
-  const scaledBox = new THREE.Box3().setFromObject(cloned);
-  cloned.position.y -= scaledBox.min.y;
+    // Remove embedded cameras from GLTF to prevent camera hijacking
+    const cameras: THREE.Camera[] = [];
+    c.traverse((node) => {
+      if ((node as THREE.Camera).isCamera) {
+        cameras.push(node as THREE.Camera);
+      }
+    });
+    cameras.forEach(cam => cam.removeFromParent());
+
+    const box = new THREE.Box3().setFromObject(c);
+    if (box.isEmpty()) return c; // Escape if GLTF has no valid geometry
+
+    const size = box.getSize(new THREE.Vector3());
+    const longestSide = Math.max(size.x, size.y, size.z);
+
+    if (longestSide > 0 && Number.isFinite(longestSide)) {
+      const scale = displaySize / longestSide;
+      c.scale.setScalar(scale);
+    }
+
+    const scaledBox = new THREE.Box3().setFromObject(c);
+    if (!scaledBox.isEmpty() && Number.isFinite(scaledBox.min.y)) {
+      c.position.y -= scaledBox.min.y;
+    }
+
+    return c;
+  }, [scene, displaySize]);
 
   return <primitive object={cloned} />;
 }
@@ -387,6 +408,34 @@ function StandaloneSidebar({
   );
 }
 
+const CAMERA_SETTINGS = {
+  position: [0, 12, 10] as [number, number, number],
+  fov: 45,
+  near: 0.1,
+  far: 100,
+};
+
+function CameraController({ editId }: { editId: string | null }) {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    // Explicitly set the camera position once when the scene loads
+    camera.position.set(0, 12, 10);
+    camera.lookAt(0, 0, 0);
+  }, [camera]);
+
+  return (
+    <OrbitControls
+      makeDefault
+      enableZoom
+      enabled={!editId}
+      target={[0, 0, 0]}
+    />
+  );
+}
+
+const ORBIT_TARGET = [0, 0, 0] as [number, number, number];
+
 export default function RoomCanvas({
   className = "",
   style,
@@ -401,7 +450,7 @@ export default function RoomCanvas({
   const isControlled = externalOnSelect !== undefined;
   const isViewerMode = !!(items && furniture);
 
-  const roomSize = 5;
+  const roomSize = 7.5;
   const roomHeight = 3.5;
   const halfW = roomSize / 2;
   const halfH = roomHeight / 2;
@@ -425,34 +474,33 @@ export default function RoomCanvas({
     generate,
   } = useGenerateRoom({ roomSize, roomHeight });
 
-  const viewerFurnitures: FurnitureItem[] = isViewerMode
-    ? items.map((item) => {
-        const detail = furniture.find((f) => f.id === item.id);
-        const width = Math.max(detail?.real_width ?? 0.8, 0.4);
-        const height = Math.max(detail?.real_height ?? 0.8, 0.2);
-        const depth = Math.max(detail?.real_depth ?? 0.8, 0.4);
-        return {
-          id: item.id,
-          name: detail?.name,
-          position: [item.x, 0, item.z] as [number, number, number],
-          rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
-          path: detail?.file_url && detail.file_url !== "PENDING_UPLOAD" ? detail.file_url : undefined,
-          displaySize:
-            detail?.file_url && detail.file_url !== "PENDING_UPLOAD"
-              ? getDisplaySize(detail.file_url)
-              : Math.max(width, height, depth),
-          size: [width, height, depth] as [number, number, number],
-          color: "#d4d4d8",
-        };
-      })
-    : [];
+  // Map viewer data if in viewer mode
+  const viewerFurnitures: FurnitureItem[] = useMemo(() => {
+    if (!isViewerMode) return [];
+    return items.map((item) => {
+      const detail = furniture.find((f) => f.id === item.id);
+      const width = Math.max(detail?.real_width ?? 0.8, 0.4);
+      const height = Math.max(detail?.real_height ?? 0.8, 0.2);
+      const depth = Math.max(detail?.real_depth ?? 0.8, 0.4);
+      return {
+        id: item.id,
+        name: detail?.name,
+        position: [item.x, 0, item.z] as [number, number, number],
+        rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
+        path: detail?.file_url && detail.file_url !== "PENDING_UPLOAD" ? detail.file_url : undefined,
+        displaySize:
+          detail?.file_url && detail.file_url !== "PENDING_UPLOAD"
+            ? getDisplaySize(detail.file_url)
+            : Math.max(width, height, depth),
+        size: [width, height, depth] as [number, number, number],
+        color: "#d4d4d8",
+      };
+    });
+  }, [isViewerMode, items, furniture]);
 
-  const normalizedGenerated = generatedFurnitures.map((f) => ({
-    ...f,
-    position: [f.position[0], 0, f.position[2]] as [number, number, number],
-  }));
-
-  const activeFurnitures = isViewerMode ? viewerFurnitures : normalizedGenerated;
+  const activeFurnitures = isViewerMode
+    ? viewerFurnitures
+    : generatedFurnitures.map(f => ({ ...f, position: [f.position[0], 0, f.position[2]] as [number, number, number] }));
 
   useEffect(() => {
     new THREE.TextureLoader().load("/furnitures/wallpapers/japanese_bamboo_pattern.png", (texture) => {
@@ -495,18 +543,6 @@ export default function RoomCanvas({
     setInternalEditId(null);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === "Delete" || e.key === "Backspace") && internalSelectedId && !isControlled) {
-        if ((e.target as HTMLElement)?.tagName === "INPUT" || (e.target as HTMLElement)?.tagName === "TEXTAREA") return;
-        e.preventDefault();
-        handleInternalDelete(internalSelectedId);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [internalSelectedId, isControlled]);
-
   const webglSupported = useMemo(() => detectWebGL(), []);
 
   return (
@@ -542,14 +578,6 @@ export default function RoomCanvas({
           </div>
         )}
 
-        {activeFurnitures.length > 0 && !isGenerating && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-            <p className="text-[0.7rem] text-white/50 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">
-              Click to inspect · Double-click to move
-            </p>
-          </div>
-        )}
-
         {isGenerating && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
             <div className="text-center">
@@ -559,30 +587,9 @@ export default function RoomCanvas({
           </div>
         )}
 
-        {error && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/90 text-white px-4 py-2 rounded-lg text-sm max-w-md text-center">
-            {error}
-          </div>
-        )}
-
-        {activeFurnitures.length === 0 && !isGenerating && (
-          <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-            <p className="text-sm text-muted-foreground/60">
-              {isControlled ? "Add furniture from the picker on the left" : "Describe a room above to get started"}
-            </p>
-          </div>
-        )}
-
         {webglSupported && (
           <Canvas
             shadows
-            // ✅ FIXED — centered position, no teleport jump
-            camera={{
-              position: [0, 12, 10],
-              fov: 45,
-              near: 0.1,
-              far: 100,
-            }}
             style={{ width: "100%", height: "100%" }}
             onPointerMissed={() => {
               if (!isControlled) {
@@ -590,59 +597,32 @@ export default function RoomCanvas({
                 setInternalEditId(null);
               }
             }}
-            gl={{
-              powerPreference: "default",
-              antialias: true,
-              failIfMajorPerformanceCaveat: false,
-              preserveDrawingBuffer: true,
-            }}
-            // ✅ FIXED — removed lookAt, OrbitControls handles orientation
-            onCreated={({ gl }) => {
-              const canvas = gl.domElement;
-              canvas.addEventListener("webglcontextlost", (e) => {
-                e.preventDefault();
-                console.warn("WebGL context lost");
-              });
-              canvas.addEventListener("webglcontextrestored", () => {
-                console.log("WebGL context restored");
-              });
-            }}
+            gl={{ antialias: true }}
           >
             <ambientLight intensity={0.7} />
             <directionalLight position={[0, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
             <directionalLight position={[0, 4, 8]} intensity={0.5} />
 
-            {/* Floor */}
+            {/* Room Geometry */}
             <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
               <planeGeometry args={[roomSize, roomSize]} />
               <meshStandardMaterial color="#f0ece4" />
             </mesh>
-
-            {/* Back wall */}
             <mesh position={[0, halfH, -halfW]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
               <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
             </mesh>
-
-            {/* Left wall */}
             <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
               <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
             </mesh>
-
-            {/* Right wall */}
             <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
               <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
             </mesh>
+            <gridHelper args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]} position={[0, 0.01, 0]} raycast={() => null} />
 
-            {/* Grid */}
-            <gridHelper
-              args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]}
-              position={[0, 0.01, 0]}
-              raycast={() => null}
-            />
-
+            {/* Furniture */}
             {activeFurnitures.map((f) => (
               <MovableFurniture
                 key={f.id}
@@ -655,21 +635,12 @@ export default function RoomCanvas({
               />
             ))}
 
-            {/* ✅ DOLLHOUSE ORBIT — constrained angles, no teleport */}
-            <OrbitControls
-              makeDefault
-              enableZoom
-              enabled={!editId}
-              target={[0, 0.5, 0]}
-              maxPolarAngle={Math.PI / 2.2}
-              minPolarAngle={Math.PI / 6}
-              maxDistance={20}
-              minDistance={4}
-            />
+            <CameraController editId={editId} />
           </Canvas>
         )}
       </div>
 
+      {/* Sidebar logic remains same */}
       {!isControlled && (internalSelectedId || internalEditId) && (
         <StandaloneSidebar
           furnitures={activeFurnitures}
