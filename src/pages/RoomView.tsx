@@ -34,6 +34,9 @@ export default function RoomView() {
   const [roomOwnerId, setRoomOwnerId] = useState<string | null>(null);
   const [roomIsCopy, setRoomIsCopy] = useState(false);
   const [copying, setCopying] = useState(false);
+  const [communityPost, setCommunityPost] = useState<any>(null);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
