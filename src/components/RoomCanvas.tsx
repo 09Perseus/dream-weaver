@@ -247,14 +247,7 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
       )}
 
       {/* ── Three.js Canvas ──────────────────────────────────────────── */}
-      <WebGLErrorBoundary fallback={
-        <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-lg">
-          <p className="text-sm text-muted-foreground text-center px-4">
-            3D preview unavailable — WebGL is not supported in this browser context.<br />
-            Try opening in a new tab or a different browser.
-          </p>
-        </div>
-      }>
+      <WebGLErrorBoundary fallback={null}>
         <Canvas
           shadows
           camera={{ position: [12, 8, 12], fov: 50 }}
