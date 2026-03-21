@@ -76,6 +76,7 @@ export interface FurnitureItem {
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
+  console.log("Loading GLB model:", path);
   const { scene } = useGLTF(path);
   const cloned = scene.clone();
 
@@ -89,6 +90,26 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   cloned.position.y -= scaledBox.min.y;
 
   return <primitive object={cloned} />;
+}
+
+// Error boundary for individual model loading failures
+class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: any) {
+    console.error("Model failed to load for item:", (this.props as any).itemId, error?.message || error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <mesh>
+          <boxGeometry args={[0.5, 0.5, 0.5]} />
+          <meshStandardMaterial color="#ef4444" wireframe />
+        </mesh>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 // ── MovableFurniture ──────────────────────────────────────────────────────────
@@ -176,17 +197,19 @@ function MovableFurniture({
       onPointerUp={handlePointerUp}
       onClick={handleClick}
     >
-      {furniture.path && furniture.path !== 'PENDING_UPLOAD' && furniture.path.startsWith('http') ? (
-        <Suspense
-          fallback={
-            <mesh>
-              <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-              <meshStandardMaterial color="gray" wireframe />
-            </mesh>
-          }
-        >
-          <Model path={furniture.path} displaySize={furniture.displaySize} />
-        </Suspense>
+      {furniture.path && furniture.path !== 'PENDING_UPLOAD' ? (
+        <ModelErrorBoundary itemId={furniture.id}>
+          <Suspense
+            fallback={
+              <mesh>
+                <boxGeometry args={furniture.size ?? [1, 1, 1]} />
+                <meshStandardMaterial color="gray" wireframe />
+              </mesh>
+            }
+          >
+            <Model path={furniture.path} displaySize={furniture.displaySize} />
+          </Suspense>
+        </ModelErrorBoundary>
       ) : (
         <mesh castShadow receiveShadow>
           <boxGeometry args={furniture.size ?? [1, 1, 1]} />
@@ -458,6 +481,15 @@ export default function RoomCanvas({
     generate,
   } = useGenerateRoom({ roomSize, roomHeight });
 
+  // Debug: log what RoomCanvas receives
+  useEffect(() => {
+    console.log("RoomCanvas received items:", items?.length);
+    console.log("RoomCanvas received furniture:", furniture?.length);
+    if (furniture && furniture.length > 0) {
+      console.log("First furniture item:", JSON.stringify(furniture[0], null, 2));
+    }
+  }, [items, furniture]);
+
   // Viewer mode: convert PlacedItem[] + FurnitureDetail[] → FurnitureItem[]
   const viewerFurnitures: FurnitureItem[] = isViewerMode
     ? items.map((item) => {
@@ -465,15 +497,17 @@ export default function RoomCanvas({
         const width  = Math.max(detail?.real_width  ?? 0.8, 0.4);
         const height = Math.max(detail?.real_height ?? 0.8, 0.2);
         const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
+        const fileUrl = detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
+                          ? detail.file_url : undefined;
+        console.log("Model path for", item.id, ":", fileUrl);
         return {
           id:          item.id,
           name:        detail?.name,
           position:    [item.x, 0, item.z] as [number, number, number],
           rotation:    [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
-          path:        detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
-                         ? detail.file_url : undefined,
-          displaySize: detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
-                         ? getDisplaySize(detail.file_url)
+          path:        fileUrl,
+          displaySize: fileUrl
+                         ? getDisplaySize(fileUrl)
                          : Math.max(width, height, depth),
           size:        [width, height, depth] as [number, number, number],
           color:       '#d4d4d8',
@@ -752,8 +786,8 @@ export default function RoomCanvas({
         )}
       </div>
 
-      {/* ── Standalone sidebar — only shown when NOT controlled by EditRoom ── */}
-      {!isControlled && (
+      {/* ── Standalone sidebar — only in standalone generate mode ── */}
+      {!isControlled && !isViewerMode && (
         <StandaloneSidebar
           furnitures={activeFurnitures}
           selectedId={internalSelectedId}
