@@ -125,10 +125,16 @@ Return ONLY a valid JSON array with no explanation, no markdown, no code fences.
     const rawText = await callClaude(prompt, anthropicKey);
     console.log("Claude raw response:", rawText);
 
+    // Clean markdown formatting before parsing
+    const cleaned = rawText
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
     // Parse & validate
     let items: any[];
     try {
-      items = JSON.parse(rawText);
+      items = JSON.parse(cleaned);
     } catch {
       throw new Error("Claude returned invalid JSON");
     }
