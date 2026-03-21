@@ -31,6 +31,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
   const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const { currency, setCurrency } = useCurrency();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
