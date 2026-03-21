@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, LayoutGrid, ShoppingBag, Pencil, LogOut, Trash2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import UserAvatar from "@/components/UserAvatar";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import DeleteAccountDialog from "@/components/DeleteAccountDialog";
 import { format } from "date-fns";
@@ -39,10 +40,8 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
     navigate("/");
   };
 
-  const avatarColor = profile?.avatar_color ?? "#C8B89A";
-  const displayName = profile?.display_name;
-  const avatarInitial = displayName
-    ? displayName[0].toUpperCase()
+  const avatarInitial = profile?.display_name
+    ? profile.display_name[0].toUpperCase()
     : user?.email
       ? user.email[0].toUpperCase()
       : "?";
@@ -61,7 +60,6 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
             </span>
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
@@ -88,39 +86,24 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
 
             {user ? (
               <div className="hidden md:block relative" ref={dropdownRef}>
-                {/* Avatar button */}
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center justify-center cursor-pointer transition-colors duration-150"
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    backgroundColor: avatarColor,
-                    border: "1.5px solid hsl(var(--border))",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "hsl(var(--accent-hover))";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "hsl(var(--border))";
-                  }}
+                  className="cursor-pointer"
                 >
-                  <span
-                    className="font-heading text-[1rem] font-semibold select-none"
-                    style={{ color: "hsl(var(--bg))" }}
-                  >
-                    {avatarInitial}
-                  </span>
+                  <UserAvatar
+                    avatarUrl={profile?.avatar_url}
+                    avatarColor={profile?.avatar_color}
+                    displayName={profile?.display_name}
+                    email={user.email}
+                    size={36}
+                  />
                 </button>
 
-                {/* Dropdown */}
                 {dropdownOpen && (
                   <div
                     className="absolute right-0 top-[48px] z-50 bg-surface border border-border"
                     style={{ width: 240 }}
                   >
-                    {/* Header */}
                     <div className="p-4 border-b border-border">
                       <p className="font-body text-[0.75rem] text-muted-foreground truncate">
                         {user.email}
@@ -132,7 +115,6 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                       )}
                     </div>
 
-                    {/* Menu items */}
                     <button
                       onClick={() => { setDropdownOpen(false); navigate("/my-rooms"); }}
                       className="w-full flex items-center gap-3 px-4 py-3 font-body text-[0.8rem] text-foreground hover:bg-background hover:text-accent transition-colors border-b border-border text-left cursor-pointer"
@@ -155,7 +137,6 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                       Edit Profile
                     </button>
 
-                    {/* Divider */}
                     <div className="border-b border-border" />
 
                     <button
@@ -193,7 +174,6 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
           </div>
         </div>
 
-        {/* Mobile nav */}
         {mobileOpen && (
           <div className="md:hidden border-t border-border bg-background p-6 animate-fade-in">
             <nav className="flex flex-col gap-4">
@@ -211,7 +191,16 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
               ))}
               {user ? (
                 <>
-                  <span className="font-body text-[0.75rem] text-muted-foreground">{user.email}</span>
+                  <div className="flex items-center gap-3">
+                    <UserAvatar
+                      avatarUrl={profile?.avatar_url}
+                      avatarColor={profile?.avatar_color}
+                      displayName={profile?.display_name}
+                      email={user.email}
+                      size={28}
+                    />
+                    <span className="font-body text-[0.75rem] text-muted-foreground">{user.email}</span>
+                  </div>
                   <button
                     onClick={() => { setMobileOpen(false); setEditProfileOpen(true); }}
                     className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-muted-foreground text-left"
@@ -241,7 +230,6 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
 
       <main className="flex-1">{children}</main>
 
-      {/* Dialogs */}
       {user && (
         <>
           <EditProfileDialog
@@ -250,8 +238,9 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
             userId={user.id}
             currentDisplayName={profile?.display_name ?? null}
             currentAvatarColor={profile?.avatar_color ?? "#C8B89A"}
+            currentAvatarUrl={profile?.avatar_url ?? null}
             avatarInitial={avatarInitial}
-            onSaved={(dn, ac) => refreshProfile()}
+            onSaved={() => refreshProfile()}
           />
           <DeleteAccountDialog
             open={deleteAccountOpen}
