@@ -23,16 +23,16 @@ export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
   const navigate = useNavigate();
 
-  // Redirect unauthenticated users
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate("/sign-in?redirect=/cart");
-    });
-  }, []);
+  const [session, setSession] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") navigate("/sign-in?redirect=/cart");
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
     });
     return () => subscription.unsubscribe();
   }, []);
