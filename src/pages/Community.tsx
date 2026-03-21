@@ -30,24 +30,44 @@ export default function Community() {
   const [activeFilter, setActiveFilter] = useState("Most Recent");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const { data, error } = await supabase
-        .from("community_posts")
-        .select(`*, room_designs (id, description)`)
-        .eq("is_visible", true)
-        .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
-        .limit(12);
+    setLoading(true);
+    setError(null);
 
-      if (error) {
-        console.error("Community fetch error:", error);
-      } else {
-        setPosts((data as unknown as CommunityPost[]) ?? []);
-      }
+    const timeout = setTimeout(() => {
       setLoading(false);
+      setError("Loading timed out. Please refresh the page.");
+    }, 8000);
+
+    const fetchPosts = async () => {
+      try {
+        const { data, error: fetchErr } = await supabase
+          .from("community_posts")
+          .select("*")
+          .eq("is_visible", true)
+          .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
+          .limit(12);
+
+        if (fetchErr) {
+          console.error("Community fetch error:", fetchErr);
+          setError("Failed to load: " + fetchErr.message);
+          return;
+        }
+
+        setPosts((data as unknown as CommunityPost[]) ?? []);
+      } catch (err: any) {
+        console.error("Unexpected community error:", err);
+        setError("Unexpected error: " + err.message);
+      } finally {
+        clearTimeout(timeout);
+        setLoading(false);
+      }
     };
     fetchPosts();
+
+    return () => clearTimeout(timeout);
   }, [activeFilter]);
 
   useEffect(() => {
