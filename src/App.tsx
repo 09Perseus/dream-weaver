@@ -17,6 +17,7 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
+import Orders from "./pages/Orders";
 import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,14 @@ const App = React.forwardRef<HTMLDivElement>((_, ref) => (
                   }
                 />
                 <Route path="/cart" element={<Cart />} />
+                <Route
+                  path="/orders"
+                  element={
+                    <RequireAuth>
+                      <Orders />
+                    </RequireAuth>
+                  }
+                />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-up" element={<SignUp />} />
