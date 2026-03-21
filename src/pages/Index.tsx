@@ -12,25 +12,7 @@ export default function Index() {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
   const navigate = useNavigate();
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (!loading) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      return;
-    }
-    setLoadingStep(0);
-    intervalRef.current = setInterval(() => {
-      setLoadingStep((prev) =>
-        prev < loadingMessages.length - 1 ? prev + 1 : 0
-      );
-    }, 1500);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [loading]);
 
   const validate = (): boolean => {
     if (!prompt.trim()) {
