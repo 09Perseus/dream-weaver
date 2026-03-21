@@ -73,12 +73,12 @@ export default function OrderConfirmation() {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <Link to="/my-rooms" className="flex-1">
-          <Button variant="amber" className="w-full">View My Rooms</Button>
+          <Button variant="amber" className="w-full min-h-[52px]">View My Rooms</Button>
         </Link>
         <Link to="/" className="flex-1">
-          <Button variant="outline" className="w-full">Back to Home</Button>
+          <Button variant="outline" className="w-full min-h-[52px]">Back to Home</Button>
         </Link>
       </div>
     </div>

@@ -207,7 +207,7 @@ export default function RoomView() {
 
         <div className="p-6 space-y-3">
           {furniture.length > 0 && (
-            <Button variant="amber" className="w-full" onClick={handleAddAll}>
+            <Button variant="amber" className="w-full min-h-[52px]" onClick={handleAddAll}>
               Add All to Cart
             </Button>
           )}

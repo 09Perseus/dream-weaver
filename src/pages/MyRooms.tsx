@@ -170,26 +170,26 @@ export default function MyRooms() {
                   <p className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">
                     {room.created_at ? format(new Date(room.created_at), "MMMM d, yyyy") : "Unknown date"}
                   </p>
-                  <div className="flex items-center gap-2 flex-wrap pt-1">
-                    <Link to={`/room/${room.id}`}>
-                      <Button variant="outline" size="sm">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                    <Link to={`/room/${room.id}`} className="flex-1 sm:flex-initial">
+                      <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px]">
                         <Eye className="h-3.5 w-3.5" />
                         View
                       </Button>
                     </Link>
-                    <Link to={`/room/${room.id}/edit`}>
-                      <Button variant="outline" size="sm">
+                    <Link to={`/room/${room.id}/edit`} className="flex-1 sm:flex-initial">
+                      <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px]">
                         <Pencil className="h-3.5 w-3.5" />
                         Edit
                       </Button>
                     </Link>
                     {isPosted ? (
-                      <Button variant="outline" size="sm" onClick={() => handleUnpost(room.id)} disabled={unposting === room.id}>
+                      <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => handleUnpost(room.id)} disabled={unposting === room.id}>
                         <X className="h-3.5 w-3.5" />
                         {unposting === room.id ? "…" : "Unpost"}
                       </Button>
                     ) : (
-                      <Button variant="outline" size="sm" onClick={() => setPostDialogRoomId(room.id)}>
+                      <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => setPostDialogRoomId(room.id)}>
                         <Share2 className="h-3.5 w-3.5" />
                         Post
                       </Button>
@@ -197,11 +197,12 @@ export default function MyRooms() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="ml-auto"
+                      className="sm:ml-auto min-h-[44px]"
                       onClick={() => handleDelete(room.id)}
                       disabled={deleting === room.id}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
+                      Delete
                     </Button>
                   </div>
                 </div>
