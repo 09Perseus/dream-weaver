@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Save, Undo, Trash2, Share2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -40,38 +39,264 @@ const CATEGORY_MAP: Record<string, string> = {
   "Shelves": "shelf",
 };
 
+// ── Item Info Card ────────────────────────────────────────────────────────────
+function ItemInfoCard({
+  item,
+  detail,
+  isEditMode,
+  onDelete,
+  onBack,
+  formatPrice,
+}: {
+  item: PlacedItem;
+  detail: FurnitureDetail | undefined;
+  isEditMode: boolean;
+  onDelete: () => void;
+  onBack: () => void;
+  formatPrice: (price: number) => string;
+}) {
+  return (
+    <div className="flex flex-col h-full">
+
+      {/* Header */}
+      <div className="flex items-center gap-2 p-4 border-b border-border shrink-0">
+        <button
+          onClick={onBack}
+          className="font-body text-[0.75rem] text-muted-foreground
+                     hover:text-foreground transition-colors flex items-center gap-1"
+        >
+          ← Back
+        </button>
+        <span className="font-body text-[0.7rem] tracking-[0.1em] uppercase
+                         text-muted-foreground ml-auto">
+          {isEditMode ? 'Edit Mode' : 'Item Details'}
+        </span>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+        {/* Image */}
+        {detail?.thumbnail_url && detail.thumbnail_url !== "PENDING_UPLOAD" ? (
+          <img
+            src={detail.thumbnail_url}
+            alt={detail.name}
+            className="w-full aspect-square object-cover rounded-lg border border-border"
+          />
+        ) : (
+          <div className="w-full aspect-square bg-muted rounded-lg border border-border
+                          flex items-center justify-center">
+            <span className="text-5xl">🛋️</span>
+          </div>
+        )}
+
+        {/* Name + description */}
+        <div>
+          <p className="font-heading text-lg text-foreground">
+            {detail?.name ?? item.id}
+          </p>
+          <p className="font-body text-[0.75rem] text-muted-foreground mt-1">
+            A beautifully crafted piece for your room.
+          </p>
+        </div>
+
+        {/* Price */}
+        <div className="flex items-center justify-between py-3 border-t border-border">
+          <span className="font-body text-[0.75rem] text-muted-foreground
+                           uppercase tracking-wide">Price</span>
+          <span className="font-heading text-xl text-accent">
+            {detail ? formatPrice(detail.price) : '—'}
+          </span>
+        </div>
+
+        {/* Dimensions */}
+        {detail && (detail.real_width || detail.real_height || detail.real_depth) && (
+          <div className="py-3 border-t border-border space-y-1">
+            <span className="font-body text-[0.7rem] text-muted-foreground
+                             uppercase tracking-wide">Dimensions</span>
+            <p className="font-body text-[0.8rem] text-foreground">
+              {detail.real_width?.toFixed(2) ?? '—'}m ×{' '}
+              {detail.real_depth?.toFixed(2) ?? '—'}m ×{' '}
+              {detail.real_height?.toFixed(2) ?? '—'}m
+            </p>
+          </div>
+        )}
+
+        {/* Edit mode hint */}
+        {isEditMode && (
+          <div className="py-3 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <p className="font-body text-[0.75rem] text-amber-600 dark:text-amber-400">
+              Drag to reposition · Double-click again to exit edit mode
+            </p>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="space-y-2 pt-1">
+          <button className="w-full py-2 px-4 bg-accent text-white text-sm
+                             font-body rounded-lg hover:opacity-90 transition-opacity">
+            Add to Cart
+          </button>
+          {isEditMode && (
+            <button
+              onClick={onDelete}
+              className="w-full py-2 px-4 bg-destructive text-white text-sm
+                         font-body rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Delete from Room
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Right Panel — switches between list and info card ─────────────────────────
+function RightPanel({
+  roomItems,
+  furniture,
+  selectedItemId,
+  editingItemId,
+  formatPrice,
+  onSelectItem,
+  onDeleteItem,
+  onBack,
+}: {
+  roomItems: PlacedItem[];
+  furniture: FurnitureDetail[];
+  selectedItemId: string | null;
+  editingItemId: string | null;
+  formatPrice: (price: number) => string;
+  onSelectItem: (id: string) => void;
+  onDeleteItem: (id: string) => void;
+  onBack: () => void;
+}) {
+  const selectedItem   = roomItems.find((i) => i.id === selectedItemId);
+  const selectedDetail = furniture.find((f) => f.id === selectedItemId);
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {selectedItem ? (
+        // ── Info card ───────────────────────────────────────────────────
+        <ItemInfoCard
+          item={selectedItem}
+          detail={selectedDetail}
+          isEditMode={editingItemId === selectedItemId}
+          onDelete={() => onDeleteItem(selectedItemId!)}
+          onBack={onBack}
+          formatPrice={formatPrice}
+        />
+      ) : (
+        // ── Room items list ─────────────────────────────────────────────
+        <>
+          <div className="p-4 border-b border-border shrink-0">
+            <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase
+                           text-muted-foreground">
+              Room Items ({roomItems.length})
+            </h3>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {roomItems.length === 0 ? (
+              <p className="font-body text-[0.75rem] text-muted-foreground
+                            text-center py-8 px-4">
+                No furniture in this room. Add items from the picker.
+              </p>
+            ) : (
+              roomItems.map((item) => {
+                const detail    = furniture.find((f) => f.id === item.id);
+                const isSelected = selectedItemId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onSelectItem(item.id)}
+                    className={`w-full text-left px-4 py-3 border-b border-border
+                                transition-colors cursor-pointer min-h-[44px]
+                                ${isSelected
+                                  ? 'bg-accent/10 border-l-2 border-l-accent'
+                                  : 'hover:bg-background'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {detail?.thumbnail_url && detail.thumbnail_url !== "PENDING_UPLOAD" ? (
+                        <img
+                          src={detail.thumbnail_url}
+                          alt={detail?.name ?? item.id}
+                          className="h-10 w-10 object-cover flex-shrink-0 rounded"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 border border-border rounded
+                                        flex items-center justify-center flex-shrink-0
+                                        bg-muted">
+                          <span className="text-lg">🛋️</span>
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-body text-[0.8rem] text-foreground truncate">
+                          {detail?.name ?? item.id}
+                        </p>
+                        <p className="font-body text-[0.7rem] text-accent">
+                          {detail ? formatPrice(detail.price) : '—'}
+                        </p>
+                      </div>
+                      <span className="font-body text-[0.65rem] text-muted-foreground shrink-0">
+                        →
+                      </span>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── EditRoom ──────────────────────────────────────────────────────────────────
 export default function EditRoom() {
   const { id: roomId } = useParams<{ id: string }>();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const navState = location.state as LocationState | null;
-  const isMobile = useIsMobile();
+  const location       = useLocation();
+  const navigate       = useNavigate();
+  const { user }       = useAuth();
+  const navState       = location.state as LocationState | null;
+  const isMobile       = useIsMobile();
   const { formatPrice } = useCurrency();
 
-  const [roomItems, setRoomItems] = useState<PlacedItem[]>(navState?.items ?? []);
-  const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
-  const [description, setDescription] = useState(navState?.description ?? "");
-  const [loading, setLoading] = useState(!navState?.items);
-  const [saving, setSaving] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [undoStack, setUndoStack] = useState<PlacedItem[][]>([]);
-  const [pickerItems, setPickerItems] = useState<PickerItem[]>([]);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [pickerLoading, setPickerLoading] = useState(true);
-  const [postDialogOpen, setPostDialogOpen] = useState(false);
-  const [posted, setPosted] = useState(false);
-  const [isCopy, setIsCopy] = useState(false);
-  const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
-  const [roomName, setRoomName] = useState(navState?.description || "My Room");
-  const [isEditingName, setIsEditingName] = useState(false);
+  const [roomItems, setRoomItems]           = useState<PlacedItem[]>(navState?.items ?? []);
+  const [furniture, setFurniture]           = useState<FurnitureDetail[]>(navState?.furniture ?? []);
+  const [description, setDescription]       = useState(navState?.description ?? "");
+  const [loading, setLoading]               = useState(!navState?.items);
+  const [saving, setSaving]                 = useState(false);
 
+  // selectedItemId — right panel shows info card
+  // editingItemId  — item is in drag mode (double click in canvas)
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [editingItemId, setEditingItemId]   = useState<string | null>(null);
+
+  const [undoStack, setUndoStack]           = useState<PlacedItem[][]>([]);
+  const [pickerItems, setPickerItems]       = useState<PickerItem[]>([]);
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [pickerLoading, setPickerLoading]   = useState(true);
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [posted, setPosted]                 = useState(false);
+  const [isCopy, setIsCopy]                 = useState(false);
+  const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
+  const [roomName, setRoomName]             = useState(navState?.description || "My Room");
+  const [isEditingName, setIsEditingName]   = useState(false);
+
+  // Fetch room from DB if no nav state
   useEffect(() => {
     if (navState?.items) return;
     if (!roomId) { setLoading(false); return; }
     const fetchRoom = async () => {
       try {
-        const { data: room, error } = await supabase.from("room_designs").select("is_copy, user_id, description, items").eq("id", roomId).maybeSingle();
+        const { data: room, error } = await supabase
+          .from("room_designs")
+          .select("is_copy, user_id, description, items")
+          .eq("id", roomId)
+          .maybeSingle();
         if (error || !room) { setLoading(false); return; }
         setIsCopy(!!room.is_copy);
         setDescription(room.description ?? "");
@@ -80,47 +305,67 @@ export default function EditRoom() {
         setRoomItems(items);
         const itemIds = items.map((i) => i.id);
         if (itemIds.length > 0) {
-          const { data: fd } = await supabase.from("furniture_items").select("*").in("id", itemIds);
+          const { data: fd } = await supabase
+            .from("furniture_items")
+            .select("*")
+            .in("id", itemIds);
           if (fd) setFurniture(fd as unknown as FurnitureDetail[]);
         }
-      } catch (err) { console.error("Error fetching room:", err); }
-      finally { setLoading(false); }
+      } catch (err) {
+        console.error("Error fetching room:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchRoom();
   }, [roomId, navState]);
 
+  // Fetch picker items
   useEffect(() => {
     const fetchPicker = async () => {
-      const { data, error } = await supabase.from("furniture_items").select("id, name, category, price, thumbnail_url").order("name");
+      const { data, error } = await supabase
+        .from("furniture_items")
+        .select("id, name, category, price, thumbnail_url")
+        .order("name");
       if (!error && data) setPickerItems(data);
       setPickerLoading(false);
     };
     fetchPicker();
   }, []);
 
+  // Check if already posted
   useEffect(() => {
     if (!roomId || !user) return;
     const check = async () => {
-      const { data } = await supabase.from("community_posts").select("id").eq("room_design_id", roomId).eq("user_id", user.id).eq("is_visible", true).maybeSingle();
+      const { data } = await supabase
+        .from("community_posts")
+        .select("id")
+        .eq("room_design_id", roomId)
+        .eq("user_id", user.id)
+        .eq("is_visible", true)
+        .maybeSingle();
       if (data) setPosted(true);
     };
     check();
   }, [roomId, user]);
-
-  const getFurnitureDetail = (itemId: string) => furniture.find((f) => f.id === itemId);
 
   const handleDeleteSelected = useCallback(() => {
     if (!selectedItemId) return;
     setUndoStack((prev) => [...prev, roomItems]);
     setRoomItems((prev) => prev.filter((item) => item.id !== selectedItemId));
     setSelectedItemId(null);
+    setEditingItemId(null);
     toast({ title: "Item removed" });
   }, [selectedItemId, roomItems]);
 
+  // Keyboard delete
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "Delete" || e.key === "Backspace") && selectedItemId) {
-        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+        if (
+          e.target instanceof HTMLInputElement ||
+          e.target instanceof HTMLTextAreaElement
+        ) return;
         handleDeleteSelected();
       }
     };
@@ -133,6 +378,7 @@ export default function EditRoom() {
     setRoomItems(undoStack[undoStack.length - 1]);
     setUndoStack((prev) => prev.slice(0, -1));
     setSelectedItemId(null);
+    setEditingItemId(null);
     toast({ title: "Undo successful" });
   };
 
@@ -141,16 +387,27 @@ export default function EditRoom() {
     setSaving(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { toast({ title: "Sign in required", variant: "destructive" }); return; }
-      const { error } = await supabase.from("room_designs").update({ items: roomItems as any, description: roomName }).eq("id", roomId).eq("user_id", session.user.id);
-      if (error) { toast({ title: "Failed to save", description: error.message, variant: "destructive" }); return; }
+      if (!session) {
+        toast({ title: "Sign in required", variant: "destructive" });
+        return;
+      }
+      const { error } = await supabase
+        .from("room_designs")
+        .update({ items: roomItems as any, description: roomName })
+        .eq("id", roomId)
+        .eq("user_id", session.user.id);
+      if (error) {
+        toast({ title: "Failed to save", description: error.message, variant: "destructive" });
+        return;
+      }
       toast({ title: "Room saved!" });
       setUndoStack([]);
-      // Capture thumbnail after save
       setTimeout(() => { if (roomId) captureRoomThumbnail(roomId); }, 1500);
     } catch (err) {
       toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAddFromPicker = (pickerItem: PickerItem) => {
@@ -159,15 +416,39 @@ export default function EditRoom() {
       return;
     }
     setUndoStack((prev) => [...prev, roomItems]);
-    setRoomItems((prev) => [...prev, { id: pickerItem.id, x: 0, y: 0, z: 0, rotation: 0, scale: 1 }]);
+    setRoomItems((prev) => [
+      ...prev,
+      { id: pickerItem.id, x: 0, y: 0, z: 0, rotation: 0, scale: 1 },
+    ]);
     setSelectedItemId(pickerItem.id);
     if (!furniture.find((f) => f.id === pickerItem.id)) {
-      setFurniture((prev) => [...prev, { id: pickerItem.id, name: pickerItem.name, category: pickerItem.category, price: pickerItem.price, thumbnail_url: pickerItem.thumbnail_url, file_url: null, real_width: null, real_depth: null, real_height: null, floor_offset: null, style_tags: null, buy_url: null }]);
+      setFurniture((prev) => [
+        ...prev,
+        {
+          id: pickerItem.id,
+          name: pickerItem.name,
+          category: pickerItem.category,
+          price: pickerItem.price,
+          thumbnail_url: pickerItem.thumbnail_url,
+          file_url: null,
+          real_width: null,
+          real_depth: null,
+          real_height: null,
+          floor_offset: null,
+          style_tags: null,
+          buy_url: null,
+        },
+      ]);
     }
     toast({ title: "Item added", description: "Reposition it in the room." });
   };
 
-  const filteredPicker = activeCategory === "All" ? pickerItems : pickerItems.filter((i) => i.category?.toLowerCase() === CATEGORY_MAP[activeCategory]);
+  const filteredPicker =
+    activeCategory === "All"
+      ? pickerItems
+      : pickerItems.filter(
+          (i) => i.category?.toLowerCase() === CATEGORY_MAP[activeCategory]
+        );
 
   if (loading) {
     return (
@@ -179,27 +460,30 @@ export default function EditRoom() {
     );
   }
 
+  // Picker content — shared between desktop sidebar and mobile drawer
   const pickerContent = (
     <>
-      <div className="flex flex-wrap gap-1 p-3 border-b border-border">
+      <div className="flex flex-wrap gap-1 p-3 border-b border-border shrink-0">
         {Object.entries(CATEGORY_MAP).map(([label, value]) => {
-          const count = value === ""
-            ? pickerItems.length
-            : pickerItems.filter((i) => i.category?.toLowerCase() === value).length;
+          const count =
+            value === ""
+              ? pickerItems.length
+              : pickerItems.filter((i) => i.category?.toLowerCase() === value).length;
           return (
             <button
               key={label}
               onClick={() => setActiveCategory(label)}
-              className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 min-h-[44px] ${
-                activeCategory === label ? "border-accent text-accent" : "border-border text-muted-foreground hover:text-foreground"
-              }`}
+              className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5
+                          border transition-colors duration-200 min-h-[44px]
+                          ${activeCategory === label
+                            ? "border-accent text-accent"
+                            : "border-border text-muted-foreground hover:text-foreground"}`}
             >
               {label} ({count})
             </button>
           );
         })}
       </div>
-
       <div className="flex-1 overflow-y-auto">
         {pickerLoading ? (
           <div className="flex justify-center py-8">
@@ -208,20 +492,31 @@ export default function EditRoom() {
             </div>
           </div>
         ) : filteredPicker.length === 0 ? (
-          <p className="font-body text-[0.75rem] text-muted-foreground text-center py-8">No items in this category</p>
+          <p className="font-body text-[0.75rem] text-muted-foreground text-center py-8">
+            No items in this category
+          </p>
         ) : (
           filteredPicker.map((item) => (
             <button
               key={item.id}
-              onClick={() => { handleAddFromPicker(item); if (isMobile) setPickerDrawerOpen(false); }}
-              className="w-full text-left px-4 py-3 border-b border-border hover:bg-background transition-colors cursor-pointer min-h-[44px]"
+              onClick={() => {
+                handleAddFromPicker(item);
+                if (isMobile) setPickerDrawerOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 border-b border-border
+                         hover:bg-background transition-colors cursor-pointer min-h-[44px]"
             >
               <div className="flex items-center gap-3">
                 {item.thumbnail_url ? (
-                  <img src={item.thumbnail_url} alt={item.name} className="h-10 w-10 object-cover flex-shrink-0" />
+                  <img
+                    src={item.thumbnail_url}
+                    alt={item.name}
+                    className="h-10 w-10 object-cover flex-shrink-0 rounded"
+                  />
                 ) : (
-                  <div className="h-10 w-10 border border-border flex items-center justify-center flex-shrink-0">
-                    <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
+                  <div className="h-10 w-10 border border-border bg-muted rounded
+                                  flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">🛋️</span>
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
@@ -239,29 +534,36 @@ export default function EditRoom() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
-      {/* Toolbar */}
-      <div className="border-b border-border px-4 py-2 flex items-center gap-2 bg-surface overflow-x-auto">
+
+      {/* ── Toolbar ──────────────────────────────────────────────────────── */}
+      <div className="border-b border-border px-4 py-2 flex items-center gap-2
+                      bg-surface overflow-x-auto shrink-0">
+
         {/* Editable room name */}
         <div className="shrink-0 mr-2">
           {isEditingName ? (
             <input
               autoFocus
               value={roomName}
-              onChange={e => setRoomName(e.target.value)}
+              onChange={(e) => setRoomName(e.target.value)}
               onBlur={() => setIsEditingName(false)}
-              onKeyDown={e => { if (e.key === "Enter") setIsEditingName(false); }}
+              onKeyDown={(e) => { if (e.key === "Enter") setIsEditingName(false); }}
               maxLength={60}
-              className="bg-transparent border-0 border-b border-accent text-foreground font-heading text-[1.3rem] font-normal outline-none py-1 w-full max-w-[400px]"
+              className="bg-transparent border-0 border-b border-accent text-foreground
+                         font-heading text-[1.3rem] font-normal outline-none py-1
+                         w-full max-w-[400px]"
             />
           ) : (
             <button
               onClick={() => setIsEditingName(true)}
               className="bg-transparent border-none cursor-pointer flex items-center gap-2 p-0"
             >
-              <span className="font-heading text-[1.3rem] font-normal text-foreground truncate max-w-[300px]">
+              <span className="font-heading text-[1.3rem] font-normal text-foreground
+                               truncate max-w-[300px]">
                 {roomName}
               </span>
-              <span className="font-body text-[0.65rem] tracking-[0.1em] uppercase text-muted-foreground shrink-0">
+              <span className="font-body text-[0.65rem] tracking-[0.1em] uppercase
+                               text-muted-foreground shrink-0">
                 ✎ RENAME
               </span>
             </button>
@@ -269,25 +571,31 @@ export default function EditRoom() {
         </div>
 
         <div className="w-px h-6 bg-border shrink-0" />
+
         <Button variant="amber" size="sm" onClick={handleSave} disabled={saving} className="min-h-[44px]">
           <Save className="h-4 w-4" />
           <span className="hidden md:inline">{saving ? "Saving…" : "Save"}</span>
         </Button>
+
         <Button variant="outline" size="sm" onClick={handleUndo} disabled={undoStack.length === 0} className="min-h-[44px]">
           <Undo className="h-4 w-4" />
           <span className="hidden md:inline">Undo</span>
         </Button>
+
         <Button variant="destructive" size="sm" onClick={handleDeleteSelected} disabled={!selectedItemId} className="min-h-[44px]">
           <Trash2 className="h-4 w-4" />
           <span className="hidden md:inline">Delete</span>
         </Button>
+
         {isMobile && (
           <Button variant="outline" size="sm" onClick={() => setPickerDrawerOpen(true)} className="min-h-[44px]">
             <Plus className="h-4 w-4" />
             <span className="text-[0.7rem]">ADD</span>
           </Button>
         )}
+
         <div className="flex-1" />
+
         {!isCopy && (
           <Button
             variant="amber-outline"
@@ -305,65 +613,100 @@ export default function EditRoom() {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row">
-        {/* Furniture Picker (desktop only) */}
+      {/* ── Main content ──────────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col md:flex-row min-h-0">
+
+        {/* Left: Furniture Picker (desktop only) */}
         {!isMobile && (
-          <aside className="w-72 border-r border-border flex flex-col bg-surface">
+          <aside className="w-72 shrink-0 border-r border-border flex flex-col
+                            bg-surface overflow-hidden">
             {pickerContent}
           </aside>
         )}
 
-        {/* Canvas */}
-        <div className="flex-1 p-4">
-          <RoomCanvas className="w-full h-full min-h-[300px] md:min-h-[400px]" items={roomItems} furniture={furniture} />
+        {/* Center: 3D Canvas — pure canvas, no sidebar inside */}
+        <div className="flex-1 min-h-0 min-w-0 flex flex-col">
+          <RoomCanvas
+            className="flex-1"
+            style={{ minHeight: isMobile ? '60vh' : '100%' }}
+            items={roomItems}
+            furniture={furniture}
+            selectedItemId={selectedItemId}
+            editingItemId={editingItemId}
+            onSelectItem={(id) => {
+              setSelectedItemId((prev) => prev === id ? null : id);
+              setEditingItemId(null);
+            }}
+            onEditItem={(id) => {
+              setSelectedItemId(id);
+              setEditingItemId((prev) => prev === id ? null : id);
+            }}
+            onPositionChange={(id, pos) => {
+              setRoomItems((prev) =>
+                prev.map((item) =>
+                  item.id === id ? { ...item, x: pos[0], y: pos[1], z: pos[2] } : item
+                )
+              );
+            }}
+          />
         </div>
 
-        {/* Room Items (right — hidden on mobile, shown below canvas) */}
-        <aside className={`${isMobile ? 'w-full border-t' : 'w-80 border-l'} border-border flex flex-col bg-surface`}>
-          <div className="p-4 border-b border-border">
-            <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground">
-              Room Items ({roomItems.length})
-            </h3>
+        {/* Right: switches between Room Items list and Item Info Card */}
+        {!isMobile && (
+          <aside className="w-80 shrink-0 border-l border-border flex flex-col
+                            bg-surface overflow-hidden">
+            <RightPanel
+              roomItems={roomItems}
+              furniture={furniture}
+              selectedItemId={selectedItemId}
+              editingItemId={editingItemId}
+              formatPrice={formatPrice}
+              onSelectItem={(id) => {
+                setSelectedItemId((prev) => prev === id ? null : id);
+                setEditingItemId(null);
+              }}
+              onDeleteItem={(id) => {
+                setUndoStack((prev) => [...prev, roomItems]);
+                setRoomItems((prev) => prev.filter((item) => item.id !== id));
+                setSelectedItemId(null);
+                setEditingItemId(null);
+                toast({ title: "Item removed" });
+              }}
+              onBack={() => {
+                setSelectedItemId(null);
+                setEditingItemId(null);
+              }}
+            />
+          </aside>
+        )}
+
+        {/* Mobile: right panel below canvas */}
+        {isMobile && (
+          <div className="w-full border-t border-border bg-surface" style={{ height: '280px' }}>
+            <RightPanel
+              roomItems={roomItems}
+              furniture={furniture}
+              selectedItemId={selectedItemId}
+              editingItemId={editingItemId}
+              formatPrice={formatPrice}
+              onSelectItem={(id) => {
+                setSelectedItemId((prev) => prev === id ? null : id);
+                setEditingItemId(null);
+              }}
+              onDeleteItem={(id) => {
+                setUndoStack((prev) => [...prev, roomItems]);
+                setRoomItems((prev) => prev.filter((item) => item.id !== id));
+                setSelectedItemId(null);
+                setEditingItemId(null);
+                toast({ title: "Item removed" });
+              }}
+              onBack={() => {
+                setSelectedItemId(null);
+                setEditingItemId(null);
+              }}
+            />
           </div>
-          <div className="flex-1 overflow-y-auto">
-            {roomItems.length === 0 ? (
-              <p className="font-body text-[0.75rem] text-muted-foreground text-center py-8 px-4">
-                No furniture in this room. Add items from the picker.
-              </p>
-            ) : (
-              roomItems.map((item) => {
-                const detail = getFurnitureDetail(item.id);
-                const isSelected = selectedItemId === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setSelectedItemId(isSelected ? null : item.id)}
-                    className={`w-full text-left px-4 py-3 border-b border-border transition-colors cursor-pointer min-h-[44px] ${
-                      isSelected ? "bg-accent/10 border-l-2 border-l-accent" : "hover:bg-background"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {detail?.thumbnail_url && detail.thumbnail_url !== "PENDING_UPLOAD" ? (
-                        <img src={detail.thumbnail_url} alt={detail?.name ?? item.id} className="h-10 w-10 object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="h-10 w-10 border border-border flex items-center justify-center flex-shrink-0">
-                          <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="font-body text-[0.8rem] text-foreground truncate">{detail?.name ?? item.id}</p>
-                        <p className="font-body text-[0.7rem] text-accent">{detail ? formatPrice(detail.price) : "—"}</p>
-                      </div>
-                      {isSelected && (
-                        <span className="font-body text-[0.6rem] tracking-[0.1em] uppercase text-accent shrink-0">Selected</span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </aside>
+        )}
       </div>
 
       {/* Mobile furniture picker drawer */}
@@ -371,7 +714,10 @@ export default function EditRoom() {
         <Drawer open={pickerDrawerOpen} onOpenChange={setPickerDrawerOpen}>
           <DrawerContent className="max-h-[70vh]">
             <DrawerHeader>
-              <DrawerTitle className="font-body text-[0.8rem] tracking-[0.1em] uppercase text-muted-foreground">Add Furniture</DrawerTitle>
+              <DrawerTitle className="font-body text-[0.8rem] tracking-[0.1em] uppercase
+                                     text-muted-foreground">
+                Add Furniture
+              </DrawerTitle>
             </DrawerHeader>
             <div className="flex flex-col overflow-hidden flex-1">
               {pickerContent}
@@ -381,7 +727,12 @@ export default function EditRoom() {
       )}
 
       {roomId && (
-        <PostToCommunityDialog open={postDialogOpen} onOpenChange={setPostDialogOpen} roomId={roomId} onPosted={() => setPosted(true)} />
+        <PostToCommunityDialog
+          open={postDialogOpen}
+          onOpenChange={setPostDialogOpen}
+          roomId={roomId}
+          onPosted={() => setPosted(true)}
+        />
       )}
     </div>
   );
