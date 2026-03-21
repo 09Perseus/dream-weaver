@@ -137,12 +137,12 @@ export default function Community() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-10 animate-reveal-up delay-100">
+      <div className="flex items-center gap-3 mb-10 animate-reveal-up delay-100 overflow-x-auto pb-2 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
         {filters.map((f) => (
           <button
             key={f}
             onClick={() => setActiveFilter(f)}
-            className={`font-body text-[0.7rem] tracking-[0.1em] uppercase px-4 py-2 border transition-colors duration-200 ${
+            className={`font-body text-[0.7rem] tracking-[0.1em] uppercase px-4 py-2 border transition-colors duration-200 whitespace-nowrap min-h-[44px] ${
               activeFilter === f
                 ? "border-accent text-accent"
                 : "border-border text-muted-foreground hover:border-accent hover:text-accent"
@@ -151,12 +151,12 @@ export default function Community() {
             {f}
           </button>
         ))}
-        <div className="w-px h-5 bg-border mx-1" />
+        <div className="w-px h-5 bg-border mx-1 shrink-0" />
         {styleTags.map((tag) => (
           <button
             key={tag}
             onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-            className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 ${
+            className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 whitespace-nowrap min-h-[44px] ${
               activeTag === tag
                 ? "border-accent text-accent"
                 : "border-border text-muted-foreground hover:border-accent/50"

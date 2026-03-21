@@ -195,7 +195,7 @@ export default function RoomView() {
                   </div>
                   <button
                     onClick={() => handleAddItem(item)}
-                    className="font-body text-[0.65rem] tracking-[0.1em] uppercase text-accent hover:underline shrink-0"
+                    className="font-body text-[0.65rem] tracking-[0.1em] uppercase text-accent hover:underline shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center md:block md:min-h-0 md:min-w-0"
                   >
                     ADD →
                   </button>
@@ -207,7 +207,7 @@ export default function RoomView() {
 
         <div className="p-6 space-y-3">
           {furniture.length > 0 && (
-            <Button variant="amber" className="w-full" onClick={handleAddAll}>
+            <Button variant="amber" className="w-full min-h-[52px]" onClick={handleAddAll}>
               Add All to Cart
             </Button>
           )}
