@@ -302,8 +302,17 @@ export default function Cart() {
 
             <div
               id="payjp-card-element"
-              className="border-b border-border py-3 mb-2"
-              style={{ background: "transparent", minHeight: 44 }}
+              style={{
+                background: "transparent",
+                minHeight: "60px",
+                height: "60px",
+                width: "100%",
+                display: "block",
+                borderBottom: "1px solid var(--border)",
+                paddingTop: "8px",
+                paddingBottom: "8px",
+                overflow: "visible",
+              }}
             />
 
             {!payjpReady && !payjpError && (
