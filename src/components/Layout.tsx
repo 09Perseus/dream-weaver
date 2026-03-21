@@ -4,6 +4,7 @@ import { ShoppingCart, Menu, X, LayoutGrid, ShoppingBag, Pencil, LogOut, Trash2,
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency, CURRENCIES, type CurrencyCode } from "@/contexts/CurrencyContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import UserAvatar from "@/components/UserAvatar";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import DeleteAccountDialog from "@/components/DeleteAccountDialog";
