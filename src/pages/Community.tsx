@@ -201,6 +201,7 @@ export default function Community() {
               likeCount={post.like_count}
               liked={likedIds.has(post.id)}
               isOwnPost={post.user_id === user?.id}
+              likeDisabled={processingLikes.has(post.id)}
               onLike={() => handleLike(post.id)}
               delay={80 * i}
             />
