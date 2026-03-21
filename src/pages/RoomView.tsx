@@ -31,6 +31,8 @@ export default function RoomView() {
   const [loading, setLoading] = useState(!navState?.items);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
+  const [roomOwnerId, setRoomOwnerId] = useState<string | null>(null);
+  const [copying, setCopying] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
