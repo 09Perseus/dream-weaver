@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import SkeletonCard from "@/components/SkeletonCard";
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, Eye, Pencil, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,71 +138,68 @@ export default function MyRooms() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {rooms.map((room, i) => {
             const isPosted = postedRoomIds.has(room.id);
+            const desc = room.description ?? "Untitled Room";
+            const displayDesc = room.is_copy
+              ? (desc.startsWith("Copy of") ? desc : `Copy of ${desc}`).slice(0, 60)
+              : desc.length > 60 ? desc.slice(0, 60) + "…" : desc;
+
             return (
               <div
                 key={room.id}
-                className="border border-border bg-surface animate-reveal-up"
+                className="border border-border bg-surface animate-reveal-up overflow-hidden min-w-0"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
-                <div className="relative aspect-[4/3] bg-surface flex items-center justify-center border-b border-border">
+                <div className="relative h-[200px] bg-surface flex items-center justify-center border-b border-border">
                   {room.is_copy && (
                     <span className="absolute top-0 left-0 z-10 font-body text-[0.6rem] tracking-[0.1em] uppercase bg-surface border border-border text-muted-foreground px-2 py-0.5">
                       COPIED
                     </span>
                   )}
-                  <p className="font-heading italic text-[0.85rem] text-muted-foreground px-6 text-center">
-                    {room.is_copy
-                      ? `Copy of ${(room.description ?? "Untitled Room").slice(0, 50)}`
-                      : room.description
-                        ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
-                        : "Untitled Room"}
+                  <p className="font-heading italic text-[0.85rem] text-muted-foreground px-6 text-center truncate">
+                    {displayDesc}
                   </p>
                 </div>
                 <div className="p-4 space-y-3">
-                  <h3 className="font-heading text-[1.1rem] font-normal text-foreground">
-                    {room.is_copy
-                      ? `Copy of ${(room.description ?? "Untitled Room").slice(0, 50)}`
-                      : room.description
-                        ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
-                        : "Untitled Room"}
+                  <h3 className="font-heading text-[1.1rem] font-normal text-foreground truncate">
+                    {displayDesc}
                   </h3>
                   <p className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">
                     {room.created_at ? format(new Date(room.created_at), "MMMM d, yyyy") : "Unknown date"}
                   </p>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                    <Link to={`/room/${room.id}`} className="flex-1 sm:flex-initial">
-                      <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px]">
-                        <Eye className="h-3.5 w-3.5" />
-                        View
-                      </Button>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link to={`/room/${room.id}`}>
+                      <button className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]">
+                        VIEW
+                      </button>
                     </Link>
-                    <Link to={`/room/${room.id}/edit`} className="flex-1 sm:flex-initial">
-                      <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px]">
-                        <Pencil className="h-3.5 w-3.5" />
-                        Edit
-                      </Button>
+                    <Link to={`/room/${room.id}/edit`}>
+                      <button className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]">
+                        EDIT
+                      </button>
                     </Link>
                     {isPosted ? (
-                      <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => handleUnpost(room.id)} disabled={unposting === room.id}>
-                        <X className="h-3.5 w-3.5" />
-                        {unposting === room.id ? "…" : "Unpost"}
-                      </Button>
+                      <button
+                        onClick={() => handleUnpost(room.id)}
+                        disabled={unposting === room.id}
+                        className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer disabled:opacity-50 min-h-[44px]"
+                      >
+                        {unposting === room.id ? "…" : "UNPOST"}
+                      </button>
                     ) : (
-                      <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => setPostDialogRoomId(room.id)}>
-                        <Share2 className="h-3.5 w-3.5" />
-                        Post
-                      </Button>
+                      <button
+                        onClick={() => setPostDialogRoomId(room.id)}
+                        className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]"
+                      >
+                        POST
+                      </button>
                     )}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="sm:ml-auto min-h-[44px]"
+                    <button
                       onClick={() => handleDelete(room.id)}
                       disabled={deleting === room.id}
+                      className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-destructive text-destructive hover:bg-destructive/10 transition-colors cursor-pointer disabled:opacity-50 min-h-[44px]"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Delete
-                    </Button>
+                      {deleting === room.id ? "…" : "DELETE"}
+                    </button>
                   </div>
                 </div>
               </div>
