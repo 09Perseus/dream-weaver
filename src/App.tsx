@@ -13,6 +13,7 @@ import EditRoom from "./pages/EditRoom";
 import Community from "./pages/Community";
 import MyRooms from "./pages/MyRooms";
 import Cart from "./pages/Cart";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
@@ -48,6 +49,7 @@ const App = React.forwardRef<HTMLDivElement>((_, ref) => (
                   }
                 />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-up" element={<SignUp />} />
                 <Route path="*" element={<NotFound />} />

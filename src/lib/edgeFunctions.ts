@@ -32,13 +32,19 @@ export interface GenerateRoomResponse {
 }
 
 export interface CheckoutItem {
+  id: string;
   name: string;
   price: number;
   quantity: number;
 }
 
 export interface CreateCheckoutResponse {
-  url: string;
+  success: boolean;
+  charge_id: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  error?: string;
 }
 
 // ── Functions ──────────────────────────────────────────
@@ -58,16 +64,21 @@ export async function generateRoom(
 }
 
 export async function createCheckout(
+  token: string,
+  amount: number,
   items: CheckoutItem[],
-  successUrl: string,
-  cancelUrl: string
+  currency: string = "jpy"
 ): Promise<CreateCheckoutResponse> {
   const { data, error } = await supabase.functions.invoke("create-checkout", {
-    body: { items, success_url: successUrl, cancel_url: cancelUrl },
+    body: { token, amount, items, currency },
   });
 
   if (error) {
-    throw new Error(error.message || "Failed to create checkout session");
+    throw new Error(error.message || "Failed to process payment");
+  }
+
+  if (data.error) {
+    throw new Error(data.error);
   }
 
   return data as CreateCheckoutResponse;
