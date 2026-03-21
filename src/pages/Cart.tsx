@@ -27,7 +27,16 @@ export default function Cart() {
     if (items.length === 0 || mountedRef.current) return;
 
     const initPayjp = () => {
-      if (typeof window.Payjp === "undefined") return;
+      if (typeof window.Payjp === "undefined") {
+        console.log("PAY.JP script not ready, retrying...");
+        setTimeout(initPayjp, 500);
+        return;
+      }
+
+      console.log("PAY.JP public key present:", !!import.meta.env.VITE_PAYJP_PUBLIC_KEY);
+      console.log("PAY.JP public key value:", import.meta.env.VITE_PAYJP_PUBLIC_KEY);
+      console.log("PAY.JP script loaded, mounting card element");
+
       const payjp = window.Payjp(import.meta.env.VITE_PAYJP_PUBLIC_KEY);
       const elements = payjp.elements();
       const card = elements.create("card", {
@@ -47,18 +56,11 @@ export default function Cart() {
       mountedRef.current = true;
     };
 
-    // Retry until pay.js loads
-    const interval = setInterval(() => {
-      if (typeof window.Payjp !== "undefined") {
-        clearInterval(interval);
-        initPayjp();
-      }
-    }, 200);
+    initPayjp();
 
-    return () => clearInterval(interval);
+    return () => {};
   }, [items.length]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (cardElement) {
@@ -74,18 +76,32 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (!payjpInstance || !cardElement) {
-      toast({ title: "Card form not ready", description: "Please wait a moment and try again.", variant: "destructive" });
+      toast({ title: "Card form is not ready", description: "Please refresh the page.", variant: "destructive" });
       return;
     }
 
     setCheckoutLoading(true);
     try {
-      const { token, error: tokenError } = await payjpInstance.createToken(cardElement);
+      const result = await payjpInstance.createToken(cardElement);
+      console.log("PAY.JP createToken result:", result);
 
-      if (tokenError) {
-        toast({ title: "Card error", description: tokenError.message, variant: "destructive" });
+      if (!result) {
+        toast({ title: "Payment failed", description: "No response from PAY.JP", variant: "destructive" });
         return;
       }
+
+      if (result.error) {
+        toast({ title: "Card error", description: result.error.message, variant: "destructive" });
+        return;
+      }
+
+      if (!result.token || !result.token.id) {
+        toast({ title: "Payment failed", description: "Could not create card token", variant: "destructive" });
+        return;
+      }
+
+      const tokenId = result.token.id;
+      console.log("PAY.JP token created:", tokenId);
 
       const checkoutItems = items.map((i) => ({
         id: i.id,
@@ -94,15 +110,15 @@ export default function Cart() {
         quantity: i.quantity,
       }));
 
-      const result = await createCheckout(token.id, totalJPY, checkoutItems, "jpy");
+      const data = await createCheckout(tokenId, totalJPY, checkoutItems, "jpy");
 
       clearCart();
       navigate("/order-confirmation", {
         state: {
-          orderId: result.order_id,
-          chargeId: result.charge_id,
-          amount: result.amount,
-          currency: result.currency,
+          orderId: data.order_id,
+          chargeId: data.charge_id,
+          amount: data.amount,
+          currency: data.currency,
           items: checkoutItems,
         },
       });
@@ -131,7 +147,6 @@ export default function Cart() {
         </div>
       ) : (
         <div className="space-y-8 animate-reveal-up delay-100">
-          {/* Items */}
           <div>
             {items.map((item) => (
               <div key={item.id} className="flex items-center gap-4 py-5 border-b border-border">
@@ -167,7 +182,6 @@ export default function Cart() {
             ))}
           </div>
 
-          {/* Card input */}
           <div className="pt-2">
             <label className="font-body text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground block mb-3">
               Card Details
@@ -182,7 +196,6 @@ export default function Cart() {
             </p>
           </div>
 
-          {/* Totals */}
           <div className="border-t border-border pt-6 space-y-4">
             <div className="flex justify-between font-body text-[0.8rem]">
               <span className="text-muted-foreground uppercase tracking-[0.08em]">Subtotal</span>
