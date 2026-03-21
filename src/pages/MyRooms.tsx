@@ -221,7 +221,7 @@ export default function MyRooms() {
                       onClick={() => navigate(`/room/${room.id}`)}
                       title="View Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: "#4A90D9", border: "none" }}
+                      style={{ background: buttonColors.view, border: "none" }}
                     >
                       <Eye size={16} color="white" />
                     </button>
@@ -229,9 +229,9 @@ export default function MyRooms() {
                       onClick={() => navigate(`/room/${room.id}/edit`)}
                       title="Edit Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: "hsl(var(--accent))", border: "none" }}
+                      style={{ background: buttonColors.edit, border: "none" }}
                     >
-                      <Pencil size={16} color="hsl(var(--bg))" />
+                      <Pencil size={16} color={theme === "dark" ? "#0D1117" : "white"} />
                     </button>
                     {!room.is_copy && (
                       <button
@@ -239,7 +239,7 @@ export default function MyRooms() {
                         disabled={unposting === room.id}
                         title={isPosted ? "Remove from Community" : "Post to Community"}
                         className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
-                        style={{ background: isPosted ? "hsl(var(--success))" : "hsl(var(--accent))", border: "none" }}
+                        style={{ background: isPosted ? buttonColors.unpost : buttonColors.post, border: "none" }}
                       >
                         {isPosted ? <EyeOff size={16} color="white" /> : <Share2 size={16} color="white" />}
                       </button>
@@ -249,7 +249,7 @@ export default function MyRooms() {
                       disabled={deleting === room.id}
                       title="Delete Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
-                      style={{ background: "hsl(var(--destructive))", border: "none" }}
+                      style={{ background: buttonColors.delete, border: "none" }}
                     >
                       <Trash2 size={16} color="white" />
                     </button>
