@@ -1,8 +1,9 @@
 import React, { useState, forwardRef } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ShoppingCart, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { label: "Community", to: "/community" },
@@ -11,8 +12,21 @@ const navLinks = [
 
 const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => {
   const { totalItems } = useCart();
+  const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const truncatedEmail = user?.email
+    ? user.email.length > 20
+      ? user.email.slice(0, 20) + "…"
+      : user.email
+    : null;
 
   return (
     <div ref={ref} className="min-h-screen flex flex-col">
@@ -53,11 +67,23 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                 )}
               </Button>
             </Link>
-            <Link to="/sign-in" className="hidden md:block">
-              <Button variant="amber-outline" size="sm">
-                Sign In
-              </Button>
-            </Link>
+
+            {user ? (
+              <div className="hidden md:flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{truncatedEmail}</span>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Link to="/sign-in" className="hidden md:block">
+                <Button variant="amber-outline" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+            )}
+
             <Button
               variant="ghost"
               size="icon"
@@ -83,11 +109,21 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                   </Button>
                 </Link>
               ))}
-              <Link to="/sign-in" onClick={() => setMobileOpen(false)}>
-                <Button variant="amber-outline" className="w-full">
-                  Sign In
-                </Button>
-              </Link>
+              {user ? (
+                <>
+                  <span className="text-sm text-muted-foreground px-4 py-2">{truncatedEmail}</span>
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => { setMobileOpen(false); handleSignOut(); }}>
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link to="/sign-in" onClick={() => setMobileOpen(false)}>
+                  <Button variant="amber-outline" className="w-full">
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </nav>
           </div>
         )}
