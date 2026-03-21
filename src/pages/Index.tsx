@@ -452,10 +452,8 @@ export default function Index() {
         </div>
       </section>
 
-      <Divider />
-
       {/* ═══ FEATURE 3 — Community ═══ */}
-      <section className="min-h-[60vh] flex items-center">
+      <section className="feature-section feature-pattern-3 min-h-[60vh] flex items-center">
         <div className="container py-20 md:py-28 w-full">
           <RevealSection>
             <div className="text-center max-w-2xl mx-auto mb-14 space-y-4">
