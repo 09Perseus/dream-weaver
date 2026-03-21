@@ -68,10 +68,10 @@ function MovableFurniture({
           onSelect();
         }}
       >
-        {furniture.path ? (
+        {furniture.path && furniture.path !== 'PENDING_UPLOAD' ? (
           <Suspense fallback={
             <mesh>
-              <boxGeometry args={[1, 1, 1]} />
+              <boxGeometry args={furniture.size ?? [1, 1, 1]} />
               <meshStandardMaterial color="gray" wireframe />
             </mesh>
           }>
@@ -79,7 +79,7 @@ function MovableFurniture({
           </Suspense>
         ) : (
           <mesh castShadow receiveShadow>
-            <boxGeometry args={[1, 1, 1]} />
+            <boxGeometry args={furniture.size ?? [1, 1, 1]} />
             <meshStandardMaterial
               color={furniture.color || 'white'}
               emissive={isSelected ? '#333333' : '#000000'}
