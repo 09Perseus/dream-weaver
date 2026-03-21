@@ -44,6 +44,8 @@ interface RoomCanvasProps {
   furniture?: FurnitureDetail[];
   selectedItemId?: string | null;
   editingItemId?: string | null;
+  wallpaper?: { path: string } | null;
+  flooring?: { path: string } | null;
   onSelectItem?: (id: string) => void;
   onEditItem?: (id: string) => void;
   onPositionChange?: (id: string, pos: [number, number, number]) => void;
@@ -73,7 +75,6 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   const cloned = useMemo(() => {
     const c = scene.clone();
 
-    // Remove embedded cameras from GLTF to prevent camera hijacking
     const cameras: THREE.Camera[] = [];
     c.traverse((node) => {
       if ((node as THREE.Camera).isCamera) {
@@ -83,7 +84,7 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
     cameras.forEach(cam => cam.removeFromParent());
 
     const box = new THREE.Box3().setFromObject(c);
-    if (box.isEmpty()) return c; // Escape if GLTF has no valid geometry
+    if (box.isEmpty()) return c;
 
     const size = box.getSize(new THREE.Vector3());
     const longestSide = Math.max(size.x, size.y, size.z);
@@ -164,7 +165,7 @@ function MovableFurniture({
   useFrame((state, delta) => {
     if (isEditMode && activeRotationDir && onRotationChange) {
       const currentRot = furniture.rotation || [0, 0, 0];
-      const speed = Math.PI / 3; // 60 degrees per second for precise control
+      const speed = Math.PI / 3;
       onRotationChange([currentRot[0], currentRot[1] + activeRotationDir * speed * delta, currentRot[2]]);
     }
 
@@ -189,7 +190,6 @@ function MovableFurniture({
     };
   }, [gl]);
 
-  // Handle rotation via R key while editing
   useEffect(() => {
     if (!isEditMode || !onRotationChange) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -442,19 +442,11 @@ function StandaloneSidebar({
   );
 }
 
-const CAMERA_SETTINGS = {
-  position: [0, 12, 10] as [number, number, number],
-  fov: 45,
-  near: 0.1,
-  far: 100,
-};
-
 function CameraController({ editId }: { editId: string | null }) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {
-    // Set camera position exactly once on mount
     camera.position.set(3, 3, 5);
   }, [camera]);
 
@@ -464,20 +456,50 @@ function CameraController({ editId }: { editId: string | null }) {
       makeDefault
       enableZoom
       enabled={!editId}
-      // Omit 'target' entirely so it doesn't aggressively override user panning on React re-renders!
       maxDistance={40}
       minDistance={2}
     />
   );
 }
 
-const ORBIT_TARGET = [0, 0, 0] as [number, number, number];
+// ── Texture loader helper ─────────────────────────────────────────────────────
+// Loads a texture from a path, sets repeat wrapping, and calls back with the result.
+
+function loadTexture(
+  path: string,
+  repeat: number,
+  onLoad: (texture: THREE.Texture) => void
+): () => void {
+  let cancelled = false;
+  const loader = new THREE.TextureLoader();
+  loader.load(
+    path,
+    (texture) => {
+      if (cancelled) {
+        texture.dispose();
+        return;
+      }
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(repeat, repeat);
+      texture.needsUpdate = true;
+      onLoad(texture);
+    },
+    undefined,
+    (err) => {
+      console.warn("[RoomCanvas] Failed to load texture:", path, err);
+    }
+  );
+  return () => { cancelled = true; };
+}
 
 export default function RoomCanvas({
   className = "",
   style,
   items,
   furniture,
+  wallpaper,
+  flooring,
   selectedItemId: controlledSelectedId,
   editingItemId: controlledEditingId,
   onSelectItem: externalOnSelect,
@@ -501,26 +523,69 @@ export default function RoomCanvas({
   const selectedId = isControlled ? (controlledSelectedId ?? null) : internalSelectedId;
   const editId = isControlled ? (controlledEditingId ?? null) : internalEditId;
 
-  const [wallTexture, setWallTexture] = useState<THREE.Texture | null>(null);
   const [description, setDescription] = useState("");
 
+  // ── Texture state ──────────────────────────────────────────────────────────
+  const [wallTexture, setWallTexture] = useState<THREE.Texture | null>(null);
+  const [floorTexture, setFloorTexture] = useState<THREE.Texture | null>(null);
+
+  // ── Hook ───────────────────────────────────────────────────────────────────
   const {
     furnitures: generatedFurnitures,
     setFurnitures,
+    textures,         // { floor: string|null, wallpaper: string|null }
     isGenerating,
     loadingMessage,
     error,
     generate,
   } = useGenerateRoom({ roomSize, roomHeight });
 
-  // Map viewer data if in viewer mode
+  // ── Load wallpaper texture ─────────────────────────────────────────────────
+  // Priority: prop (viewer mode) → generated texture (standalone mode)
+  useEffect(() => {
+    // Determine which path to load
+    const rawPath = wallpaper?.path ?? (isViewerMode ? null : textures.wallpaper);
+    if (!rawPath) return;
+
+    // Textures from the hook are relative (e.g. "wallpapers/foo.png"), so prefix with /furnitures/
+    // Prop paths from viewer mode are already absolute URLs — don't double-prefix them
+    const fullPath = wallpaper?.path
+      ? rawPath                          // viewer mode: already a full URL/path
+      : `/furnitures/${rawPath}`;        // standalone: relative path from catalogue
+
+    const cancel = loadTexture(fullPath, 4, (texture) => {
+      setWallTexture((prev) => { prev?.dispose(); return texture; });
+    });
+    return () => {
+      cancel();
+    };
+  }, [wallpaper?.path, textures.wallpaper, isViewerMode]);
+
+  // ── Load floor texture ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const rawPath = flooring?.path ?? (isViewerMode ? null : textures.floor);
+    if (!rawPath) return;
+
+    const fullPath = flooring?.path
+      ? rawPath
+      : `/furnitures/${rawPath}`;
+
+    const cancel = loadTexture(fullPath, 4, (texture) => {
+      setFloorTexture((prev) => { prev?.dispose(); return texture; });
+    });
+    return () => {
+      cancel();
+    };
+  }, [flooring?.path, textures.floor, isViewerMode]);
+
+  // ── Map viewer data ────────────────────────────────────────────────────────
   const viewerFurnitures: FurnitureItem[] = useMemo(() => {
     if (!isViewerMode) return [];
     return items.map((item) => {
       const detail = furniture.find((f) => f.id === item.id);
-      const width = Math.max(detail?.real_width ?? 0.8, 0.4);
+      const width  = Math.max(detail?.real_width  ?? 0.8, 0.4);
       const height = Math.max(detail?.real_height ?? 0.8, 0.2);
-      const depth = Math.max(detail?.real_depth ?? 0.8, 0.4);
+      const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
       return {
         id: item.id,
         name: detail?.name,
@@ -539,22 +604,19 @@ export default function RoomCanvas({
 
   const activeFurnitures = isViewerMode
     ? viewerFurnitures
-    : generatedFurnitures.map(f => ({ ...f, position: [f.position[0], 0, f.position[2]] as [number, number, number] }));
+    : generatedFurnitures.map(f => ({
+        ...f,
+        position: [f.position[0], 0, f.position[2]] as [number, number, number],
+      }));
 
-  useEffect(() => {
-    new THREE.TextureLoader().load("/furnitures/wallpapers/japanese_bamboo_pattern.png", (texture) => {
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(4, 4);
-      setWallTexture(texture);
-    });
-  }, []);
-
+  // ── Handlers ───────────────────────────────────────────────────────────────
   const handlePositionChange = (id: string, newPos: [number, number, number]) => {
     if (externalOnPositionChange) {
       externalOnPositionChange(id, [newPos[0], 0, newPos[2]]);
     } else {
-      setFurnitures((prev) => prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f)));
+      setFurnitures((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f))
+      );
     }
   };
 
@@ -600,6 +662,7 @@ export default function RoomCanvas({
       <div className="relative flex-1 min-h-0 min-w-0">
         {!webglSupported && <WebGLUnavailable items={isViewerMode ? items : undefined} />}
 
+        {/* Standalone generate input */}
         {!isViewerMode && !isControlled && webglSupported && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xl">
             <div className="flex gap-2">
@@ -625,6 +688,7 @@ export default function RoomCanvas({
           </div>
         )}
 
+        {/* Loading overlay */}
         {isGenerating && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
             <div className="text-center">
@@ -634,6 +698,7 @@ export default function RoomCanvas({
           </div>
         )}
 
+        {/* Rotation buttons */}
         {editId && webglSupported && (
           <div className="absolute bottom-6 right-6 z-20 flex gap-2">
             <button
@@ -673,45 +738,94 @@ export default function RoomCanvas({
             <directionalLight position={[0, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
             <directionalLight position={[0, 4, 8]} intensity={0.5} />
 
-            {/* Room Geometry - Outward normals with BackSide to achieve dollhouse visibility */}
-            {/* Floor (Outward normal faces -Y) */}
-            <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
+            {/* ── Floor ── */}
+            <mesh
+              position={[0, 0, 0]}
+              rotation={[Math.PI / 2, 0, 0]}
+              receiveShadow
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomSize]} />
-              <meshStandardMaterial color="#f0ece4" side={THREE.BackSide} />
+              <meshStandardMaterial
+                map={floorTexture ?? undefined}
+                color={floorTexture ? "#ffffff" : "#f0ece4"}
+                side={THREE.BackSide}
+              />
             </mesh>
 
-            {/* Roof (Outward normal faces +Y) */}
-            <mesh position={[0, roomHeight, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
+            {/* ── Ceiling ── */}
+            <mesh
+              position={[0, roomHeight, 0]}
+              rotation={[-Math.PI / 2, 0, 0]}
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomSize]} />
               <meshStandardMaterial color="#faf7f2" side={THREE.BackSide} transparent opacity={0.9} />
             </mesh>
 
-            {/* Back Wall (-Z) (Outward normal faces -Z) */}
-            <mesh position={[0, halfH, -halfW]} rotation={[0, Math.PI, 0]} raycast={() => null}>
+            {/* ── Back Wall (-Z) ── */}
+            <mesh
+              position={[0, halfH, -halfW]}
+              rotation={[0, Math.PI, 0]}
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.BackSide} />
+              <meshStandardMaterial
+                map={wallTexture ?? undefined}
+                color={wallTexture ? "#ffffff" : "#faf7f2"}
+                side={THREE.BackSide}
+              />
             </mesh>
 
-            {/* Front Wall (+Z) (Outward normal faces +Z) */}
-            <mesh position={[0, halfH, halfW]} rotation={[0, 0, 0]} raycast={() => null}>
+            {/* ── Front Wall (+Z) ── */}
+            <mesh
+              position={[0, halfH, halfW]}
+              rotation={[0, 0, 0]}
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.BackSide} />
+              <meshStandardMaterial
+                map={wallTexture ?? undefined}
+                color={wallTexture ? "#ffffff" : "#faf7f2"}
+                side={THREE.BackSide}
+              />
             </mesh>
 
-            {/* Left Wall (-X) (Outward normal faces -X) */}
-            <mesh position={[-halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
+            {/* ── Left Wall (-X) ── */}
+            <mesh
+              position={[-halfW, halfH, 0]}
+              rotation={[0, -Math.PI / 2, 0]}
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.BackSide} />
+              <meshStandardMaterial
+                map={wallTexture ?? undefined}
+                color={wallTexture ? "#ffffff" : "#faf7f2"}
+                side={THREE.BackSide}
+              />
             </mesh>
 
-            {/* Right Wall (+X) (Outward normal faces +X) */}
-            <mesh position={[halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
+            {/* ── Right Wall (+X) ── */}
+            <mesh
+              position={[halfW, halfH, 0]}
+              rotation={[0, Math.PI / 2, 0]}
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.BackSide} />
+              <meshStandardMaterial
+                map={wallTexture ?? undefined}
+                color={wallTexture ? "#ffffff" : "#faf7f2"}
+                side={THREE.BackSide}
+              />
             </mesh>
-            <gridHelper args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]} position={[0, 0.01, 0]} raycast={() => null} />
 
-            {/* Furniture */}
+            <gridHelper
+              args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]}
+              position={[0, 0.01, 0]}
+              raycast={() => null}
+            />
+
+            {/* ── Furniture ── */}
             {activeFurnitures.map((f) => (
               <MovableFurniture
                 key={f.id}
@@ -731,7 +845,7 @@ export default function RoomCanvas({
         )}
       </div>
 
-      {/* Sidebar logic remains same */}
+      {/* Sidebar */}
       {!isControlled && (internalSelectedId || internalEditId) && (
         <StandaloneSidebar
           furnitures={activeFurnitures}
