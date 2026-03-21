@@ -17,6 +17,7 @@ interface Room {
 export default function MyRooms() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [postedRoomIds, setPostedRoomIds] = useState<Set<string>>(new Set());
   const [postDialogRoomId, setPostDialogRoomId] = useState<string | null>(null);
@@ -24,27 +25,43 @@ export default function MyRooms() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/sign-in?redirect=/my-rooms"); return; }
+    setLoading(true);
+    setError(null);
 
-      const [roomsRes, postsRes] = await Promise.all([
-        supabase.from("room_designs").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }),
-        supabase.from("community_posts").select("room_design_id").eq("user_id", session.user.id).eq("is_visible", true),
-      ]);
-
-      if (roomsRes.error) {
-        console.error("Error fetching rooms:", roomsRes.error);
-        toast({ title: "Error", description: "Failed to load your rooms.", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-
-      setRooms(roomsRes.data ?? []);
-      setPostedRoomIds(new Set(postsRes.data?.map((p) => p.room_design_id) ?? []));
+    const timeout = setTimeout(() => {
       setLoading(false);
+      setError("Loading timed out. Please refresh the page.");
+    }, 8000);
+
+    const fetchRooms = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { navigate("/sign-in?redirect=/my-rooms"); return; }
+
+        const [roomsRes, postsRes] = await Promise.all([
+          supabase.from("room_designs").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }),
+          supabase.from("community_posts").select("room_design_id").eq("user_id", session.user.id).eq("is_visible", true),
+        ]);
+
+        if (roomsRes.error) {
+          console.error("My rooms error:", roomsRes.error);
+          setError("Failed to load rooms: " + roomsRes.error.message);
+          return;
+        }
+
+        setRooms(roomsRes.data ?? []);
+        setPostedRoomIds(new Set(postsRes.data?.map((p) => p.room_design_id) ?? []));
+      } catch (err: any) {
+        console.error("Unexpected my rooms error:", err);
+        setError("Unexpected error: " + err.message);
+      } finally {
+        clearTimeout(timeout);
+        setLoading(false);
+      }
     };
     fetchRooms();
+
+    return () => clearTimeout(timeout);
   }, [navigate]);
 
   const handleDelete = async (roomId: string) => {
@@ -79,6 +96,20 @@ export default function MyRooms() {
         <div className="h-px w-32 bg-border overflow-hidden">
           <div className="h-full w-1/3 bg-accent animate-line-progress" />
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-20 text-center">
+        <p className="font-body text-[0.85rem] text-destructive mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-accent border border-border px-6 py-2 bg-transparent cursor-pointer hover:border-accent transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }
