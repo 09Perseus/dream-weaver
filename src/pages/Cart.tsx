@@ -366,22 +366,22 @@ export default function Cart() {
           <div className="border-t border-border pt-6 space-y-4">
             <div className="flex justify-between font-body text-[0.8rem]">
               <span className="text-muted-foreground uppercase tracking-[0.08em]">
-                Subtotal
+                Total ({currency})
               </span>
-              <span className="tabular-nums">${subtotal.toLocaleString()}</span>
+              <span className="tabular-nums">{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between font-body text-[0.75rem]">
               <span className="text-muted-foreground uppercase tracking-[0.08em]">
-                Total (JPY)
+                Charged as
               </span>
               <span className="tabular-nums text-accent">
-                ¥{totalJPY.toLocaleString()}
+                ¥{totalJPY.toLocaleString()} JPY
               </span>
             </div>
             <div className="flex justify-between items-baseline">
               <span className="font-heading text-[1.2rem]">Total</span>
               <span className="font-heading text-[1.5rem] text-accent tabular-nums">
-                ¥{totalJPY.toLocaleString()}
+                {formatPrice(subtotal)}
               </span>
             </div>
             <Button
