@@ -285,8 +285,8 @@ export default function Index() {
       {loading && <GeneratingOverlay />}
 
       {/* ═══ HERO ═══ */}
-      <section className="relative flex flex-col items-center justify-center px-4 min-h-[100vh] pb-24">
-        <div className="max-w-3xl w-full text-center space-y-8">
+      <section className="hero-section relative flex flex-col items-center justify-center px-4 min-h-[100vh]" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
+        <div className="max-w-3xl w-full text-center space-y-4">
           {/* Eyebrow */}
           <div className="animate-reveal-up flex items-center justify-center gap-0">
             <span
@@ -299,7 +299,7 @@ export default function Index() {
                 animation: "pulse-dot 2s ease-in-out infinite",
               }}
             />
-            <span className="font-body text-[0.7rem] tracking-[0.25em] uppercase text-accent">
+            <span className="font-body tracking-[0.25em] uppercase text-accent" style={{ fontSize: "clamp(0.6rem, 1vw, 0.7rem)" }}>
               AI-POWERED INTERIOR DESIGN
             </span>
           </div>
@@ -308,7 +308,7 @@ export default function Index() {
           <div className="animate-reveal-up delay-100">
             <h1
               className="font-heading font-light uppercase tracking-[0.04em] text-foreground leading-[1.05]"
-              style={{ fontSize: "clamp(3.5rem, 9vw, 8rem)" }}
+              style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
             >
               DESCRIBE YOUR DREAM
               <br />
@@ -319,6 +319,7 @@ export default function Index() {
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
+                  fontSize: "clamp(2rem, 5vw, 4rem)",
                 }}
               >
                 {typedText}
@@ -340,7 +341,7 @@ export default function Index() {
           {/* Sub-headline */}
           <p
             className="animate-reveal-up delay-200 font-body text-muted-foreground tracking-[0.05em]"
-            style={{ fontSize: "clamp(0.85rem, 2vw, 1.1rem)", marginTop: "1.5rem" }}
+            style={{ fontSize: "clamp(0.75rem, 1.5vw, 0.9rem)", marginTop: "0.75rem" }}
           >
             Walk into it in seconds. Buy what you see.
           </p>
