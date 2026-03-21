@@ -99,6 +99,7 @@ export default function Index() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
+      {loading && <GeneratingOverlay />}
       {/* Hero */}
       <section className="flex flex-col items-center justify-center px-4 min-h-[calc(100vh-3.5rem)]">
         <div className="max-w-2xl w-full text-center space-y-10">
