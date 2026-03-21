@@ -5,6 +5,7 @@ import { useCart } from "@/contexts/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { ensureEnglishError, friendlySupabaseError } from "@/utils/translateError";
 
 declare global {
   interface Window {
@@ -111,7 +112,7 @@ export default function Cart() {
         console.log("PAY.JP card element mounted successfully");
       } catch (err: any) {
         console.error("PAY.JP mount error:", err);
-        setPayjpError("Card form failed to load: " + err.message);
+        setPayjpError(ensureEnglishError(err.message));
       }
     };
 
@@ -157,7 +158,7 @@ export default function Cart() {
       if (result?.error) {
         toast({
           title: "Card error",
-          description: result.error.message,
+          description: ensureEnglishError(result.error.message),
           variant: "destructive",
         });
         setLoading(false);
@@ -201,9 +202,10 @@ export default function Cart() {
       console.log("Edge function response:", data, error);
 
       if (error || data?.error) {
+        const errMsg = data?.error || error?.message || "Please try again.";
         toast({
           title: "Payment failed",
-          description: data?.error || error?.message || "Please try again.",
+          description: ensureEnglishError(errMsg),
           variant: "destructive",
         });
         setLoading(false);
@@ -226,7 +228,7 @@ export default function Cart() {
       console.error("Checkout error:", err);
       toast({
         title: "Unexpected error",
-        description: err.message,
+        description: ensureEnglishError(err.message),
         variant: "destructive",
       });
       setLoading(false);
