@@ -5,6 +5,7 @@ import CommunityCard from "@/components/CommunityCard";
 import GeneratingOverlay from "@/components/GeneratingOverlay";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
@@ -177,6 +178,7 @@ export default function Index() {
   const [loading, setLoading] = useState(false);
   const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
   const [inputFocused, setInputFocused] = useState(false);
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   // Typing animation
@@ -255,42 +257,32 @@ export default function Index() {
       const items: PlacedItem[] = data.items;
       const furniture: FurnitureDetail[] = data.furniture;
 
-      let session: any = null;
-      try {
-        const { data: authData } = await supabase.auth.getSession();
-        session = authData?.session;
-      } catch (authErr) {
-        console.warn("Auth check failed, proceeding as guest:", authErr);
-      }
-
-      if (!session?.user?.id) {
-        // Not logged in — navigate directly to room view without saving
-        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
-        setLoading(false);
+      if (authLoading) {
+        toast({ title: "Still loading session", description: "Please try again in a moment.", variant: "destructive" });
         return;
       }
 
-      try {
-        const { data: room, error: insertError } = await supabase
-          .from("room_designs")
-          .insert({ description: prompt.trim(), items: items as any, user_id: session.user.id, share_token: crypto.randomUUID() })
-          .select("id")
-          .single();
-
-        if (insertError || !room?.id) {
-          console.error("Room save error:", insertError);
-          // Still navigate even if save fails — show the room
-          toast({ title: "Room generated!", description: "Could not save to your account, but you can still view it.", variant: "default" });
-          navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
-          setLoading(false);
-          return;
-        }
-        navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
-      } catch (saveErr) {
-        console.error("Room save exception:", saveErr);
-        // Navigate anyway so user sees their generated room
+      if (!user?.id) {
         navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
+        return;
       }
+
+      const { data: roomRows, error: insertError } = await supabase
+        .from("room_designs")
+        .insert({ description: prompt.trim(), items: items as any, user_id: user.id, share_token: crypto.randomUUID() })
+        .select("id")
+        .limit(1);
+
+      const room = roomRows?.[0];
+
+      if (insertError || !room?.id) {
+        console.error("Room save error:", insertError);
+        toast({ title: "Room generated!", description: "Could not save to your account, but you can still view it." });
+        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
+        return;
+      }
+
+      navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
     } catch (err: any) {
       console.error("Unexpected error:", err);
       toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
