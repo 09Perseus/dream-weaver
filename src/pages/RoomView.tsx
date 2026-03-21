@@ -77,6 +77,36 @@ export default function RoomView() {
 
   const handleAddAll = () => { furniture.forEach(handleAddItem); };
 
+  const handleCopyRoom = async () => {
+    if (!user) {
+      toast({ title: "Sign in to copy this room", variant: "destructive" });
+      return;
+    }
+    setCopying(true);
+    try {
+      const { data, error } = await supabase
+        .from("room_designs")
+        .insert({
+          user_id: user.id,
+          description,
+          items: items as any,
+          share_token: crypto.randomUUID(),
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      toast({ title: "Room copied to your account!" });
+      navigate(`/room/${data.id}/edit`);
+    } catch (err) {
+      console.error("Copy room error:", err);
+      toast({ title: "Failed to copy room", variant: "destructive" });
+    } finally {
+      setCopying(false);
+    }
+  };
+
+  const isOwnRoom = user?.id === roomOwnerId;
+
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center">
