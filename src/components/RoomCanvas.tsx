@@ -80,15 +80,30 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   const { scene } = useGLTF(path);
 
   const cloned = useMemo(() => {
-    const c = scene.clone(true);
-    const box = new THREE.Box3().setFromObject(c);
-    const size = box.getSize(new THREE.Vector3());
-    const longestSide = Math.max(size.x, size.y, size.z);
-    const scale = longestSide > 0 ? displaySize / longestSide : 1;
-    c.scale.setScalar(scale);
+    let c: THREE.Object3D;
+    try {
+      c = skeletonClone(scene);
+    } catch {
+      c = scene.clone(true);
+    }
 
-    const scaledBox = new THREE.Box3().setFromObject(c);
-    c.position.y -= scaledBox.min.y;
+    const box = new THREE.Box3().setFromObject(c);
+    const naturalSize = box.getSize(new THREE.Vector3());
+    const longestSide = Math.max(naturalSize.x, naturalSize.y, naturalSize.z);
+
+    if (longestSide > 0 && displaySize > 0) {
+      const ratio = displaySize / longestSide;
+      if (ratio > 0.1 && ratio < 10) {
+        c.scale.multiplyScalar(ratio);
+      }
+    }
+
+    // Snap to floor
+    const newBox = new THREE.Box3().setFromObject(c);
+    if (newBox.min.y < 0) {
+      c.position.y += Math.abs(newBox.min.y);
+    }
+
     return c;
   }, [scene, displaySize]);
 
