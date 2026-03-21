@@ -1,0 +1,276 @@
+{
+  "furnitures": [
+    {
+      "name": "psx_wooden_table",
+      "path": "Tables/psx_wooden_table.glb",
+      "keywords": [
+        "psx_wooden_table",
+        "psx",
+        "wooden"
+      ],
+      "description": "Rustic wooden dining table"
+    },
+    {
+      "name": "office_table_desk",
+      "path": "Tables/office_table_desk.glb",
+      "keywords": [
+        "office_table_desk",
+        "office",
+        "desk"
+      ],
+      "description": "Modern office desk"
+    },
+    {
+      "name": "serving_table_01",
+      "path": "Tables/serving_table_01.glb",
+      "keywords": [
+        "serving_table_01",
+        "serving"
+      ],
+      "description": "Small serving side table"
+    },
+    {
+      "name": "victorian_style_tabledesk",
+      "path": "Tables/victorian_style_tabledesk.glb",
+      "keywords": [
+        "victorian_style_tabledesk",
+        "victorian",
+        "style"
+      ],
+      "description": "Ornate Victorian writing desk"
+    },
+    {
+      "name": "hexagonal_table_01",
+      "path": "Tables/hexagonal_table_01.glb",
+      "keywords": [
+        "hexagonal_table_01",
+        "hexagonal"
+      ],
+      "description": "Small hexagonal side table"
+    },
+    {
+      "name": "realistic_bed_3d_model",
+      "path": "Bed/realistic_bed_3d_model.glb",
+      "keywords": [
+        "realistic_bed_3d_model",
+        "realistic"
+      ],
+      "description": "Standard double bed with mattress"
+    },
+    {
+      "name": "paper_mario_sticker_star_luxurious_bed",
+      "path": "Bed/paper_mario_sticker_star_luxurious_bed.glb",
+      "keywords": [
+        "paper_mario_sticker_star_luxurious_bed",
+        "luxurious"
+      ],
+      "description": "Luxurious ornate king bed"
+    },
+    {
+      "name": "ornate_carved_bed",
+      "path": "Bed/ornate_carved_bed.glb",
+      "keywords": [
+        "ornate_carved_bed",
+        "ornate",
+        "carved"
+      ],
+      "description": "Ornate carved wooden bed frame"
+    },
+    {
+      "name": "bed",
+      "path": "Bed/bed.glb",
+      "keywords": [
+        "bed"
+      ],
+      "description": "Standard single bed"
+    },
+    {
+      "name": "majesty_palm_plant",
+      "path": "Plants/majesty_palm_plant.glb",
+      "keywords": [
+        "majesty_palm_plant",
+        "majesty",
+        "palm"
+      ],
+      "description": "Large majesty palm plant"
+    },
+    {
+      "name": "house_palm_plant",
+      "path": "Plants/house_palm_plant.glb",
+      "keywords": [
+        "house_palm_plant",
+        "house",
+        "palm"
+      ],
+      "description": "Medium indoor palm plant"
+    },
+    {
+      "name": "aglaonema_plant",
+      "path": "Plants/aglaonema_plant.glb",
+      "keywords": [
+        "aglaonema_plant",
+        "aglaonema"
+      ],
+      "description": "Aglaonema leafy indoor plant"
+    },
+    {
+      "name": "low-poly_snake_plant",
+      "path": "Plants/low-poly_snake_plant.glb",
+      "keywords": [
+        "low-poly_snake_plant",
+        "snake"
+      ],
+      "description": "Low poly snake plant"
+    },
+    {
+      "name": "airport_plant",
+      "path": "Plants/airport_plant.glb",
+      "keywords": [
+        "airport_plant",
+        "airport"
+      ],
+      "description": "Large decorative airport-style plant"
+    },
+    {
+      "name": "ikea_lamp",
+      "path": "Lamps/ikea_lamp.glb",
+      "keywords": [
+        "ikea_lamp",
+        "ikea"
+      ],
+      "description": "IKEA style floor lamp"
+    },
+    {
+      "name": "desk_lamp",
+      "path": "Lamps/desk_lamp.glb",
+      "keywords": [
+        "desk_lamp",
+        "desk"
+      ],
+      "description": "Adjustable desk lamp"
+    },
+    {
+      "name": "retro_lowpoly_lamp",
+      "path": "Lamps/retro_lowpoly_lamp.glb",
+      "keywords": [
+        "retro_lowpoly_lamp",
+        "retro",
+        "lowpoly"
+      ],
+      "description": "Retro low poly floor lamp"
+    },
+    {
+      "name": "titanic_lamp",
+      "path": "Lamps/titanic_lamp.glb",
+      "keywords": [
+        "titanic_lamp",
+        "titanic"
+      ],
+      "description": "Vintage Titanic style table lamp"
+    },
+    {
+      "name": "barcelona_chair",
+      "path": "Chair/barcelona_chair.glb",
+      "keywords": [
+        "barcelona_chair",
+        "barcelona"
+      ],
+      "description": "Barcelona style leather lounge chair"
+    },
+    {
+      "name": "chair",
+      "path": "Chair/chair.glb",
+      "keywords": [
+        "chair"
+      ],
+      "description": "Simple wooden dining chair"
+    },
+    {
+      "name": "gaming_chair",
+      "path": "Chair/gaming_chair.glb",
+      "keywords": [
+        "gaming_chair",
+        "gaming"
+      ],
+      "description": "Racing style gaming chair"
+    },
+    {
+      "name": "woven_lounge_chair",
+      "path": "Chair/woven_lounge_chair.glb",
+      "keywords": [
+        "woven_lounge_chair",
+        "woven",
+        "lounge"
+      ],
+      "description": "Woven rattan lounge chair"
+    },
+    {
+      "name": "old_western_saloon_chair",
+      "path": "Chair/old_western_saloon_chair.glb",
+      "keywords": [
+        "old_western_saloon_chair",
+        "old",
+        "western",
+        "saloon"
+      ],
+      "description": "Old Western saloon wooden chair"
+    },
+    {
+      "name": "leather_chair",
+      "path": "Chair/leather_chair.glb",
+      "keywords": [
+        "leather_chair",
+        "leather"
+      ],
+      "description": "Classic leather armchair"
+    },
+    {
+      "name": "vintage_zen_dining_chair",
+      "path": "Chair/vintage_zen_dining_chair.glb",
+      "keywords": [
+        "vintage_zen_dining_chair",
+        "vintage",
+        "zen",
+        "dining"
+      ],
+      "description": "Vintage zen wooden dining chair"
+    },
+    {
+      "name": "chair (1)",
+      "path": "Chair/chair (1).glb",
+      "keywords": [
+        "chair"
+      ],
+      "description": "Modern accent chair"
+    },
+    {
+      "name": "alko_chair",
+      "path": "Chair/alko_chair.glb",
+      "keywords": [
+        "alko_chair",
+        "alko"
+      ],
+      "description": "Alko modern designer chair"
+    },
+    {
+      "name": "antique_heriz_8708_golden_horn_beige_rugs",
+      "path": "Carpet/antique_heriz_8708_golden_horn_beige_rugs.glb",
+      "keywords": [
+        "antique",
+        "heriz",
+        "golden",
+        "beige",
+        "rugs"
+      ],
+      "description": "Antique Heriz style area rug"
+    },
+    {
+      "name": "mat",
+      "path": "Carpet/mat.glb",
+      "keywords": [
+        "mat"
+      ],
+      "description": "Simple floor mat"
+    }
+  ]
+}
