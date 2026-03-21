@@ -76,6 +76,7 @@ export interface FurnitureItem {
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
+  console.log("Loading GLB model:", path);
   const { scene } = useGLTF(path);
   const cloned = scene.clone();
 
@@ -89,6 +90,26 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   cloned.position.y -= scaledBox.min.y;
 
   return <primitive object={cloned} />;
+}
+
+// Error boundary for individual model loading failures
+class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: any) {
+    console.error("Model failed to load for item:", (this.props as any).itemId, error?.message || error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <mesh>
+          <boxGeometry args={[0.5, 0.5, 0.5]} />
+          <meshStandardMaterial color="#ef4444" wireframe />
+        </mesh>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 // ── MovableFurniture ──────────────────────────────────────────────────────────
