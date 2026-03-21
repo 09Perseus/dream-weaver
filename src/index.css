@@ -105,6 +105,7 @@
   :root:not([data-theme]) {
     --bg: 215 21% 7%;
     --surface: 215 19% 11%;
+    --accent-rgb: 163, 113, 247;
     --surface-2: 215 16% 16%;
     --border: 215 14% 21%;
     --accent: 263 89% 71%;
