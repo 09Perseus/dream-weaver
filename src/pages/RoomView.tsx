@@ -110,6 +110,13 @@ export default function RoomView() {
     fetchRoom();
   }, [id, navState]);
 
+  // Capture thumbnail after render
+  useEffect(() => {
+    if (!id || loading) return;
+    const timer = setTimeout(() => { captureRoomThumbnail(id); }, 3000);
+    return () => clearTimeout(timer);
+  }, [id, loading]);
+
   const handleAddItem = (item: FurnitureDetail) => {
     addItem({ id: item.id, name: item.name, price: item.price, thumbnailUrl: item.thumbnail_url ?? "" });
   };
