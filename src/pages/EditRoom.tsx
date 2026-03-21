@@ -60,6 +60,8 @@ export default function EditRoom() {
   const [posted, setPosted] = useState(false);
   const [isCopy, setIsCopy] = useState(false);
   const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
+  const [roomName, setRoomName] = useState(navState?.description || "My Room");
+  const [isEditingName, setIsEditingName] = useState(false);
 
   useEffect(() => {
     if (navState?.items) return;
