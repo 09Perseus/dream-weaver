@@ -166,7 +166,7 @@ export default function MyRooms() {
                   <p className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">
                     {room.created_at ? format(new Date(room.created_at), "MMMM d, yyyy") : "Unknown date"}
                   </p>
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className={`grid gap-2 pt-1 ${room.is_copy ? 'grid-cols-3' : 'grid-cols-2'}`}>
                     <Link to={`/room/${room.id}`}>
                       <button className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]">
                         VIEW
@@ -177,21 +177,23 @@ export default function MyRooms() {
                         EDIT
                       </button>
                     </Link>
-                    {isPosted ? (
-                      <button
-                        onClick={() => handleUnpost(room.id)}
-                        disabled={unposting === room.id}
-                        className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer disabled:opacity-50 min-h-[44px]"
-                      >
-                        {unposting === room.id ? "…" : "UNPOST"}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setPostDialogRoomId(room.id)}
-                        className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]"
-                      >
-                        POST
-                      </button>
+                    {!room.is_copy && (
+                      isPosted ? (
+                        <button
+                          onClick={() => handleUnpost(room.id)}
+                          disabled={unposting === room.id}
+                          className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer disabled:opacity-50 min-h-[44px]"
+                        >
+                          {unposting === room.id ? "…" : "UNPOST"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setPostDialogRoomId(room.id)}
+                          className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]"
+                        >
+                          POST
+                        </button>
+                      )
                     )}
                     <button
                       onClick={() => handleDelete(room.id)}
