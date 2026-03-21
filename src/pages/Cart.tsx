@@ -102,8 +102,9 @@ export default function Cart() {
               <span className="font-semibold">Total</span>
               <span className="text-xl font-bold text-amber tabular-nums">${subtotal.toLocaleString()}</span>
             </div>
-            <Button variant="amber" className="w-full" size="lg">
-              Proceed to Checkout
+            <Button variant="amber" className="w-full" size="lg" onClick={handleCheckout} disabled={checkoutLoading}>
+              {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+              {checkoutLoading ? "Processing…" : "Proceed to Checkout"}
             </Button>
             <Button variant="ghost" className="w-full text-muted-foreground" onClick={clearCart}>
               Clear Cart

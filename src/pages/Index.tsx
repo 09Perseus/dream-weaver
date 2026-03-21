@@ -68,10 +68,10 @@ export default function Index() {
               size="lg"
               className="w-full md:w-auto min-w-[200px] text-base"
               onClick={handleGenerate}
-              disabled={!prompt.trim()}
+              disabled={!prompt.trim() || loading}
             >
-              <Sparkles className="h-5 w-5" />
-              Generate Room
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+              {loading ? "Generating…" : "Generate Room"}
             </Button>
           </div>
         </div>
