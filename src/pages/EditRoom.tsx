@@ -139,7 +139,7 @@ export default function EditRoom() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast({ title: "Sign in required", variant: "destructive" }); return; }
-      const { error } = await supabase.from("room_designs").update({ items: roomItems as any }).eq("id", roomId).eq("user_id", session.user.id);
+      const { error } = await supabase.from("room_designs").update({ items: roomItems as any, description: roomName }).eq("id", roomId).eq("user_id", session.user.id);
       if (error) { toast({ title: "Failed to save", description: error.message, variant: "destructive" }); return; }
       toast({ title: "Room saved!" });
       setUndoStack([]);
