@@ -1,18 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
+import GeneratingOverlay from "@/components/GeneratingOverlay";
 import { mockCommunityPosts } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
-
-const loadingMessages = [
-  "Designing your room…",
-  "Placing furniture…",
-  "Adding finishing touches…",
-  "Welcome home…",
-];
 
 export default function Index() {
   const [prompt, setPrompt] = useState("");
