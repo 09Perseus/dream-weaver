@@ -264,7 +264,7 @@ export default function Cart() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="h-8 w-8 border border-border flex items-center justify-center text-muted-foreground hover:border-accent hover:text-accent transition-colors"
+                    className="h-11 w-11 border border-border flex items-center justify-center text-muted-foreground hover:border-accent hover:text-accent transition-colors"
                   >
                     <Minus className="h-3 w-3" />
                   </button>
@@ -273,7 +273,7 @@ export default function Cart() {
                   </span>
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="h-8 w-8 border border-border flex items-center justify-center text-muted-foreground hover:border-accent hover:text-accent transition-colors"
+                    className="h-11 w-11 border border-border flex items-center justify-center text-muted-foreground hover:border-accent hover:text-accent transition-colors"
                   >
                     <Plus className="h-3 w-3" />
                   </button>
@@ -345,7 +345,7 @@ export default function Cart() {
             </div>
             <Button
               variant="amber"
-              className="w-full"
+              className="w-full min-h-[52px]"
               size="lg"
               onClick={handleCheckout}
               disabled={loading || !payjpReady || items.length === 0}
