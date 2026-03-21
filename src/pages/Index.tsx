@@ -253,18 +253,29 @@ export default function Index() {
               className="font-heading font-light uppercase tracking-[0.04em] text-foreground leading-[1.05]"
               style={{ fontSize: "clamp(3.5rem, 9vw, 8rem)" }}
             >
-              DESCRIBE YOUR
+              DESCRIBE YOUR DREAM
               <br />
               <span
                 style={{
-                  textDecoration: "underline",
-                  textDecorationColor: "hsl(var(--accent))",
-                  textUnderlineOffset: "8px",
-                  textDecorationThickness: "1px",
+                  background: "linear-gradient(135deg, #E8C06A 0%, #C8B89A 40%, #E05533 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
                 }}
               >
-                DREAM ROOM.
+                {typedText}
               </span>
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "3px",
+                  height: "0.85em",
+                  background: "hsl(var(--accent))",
+                  marginLeft: "4px",
+                  verticalAlign: "middle",
+                  animation: "blink 1s step-end infinite",
+                }}
+              />
             </h1>
           </div>
 
