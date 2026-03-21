@@ -1,18 +1,42 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
 import GeneratingOverlay from "@/components/GeneratingOverlay";
-import { mockCommunityPosts } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+
+interface FeaturedPost {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  like_count: number;
+  room_design_id: string;
+  user_id: string;
+}
 
 export default function Index() {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase
+      .from("community_posts")
+      .select("*")
+      .eq("is_visible", true)
+      .order("like_count", { ascending: false })
+      .limit(6)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setFeaturedPosts(data as unknown as FeaturedPost[]);
+        }
+      });
+  }, []);
 
   const validate = (): boolean => {
     if (!prompt.trim()) {
@@ -156,30 +180,42 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Community Feed */}
-      <section className="container pb-20">
-        <div className="animate-reveal-up delay-300 mb-10">
-          <h2 className="font-heading text-[2rem] font-normal tracking-[0.02em]">
-            Community Rooms
-          </h2>
-          <p className="font-body text-[0.8rem] tracking-[0.08em] uppercase text-muted-foreground mt-2">
-            Explore designs created by the community
-          </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockCommunityPosts.map((post, i) => (
-            <CommunityCard
-              key={post.id}
-              id={post.id}
-              title={post.title}
-              author={post.author}
-              thumbnailUrl={post.thumbnailUrl}
-              likeCount={post.likeCount}
-              delay={100 + i * 80}
-            />
-          ))}
-        </div>
-      </section>
+      {/* Community Feed — only when real posts exist */}
+      {featuredPosts.length > 0 && (
+        <section className="container pb-20">
+          <div className="animate-reveal-up delay-300 mb-10">
+            <h2 className="font-heading text-[2rem] font-light uppercase tracking-[0.1em]">
+              Community Rooms
+            </h2>
+            <p className="font-body text-[0.75rem] tracking-[0.08em] uppercase text-muted-foreground mt-2">
+              Rooms designed by our community
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredPosts.map((post, i) => (
+              <CommunityCard
+                key={post.id}
+                id={post.id}
+                roomDesignId={post.room_design_id}
+                title={post.title}
+                description={post.description}
+                author="Community Member"
+                thumbnailUrl={post.thumbnail_url ?? undefined}
+                likeCount={post.like_count}
+                delay={100 + i * 80}
+              />
+            ))}
+          </div>
+          <div className="mt-10 text-center animate-reveal-up delay-500">
+            <Link
+              to="/community"
+              className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-accent hover:underline transition-all"
+            >
+              VIEW ALL ROOMS →
+            </Link>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
