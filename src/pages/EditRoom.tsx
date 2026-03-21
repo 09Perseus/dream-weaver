@@ -137,15 +137,13 @@ function ItemInfoCard({
                              font-body rounded-lg hover:opacity-90 transition-opacity">
             Add to Cart
           </button>
-          {isEditMode && (
-            <button
-              onClick={onDelete}
-              className="w-full py-2 px-4 bg-destructive text-white text-sm
-                         font-body rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Delete from Room
-            </button>
-          )}
+          <button
+            onClick={onDelete}
+            className="w-full py-2 px-4 bg-destructive text-destructive-foreground text-sm
+                       font-body rounded-lg hover:opacity-90 transition-opacity"
+          >
+            Delete from Room
+          </button>
         </div>
       </div>
     </div>
