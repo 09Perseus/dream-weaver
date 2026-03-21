@@ -7,7 +7,6 @@ import { useGenerateRoom, getDisplaySize } from "@/hooks/useGenerateRoom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
-// ── WebGL detection ───────────────────────────────────────────────────────────
 function detectWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");
@@ -21,7 +20,6 @@ function detectWebGL(): boolean {
   }
 }
 
-// ── WebGL unavailable fallback ────────────────────────────────────────────────
 function WebGLUnavailable({ items }: { items?: { id: string }[] }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/50 rounded-lg gap-4 p-8">
@@ -38,7 +36,6 @@ function WebGLUnavailable({ items }: { items?: { id: string }[] }) {
   );
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface RoomCanvasProps {
   className?: string;
   style?: React.CSSProperties;
@@ -63,7 +60,6 @@ export interface FurnitureItem {
   size?: [number, number, number];
 }
 
-// ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
   const cleanPath = path
     .replace(/^\/+/, "")
@@ -85,7 +81,6 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   return <primitive object={cloned} />;
 }
 
-// ── Model Error Boundary ──────────────────────────────────────────────────────
 class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() {
@@ -107,7 +102,6 @@ class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string
   }
 }
 
-// ── MovableFurniture ──────────────────────────────────────────────────────────
 function MovableFurniture({
   furniture,
   isSelected,
@@ -221,7 +215,6 @@ function MovableFurniture({
   );
 }
 
-// ── Item List Row ─────────────────────────────────────────────────────────────
 function ItemListRow({
   furniture,
   isActive,
@@ -255,7 +248,6 @@ function ItemListRow({
   );
 }
 
-// ── Info Card ─────────────────────────────────────────────────────────────────
 function InfoCard({
   furniture,
   isEditMode,
@@ -335,7 +327,6 @@ function InfoCard({
   );
 }
 
-// ── Standalone Sidebar ────────────────────────────────────────────────────────
 function StandaloneSidebar({
   furnitures,
   selectedId,
@@ -396,7 +387,6 @@ function StandaloneSidebar({
   );
 }
 
-// ── RoomCanvas ────────────────────────────────────────────────────────────────
 export default function RoomCanvas({
   className = "",
   style,
@@ -586,10 +576,10 @@ export default function RoomCanvas({
         {webglSupported && (
           <Canvas
             shadows
-            // ✅ DOLLHOUSE CAMERA — high above, angled down, looking at room center
+            // ✅ FIXED — centered position, no teleport jump
             camera={{
-              position: [40, 12, 10], // directly above and slightly in front
-              fov: 45, // narrower FOV for less distortion
+              position: [0, 12, 10],
+              fov: 45,
               near: 0.1,
               far: 100,
             }}
@@ -606,10 +596,8 @@ export default function RoomCanvas({
               failIfMajorPerformanceCaveat: false,
               preserveDrawingBuffer: true,
             }}
-            onCreated={({ gl, camera }) => {
-              // Point camera at room center on load
-              (camera as THREE.PerspectiveCamera).lookAt(0, 0, 0);
-
+            // ✅ FIXED — removed lookAt, OrbitControls handles orientation
+            onCreated={({ gl }) => {
               const canvas = gl.domElement;
               canvas.addEventListener("webglcontextlost", (e) => {
                 e.preventDefault();
@@ -620,46 +608,35 @@ export default function RoomCanvas({
               });
             }}
           >
-            {/* Warm ambient + soft directional light from above */}
             <ambientLight intensity={0.7} />
             <directionalLight position={[0, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
-            {/* Fill light from the open front so interior is well lit */}
             <directionalLight position={[0, 4, 8]} intensity={0.5} />
 
-            {/* ── Floor ───────────────────────────────────────────────── */}
+            {/* Floor */}
             <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
               <planeGeometry args={[roomSize, roomSize]} />
               <meshStandardMaterial color="#f0ece4" />
             </mesh>
 
-            {/* ── NO ceiling — dollhouse is open top ──────────────────── */}
-
-            {/* ── Back wall (always visible) ───────────────────────────── */}
+            {/* Back wall */}
             <mesh position={[0, halfH, -halfW]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial
-                map={wallTexture ?? undefined}
-                color="#faf7f2"
-                // DoubleSide so it renders from both front and back
-                side={THREE.DoubleSide}
-              />
+              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
             </mesh>
 
-            {/* ── Left wall ───────────────────────────────────────────── */}
+            {/* Left wall */}
             <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
               <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
             </mesh>
 
-            {/* ── Right wall ──────────────────────────────────────────── */}
+            {/* Right wall */}
             <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
               <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
             </mesh>
 
-            {/* ── NO front wall — open face of the dollhouse ──────────── */}
-
-            {/* ── Grid ────────────────────────────────────────────────── */}
+            {/* Grid */}
             <gridHelper
               args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]}
               position={[0, 0.01, 0]}
@@ -678,14 +655,14 @@ export default function RoomCanvas({
               />
             ))}
 
-            {/* ✅ DOLLHOUSE ORBIT — constrained so camera stays above */}
+            {/* ✅ DOLLHOUSE ORBIT — constrained angles, no teleport */}
             <OrbitControls
               makeDefault
               enableZoom
               enabled={!editId}
-              target={[0, 0.5, 0]} // look slightly above floor center
-              maxPolarAngle={Math.PI / 2.2} // prevent going below floor level
-              minPolarAngle={Math.PI / 6} // prevent going completely overhead
+              target={[0, 0.5, 0]}
+              maxPolarAngle={Math.PI / 2.2}
+              minPolarAngle={Math.PI / 6}
               maxDistance={20}
               minDistance={4}
             />
