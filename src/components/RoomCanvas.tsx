@@ -6,7 +6,7 @@ interface RoomCanvasProps {
   furniture?: FurnitureDetail[];
 }
 
-export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
+export default function RoomCanvas({ className = "", items = [], furniture = [] }: RoomCanvasProps) {
   return (
     <div
       id="room-canvas"
