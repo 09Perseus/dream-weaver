@@ -1,17 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
 import { mockCommunityPosts } from "@/data/mockData";
+import { generateRoom } from "@/lib/edgeFunctions";
+import { toast } from "@/hooks/use-toast";
 
 export default function Index() {
   const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleGenerate = () => {
-    if (prompt.trim()) {
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    setLoading(true);
+    try {
+      const result = await generateRoom(prompt);
+      console.log("Generated room:", result);
+      // Use a placeholder id until real persistence is wired up
       navigate(`/room/new?prompt=${encodeURIComponent(prompt)}`);
+    } catch (err: any) {
+      toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,10 +68,10 @@ export default function Index() {
               size="lg"
               className="w-full md:w-auto min-w-[200px] text-base"
               onClick={handleGenerate}
-              disabled={!prompt.trim()}
+              disabled={!prompt.trim() || loading}
             >
-              <Sparkles className="h-5 w-5" />
-              Generate Room
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+              {loading ? "Generating…" : "Generate Room"}
             </Button>
           </div>
         </div>
