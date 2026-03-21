@@ -284,7 +284,7 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
       )}
 
       {/* ── Three.js Canvas ──────────────────────────────────────────── */}
-      <WebGLErrorBoundary fallback={null}>
+      {webglSupported && <WebGLErrorBoundary fallback={null}>
         <Canvas
           shadows
           camera={{ position: [12, 8, 12], fov: 50 }}
