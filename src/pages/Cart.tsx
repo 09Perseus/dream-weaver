@@ -228,7 +228,7 @@ export default function Cart() {
       console.error("Checkout error:", err);
       toast({
         title: "Unexpected error",
-        description: err.message,
+        description: ensureEnglishError(err.message),
         variant: "destructive",
       });
       setLoading(false);
