@@ -12,6 +12,8 @@ interface Room {
   description: string | null;
   created_at: string | null;
   is_shared: boolean;
+  is_copy?: boolean;
+  source_room_id?: string | null;
 }
 
 export default function MyRooms() {
