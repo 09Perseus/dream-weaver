@@ -28,6 +28,7 @@ const App = React.forwardRef<HTMLDivElement>((_, ref) => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
+        <ThemeProvider>
         <CurrencyProvider>
         <CartProvider>
           <Toaster />
