@@ -56,8 +56,9 @@ export default function EditRoom() {
     if (!roomId) { setLoading(false); return; }
     const fetchRoom = async () => {
       try {
-        const { data: room, error } = await supabase.from("room_designs").select("*").eq("id", roomId).single();
+        const { data: room, error } = await supabase.from("room_designs").select("is_copy, user_id, description, items").eq("id", roomId).single();
         if (error || !room) { setLoading(false); return; }
+        setIsCopy(!!room.is_copy);
         setDescription(room.description ?? "");
         const items = (room.items as any as PlacedItem[]) ?? [];
         setRoomItems(items);
