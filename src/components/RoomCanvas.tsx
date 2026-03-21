@@ -752,8 +752,8 @@ export default function RoomCanvas({
         )}
       </div>
 
-      {/* ── Standalone sidebar — only shown when NOT controlled by EditRoom ── */}
-      {!isControlled && (
+      {/* ── Standalone sidebar — only in standalone generate mode ── */}
+      {!isControlled && !isViewerMode && (
         <StandaloneSidebar
           furnitures={activeFurnitures}
           selectedId={internalSelectedId}
