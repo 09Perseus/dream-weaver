@@ -1,8 +1,18 @@
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { useState, useRef, useEffect, Suspense, Component, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, TransformControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGenerateRoom, getDisplaySize } from '@/hooks/useGenerateRoom';
+
+// Error boundary to catch WebGL context failures gracefully
+class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
 
 import type { PlacedItem, FurnitureDetail } from '@/lib/edgeFunctions';
 
@@ -219,85 +229,97 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
       )}
 
       {/* ── Three.js Canvas ──────────────────────────────────────────── */}
-      <Canvas
-        shadows
-        camera={{ position: [12, 8, 12], fov: 50 }}
-        onPointerMissed={() => setSelectedId(null)}
-        gl={{
-          powerPreference: 'high-performance',
-          antialias: true,
-          failIfMajorPerformanceCaveat: false,
-        }}
-      >
-        <ambientLight intensity={0.5} />
-        <directionalLight
-          position={[20, 30, 20]}
-          intensity={1.5}
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-        />
-
-        {/* Floor */}
-        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
-          <planeGeometry args={[roomSize, roomSize]} />
-          <meshStandardMaterial color="#f0f0f0" />
-        </mesh>
-
-        {/* Ceiling */}
-        <mesh position={[0, roomHeight, 0]} rotation={[Math.PI / 2, 0, 0]} raycast={() => null}>
-          <planeGeometry args={[roomSize, roomSize]} />
-          <meshStandardMaterial color="#e8e8e8" />
-        </mesh>
-
-        {/* Back wall */}
-        <mesh position={[0, halfH, -halfW]} raycast={() => null}>
-          <planeGeometry args={[roomSize, roomHeight]} />
-          <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
-        </mesh>
-
-        {/* Front wall */}
-        <mesh position={[0, halfH, halfW]} rotation={[0, Math.PI, 0]} raycast={() => null}>
-          <planeGeometry args={[roomSize, roomHeight]} />
-          <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
-        </mesh>
-
-        {/* Left wall */}
-        <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
-          <planeGeometry args={[roomSize, roomHeight]} />
-          <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
-        </mesh>
-
-        {/* Right wall */}
-        <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
-          <planeGeometry args={[roomSize, roomHeight]} />
-          <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
-        </mesh>
-
-        {/* Grid */}
-        <gridHelper
-          args={[roomSize, roomSize, '#94a3b8', '#cbd5e1']}
-          position={[0, 0.01, 0]}
-          raycast={() => null}
-        />
-
-        {activeFurnitures.map((furniture) => (
-          <MovableFurniture
-            key={furniture.id}
-            furniture={furniture}
-            isSelected={selectedId === furniture.id}
-            onSelect={() => setSelectedId(furniture.id)}
-            onPositionChange={(newPos) => updateFurniturePosition(furniture.id, newPos)}
+      <WebGLErrorBoundary fallback={
+        <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground text-center px-4">
+            3D preview unavailable — WebGL is not supported in this browser context.<br />
+            Try opening in a new tab or a different browser.
+          </p>
+        </div>
+      }>
+        <Canvas
+          shadows
+          camera={{ position: [12, 8, 12], fov: 50 }}
+          onPointerMissed={() => setSelectedId(null)}
+          gl={{
+            powerPreference: 'high-performance',
+            antialias: true,
+            failIfMajorPerformanceCaveat: false,
+          }}
+          onCreated={({ gl }) => {
+            if (!gl) console.warn('WebGL context unavailable');
+          }}
+        >
+          <ambientLight intensity={0.5} />
+          <directionalLight
+            position={[20, 30, 20]}
+            intensity={1.5}
+            castShadow
+            shadow-mapSize={[1024, 1024]}
           />
-        ))}
 
-        <OrbitControls
-          makeDefault
-          enableZoom
-          target={[0, 0, 0]}
-          maxDistance={220}
-          minDistance={5}
-        />
-      </Canvas>
+          {/* Floor */}
+          <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
+            <planeGeometry args={[roomSize, roomSize]} />
+            <meshStandardMaterial color="#f0f0f0" />
+          </mesh>
+
+          {/* Ceiling */}
+          <mesh position={[0, roomHeight, 0]} rotation={[Math.PI / 2, 0, 0]} raycast={() => null}>
+            <planeGeometry args={[roomSize, roomSize]} />
+            <meshStandardMaterial color="#e8e8e8" />
+          </mesh>
+
+          {/* Back wall */}
+          <mesh position={[0, halfH, -halfW]} raycast={() => null}>
+            <planeGeometry args={[roomSize, roomHeight]} />
+            <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
+          </mesh>
+
+          {/* Front wall */}
+          <mesh position={[0, halfH, halfW]} rotation={[0, Math.PI, 0]} raycast={() => null}>
+            <planeGeometry args={[roomSize, roomHeight]} />
+            <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
+          </mesh>
+
+          {/* Left wall */}
+          <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
+            <planeGeometry args={[roomSize, roomHeight]} />
+            <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
+          </mesh>
+
+          {/* Right wall */}
+          <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
+            <planeGeometry args={[roomSize, roomHeight]} />
+            <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
+          </mesh>
+
+          {/* Grid */}
+          <gridHelper
+            args={[roomSize, roomSize, '#94a3b8', '#cbd5e1']}
+            position={[0, 0.01, 0]}
+            raycast={() => null}
+          />
+
+          {activeFurnitures.map((furniture) => (
+            <MovableFurniture
+              key={furniture.id}
+              furniture={furniture}
+              isSelected={selectedId === furniture.id}
+              onSelect={() => setSelectedId(furniture.id)}
+              onPositionChange={(newPos) => updateFurniturePosition(furniture.id, newPos)}
+            />
+          ))}
+
+          <OrbitControls
+            makeDefault
+            enableZoom
+            target={[0, 0, 0]}
+            maxDistance={220}
+            minDistance={5}
+          />
+        </Canvas>
+      </WebGLErrorBoundary>
     </div>
   );
 }
