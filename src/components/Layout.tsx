@@ -92,7 +92,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
 
           {/* Right: cart + avatar */}
           <div className="flex items-center gap-4 md:gap-6">
-            <Link to="/cart" className="relative min-h-[44px] min-w-[44px] flex items-center justify-center">
+            <Link to={session ? "/cart" : "/sign-in?redirect=/cart"} className="relative min-h-[44px] min-w-[44px] flex items-center justify-center">
               <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
               {totalItems > 0 && (
                 <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-accent" />
@@ -201,7 +201,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
               </Link>
             ))}
             <Link
-              to="/cart"
+              to={session ? "/cart" : "/sign-in?redirect=/cart"}
               onClick={() => setMobileOpen(false)}
               className="font-body text-[0.8rem] tracking-[0.15em] uppercase px-6 py-4 border-b border-border min-h-[52px] flex items-center gap-2 text-muted-foreground"
             >

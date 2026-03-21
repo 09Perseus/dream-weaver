@@ -23,6 +23,20 @@ export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
   const navigate = useNavigate();
 
+  // Redirect unauthenticated users
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) navigate("/sign-in?redirect=/cart");
+    });
+  }, []);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") navigate("/sign-in?redirect=/cart");
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   const [payjp, setPayjp] = useState<any>(null);
   const [cardElement, setCardElement] = useState<any>(null);
   const [payjpReady, setPayjpReady] = useState(false);
