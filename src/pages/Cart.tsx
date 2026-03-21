@@ -5,6 +5,7 @@ import { useCart } from "@/contexts/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { ensureEnglishError, friendlySupabaseError } from "@/utils/translateError";
 
 declare global {
   interface Window {
