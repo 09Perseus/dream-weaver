@@ -227,6 +227,41 @@ export default function RoomView() {
 
       {/* Sidebar */}
       <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-border bg-surface">
+        {communityPost && (
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="font-heading text-[1.1rem] font-normal text-foreground mb-1 truncate">
+                {communityPost.title}
+              </p>
+              {communityPost.description && (
+                <p className="font-body text-[0.75rem] text-muted-foreground">{communityPost.description}</p>
+              )}
+              {communityPost.style_tags?.length > 0 && (
+                <div className="flex gap-1.5 flex-wrap mt-2">
+                  {communityPost.style_tags.map((tag: string) => (
+                    <span key={tag} className="font-body text-[0.6rem] tracking-[0.08em] uppercase border border-border text-muted-foreground px-1.5 py-0.5">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={handleLike}
+              disabled={likeLoading}
+              className="flex flex-col items-center gap-1 bg-transparent border border-border px-3 py-2 cursor-pointer transition-all duration-150 shrink-0 ml-4 hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ borderColor: isLiked ? "hsl(var(--accent))" : undefined }}
+            >
+              <span className={`text-[1.2rem] ${isLiked ? "text-accent" : "text-muted-foreground"}`}>
+                {isLiked ? "♥" : "♡"}
+              </span>
+              <span className={`font-body text-[0.65rem] tracking-[0.08em] ${isLiked ? "text-accent" : "text-muted-foreground"}`}>
+                {communityPost.like_count}
+              </span>
+            </button>
+          </div>
+        )}
+
         <div className="p-6 border-b border-border">
           <h2 className="font-heading text-[1.5rem] font-normal mb-1">Generated Room</h2>
           <p className="font-body text-[0.75rem] text-muted-foreground">{description || "Your custom design"}</p>
