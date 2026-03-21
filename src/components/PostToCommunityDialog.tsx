@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -19,21 +16,14 @@ interface PostToCommunityDialogProps {
   onPosted: () => void;
 }
 
-export default function PostToCommunityDialog({
-  open,
-  onOpenChange,
-  roomId,
-  onPosted,
-}: PostToCommunityDialogProps) {
+export default function PostToCommunityDialog({ open, onOpenChange, roomId, onPosted }: PostToCommunityDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [posting, setPosting] = useState(false);
 
   const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+    setSelectedTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]);
   };
 
   const handlePost = async () => {
@@ -46,12 +36,12 @@ export default function PostToCommunityDialog({
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" });
+        toast({ title: "Sign in required", variant: "destructive" });
         setPosting(false);
         return;
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("community_posts")
         .insert({
           user_id: session.user.id,
@@ -67,20 +57,18 @@ export default function PostToCommunityDialog({
         .single();
 
       if (error) {
-        console.error("Post to community error:", error);
         toast({ title: "Failed to post", description: error.message, variant: "destructive" });
         return;
       }
 
-      toast({ title: "Posted!", description: "Room posted to the community!" });
+      toast({ title: "Room posted to the community!" });
       onOpenChange(false);
       onPosted();
       setTitle("");
       setDescription("");
       setSelectedTags([]);
     } catch (err) {
-      console.error("Unexpected post error:", err);
-      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
     } finally {
       setPosting(false);
     }
@@ -88,54 +76,56 @@ export default function PostToCommunityDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-surface border-border">
         <DialogHeader>
-          <DialogTitle>Post to Community</DialogTitle>
+          <DialogTitle className="font-heading text-[1.5rem] font-normal">Post to Community</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="text-sm font-medium mb-1.5 block">
+            <label className="font-body text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground mb-1.5 block">
               Title <span className="text-destructive">*</span>
             </label>
-            <Input
+            <input
               value={title}
               onChange={(e) => setTitle(e.target.value.slice(0, 60))}
               placeholder="Give your room a name"
+              className="input-editorial"
               maxLength={60}
             />
-            <p className="text-xs text-muted-foreground mt-1 text-right">
-              {60 - title.length} characters remaining
+            <p className="font-body text-[0.65rem] text-muted-foreground mt-1 text-right">
+              {60 - title.length} remaining
             </p>
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block">
+            <label className="font-body text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground mb-1.5 block">
               Description <span className="text-muted-foreground">(optional)</span>
             </label>
-            <Textarea
+            <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value.slice(0, 280))}
-              placeholder="Describe your design..."
+              placeholder="Describe your design…"
               maxLength={280}
               rows={3}
+              className="input-editorial resize-none"
             />
-            <p className="text-xs text-muted-foreground mt-1 text-right">
-              {280 - description.length} characters remaining
+            <p className="font-body text-[0.65rem] text-muted-foreground mt-1 text-right">
+              {280 - description.length} remaining
             </p>
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Style Tags</label>
+            <label className="font-body text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground mb-2 block">Style Tags</label>
             <div className="flex flex-wrap gap-2">
               {STYLE_TAGS.map((tag) => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all active:scale-95 ${
+                  className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 ${
                     selectedTags.includes(tag)
-                      ? "border-amber text-amber bg-amber/10"
-                      : "border-border/50 text-muted-foreground hover:border-amber/30"
+                      ? "border-accent text-accent"
+                      : "border-border text-muted-foreground hover:border-accent/50"
                   }`}
                 >
                   {tag}
@@ -149,7 +139,6 @@ export default function PostToCommunityDialog({
             Cancel
           </Button>
           <Button variant="amber" onClick={handlePost} disabled={posting || !title.trim()}>
-            {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {posting ? "Posting…" : "Post"}
           </Button>
         </DialogFooter>

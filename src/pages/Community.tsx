@@ -3,7 +3,6 @@ import CommunityCard from "@/components/CommunityCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
 
 const filters = ["Most Recent", "Most Liked"];
 const styleTags = ["minimalist", "japandi", "scandinavian", "industrial", "bohemian", "modern", "classic", "coastal", "dark", "bright"];
@@ -32,18 +31,11 @@ export default function Community() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch posts with room_designs join
   useEffect(() => {
     const fetchPosts = async () => {
       const { data, error } = await supabase
         .from("community_posts")
-        .select(`
-          *,
-          room_designs (
-            id,
-            description
-          )
-        `)
+        .select(`*, room_designs (id, description)`)
         .eq("is_visible", true)
         .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
         .limit(12);
@@ -58,12 +50,8 @@ export default function Community() {
     fetchPosts();
   }, [activeFilter]);
 
-  // Fetch user's likes
   useEffect(() => {
-    if (!user) {
-      setLikedIds(new Set());
-      return;
-    }
+    if (!user) { setLikedIds(new Set()); return; }
     const fetchLikes = async () => {
       const { data } = await supabase
         .from("post_likes")
@@ -74,133 +62,82 @@ export default function Community() {
     fetchLikes();
   }, [user]);
 
-  // Realtime subscription for like count updates
   useEffect(() => {
     const channel = supabase
       .channel("community-likes")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "community_posts",
-          filter: "is_visible=eq.true",
-        },
-        (payload) => {
-          setPosts((current) =>
-            current.map((post) =>
-              post.id === payload.new.id
-                ? { ...post, like_count: (payload.new as any).like_count }
-                : post
-            )
-          );
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const handleLike = useCallback(
-    async (postId: string) => {
-      if (!user) {
-        toast({ title: "Sign in required", description: "Sign in to like rooms", variant: "destructive" });
-        return;
-      }
-
-      const isLiked = likedIds.has(postId);
-      const post = posts.find((p) => p.id === postId);
-      if (!post) return;
-
-      // Optimistic update
-      setLikedIds((prev) => {
-        const next = new Set(prev);
-        if (isLiked) next.delete(postId);
-        else next.add(postId);
-        return next;
-      });
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId
-            ? { ...p, like_count: p.like_count + (isLiked ? -1 : 1) }
-            : p
-        )
-      );
-
-      try {
-        if (isLiked) {
-          const { error: delErr } = await supabase
-            .from("post_likes")
-            .delete()
-            .eq("post_id", postId)
-            .eq("user_id", user.id);
-          if (delErr) throw delErr;
-        } else {
-          const { error: insErr } = await supabase
-            .from("post_likes")
-            .insert({ post_id: postId, user_id: user.id });
-          if (insErr) throw insErr;
-        }
-      } catch (err) {
-        console.error("Like error:", err);
-        // Rollback
-        setLikedIds((prev) => {
-          const next = new Set(prev);
-          if (isLiked) next.add(postId);
-          else next.delete(postId);
-          return next;
-        });
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === postId
-              ? { ...p, like_count: p.like_count + (isLiked ? 1 : -1) }
-              : p
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "community_posts", filter: "is_visible=eq.true" }, (payload) => {
+        setPosts((current) =>
+          current.map((post) =>
+            post.id === payload.new.id ? { ...post, like_count: (payload.new as any).like_count } : post
           )
         );
-        toast({ title: "Error", description: "Failed to update like. Please try again.", variant: "destructive" });
-      }
-    },
-    [user, likedIds, posts]
-  );
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
-  // Filter by style tag
+  const handleLike = useCallback(async (postId: string) => {
+    if (!user) {
+      toast({ title: "Sign in required", description: "Sign in to like rooms", variant: "destructive" });
+      return;
+    }
+    const isLiked = likedIds.has(postId);
+    setLikedIds((prev) => { const next = new Set(prev); if (isLiked) next.delete(postId); else next.add(postId); return next; });
+    setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: p.like_count + (isLiked ? -1 : 1) } : p));
+
+    try {
+      if (isLiked) {
+        const { error } = await supabase.from("post_likes").delete().eq("post_id", postId).eq("user_id", user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("post_likes").insert({ post_id: postId, user_id: user.id });
+        if (error) throw error;
+      }
+    } catch (err) {
+      console.error("Like error:", err);
+      setLikedIds((prev) => { const next = new Set(prev); if (isLiked) next.add(postId); else next.delete(postId); return next; });
+      setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: p.like_count + (isLiked ? 1 : -1) } : p));
+      toast({ title: "Error", description: "Failed to update like.", variant: "destructive" });
+    }
+  }, [user, likedIds, posts]);
+
   const filteredPosts = activeTag
     ? posts.filter((p) => p.style_tags?.some((t) => t.toLowerCase() === activeTag.toLowerCase()))
     : posts;
 
   return (
-    <div className="container py-8 md:py-12">
-      <div className="space-y-2 mb-8 animate-reveal-up">
-        <h1 className="text-3xl md:text-4xl font-bold">Community</h1>
-        <p className="text-muted-foreground text-lg">Explore and get inspired by room designs from the community</p>
+    <div className="container py-12 md:py-16">
+      <div className="space-y-2 mb-10 animate-reveal-up">
+        <h1 className="font-heading text-[2.5rem] font-light uppercase tracking-[0.05em]">Community</h1>
+        <p className="font-body text-[0.8rem] tracking-[0.08em] uppercase text-muted-foreground">
+          Explore and get inspired by room designs
+        </p>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2 mb-8 animate-reveal-up delay-100">
+      <div className="flex flex-wrap items-center gap-3 mb-10 animate-reveal-up delay-100">
         {filters.map((f) => (
           <button
             key={f}
             onClick={() => setActiveFilter(f)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 ${
+            className={`font-body text-[0.7rem] tracking-[0.1em] uppercase px-4 py-2 border transition-colors duration-200 ${
               activeFilter === f
-                ? "bg-amber text-amber-foreground"
-                : "bg-surface text-muted-foreground hover:text-foreground"
+                ? "border-accent text-accent"
+                : "border-border text-muted-foreground hover:border-accent hover:text-accent"
             }`}
           >
             {f}
           </button>
         ))}
-        <div className="w-px h-6 bg-border/50 mx-1" />
+        <div className="w-px h-5 bg-border mx-1" />
         {styleTags.map((tag) => (
           <button
             key={tag}
             onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all active:scale-95 ${
+            className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 ${
               activeTag === tag
-                ? "border-amber text-amber bg-amber/10"
-                : "border-border/50 text-muted-foreground hover:border-amber/30"
+                ? "border-accent text-accent"
+                : "border-border text-muted-foreground hover:border-accent/50"
             }`}
           >
             {tag}
@@ -211,11 +148,13 @@ export default function Community() {
       {/* Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 text-amber animate-spin" />
+          <div className="h-px w-32 bg-border overflow-hidden">
+            <div className="h-full w-1/3 bg-accent animate-line-progress" />
+          </div>
         </div>
       ) : filteredPosts.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
-          <p className="text-muted-foreground">No community posts yet. Be the first to share a room!</p>
+          <p className="font-body text-[0.8rem] text-muted-foreground">No community posts yet. Be the first to share a room!</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -226,11 +165,7 @@ export default function Community() {
               roomDesignId={post.room_design_id}
               title={post.title}
               description={post.room_designs?.description ?? post.description}
-              author={
-                post.user_id === user?.id
-                  ? "You"
-                  : "Community Member"
-              }
+              author={post.user_id === user?.id ? "You" : "Community Member"}
               authorInitial={post.user_id === user?.id ? "Y" : "C"}
               thumbnailUrl={post.thumbnail_url ?? undefined}
               likeCount={post.like_count}
