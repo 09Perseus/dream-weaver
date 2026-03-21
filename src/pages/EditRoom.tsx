@@ -47,6 +47,7 @@ export default function EditRoom() {
   const { user } = useAuth();
   const navState = location.state as LocationState | null;
   const isMobile = useIsMobile();
+  const { formatPrice } = useCurrency();
 
   const [roomItems, setRoomItems] = useState<PlacedItem[]>(navState?.items ?? []);
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
