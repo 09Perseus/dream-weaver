@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import CommunityCard from "@/components/CommunityCard";
+import SkeletonCard from "@/components/SkeletonCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -168,10 +169,10 @@ export default function Community() {
 
       {/* Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="h-px w-32 bg-border overflow-hidden">
-            <div className="h-full w-1/3 bg-accent animate-line-progress" />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       ) : error ? (
         <div className="text-center py-16">

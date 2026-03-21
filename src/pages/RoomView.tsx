@@ -133,10 +133,27 @@ export default function RoomView() {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center">
-        <div className="h-px w-32 bg-border overflow-hidden">
-          <div className="h-full w-1/3 bg-accent animate-line-progress" />
+      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
+        <div className="flex-1 p-4 lg:p-6 flex items-center justify-center bg-surface">
+          <p className="font-heading italic text-[1.2rem] text-muted-foreground">Loading your room…</p>
         </div>
+        <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-border bg-surface">
+          <div className="p-6 border-b border-border">
+            <div className="h-6 bg-muted w-40 animate-skeleton-pulse mb-2" />
+            <div className="h-4 bg-muted w-60 animate-skeleton-pulse" />
+          </div>
+          <div className="p-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 py-4 border-b border-border last:border-b-0 animate-skeleton-pulse">
+                <div className="h-12 w-12 bg-muted flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-muted w-3/4" />
+                  <div className="h-3 bg-muted w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
       </div>
     );
   }
@@ -198,7 +215,7 @@ export default function RoomView() {
           {!isOwnRoom && (
             <Button
               variant="outline"
-              className="w-full"
+              className={`w-full ${copying ? "button-loading" : ""}`}
               disabled={copying}
               onClick={handleCopyRoom}
             >
