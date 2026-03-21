@@ -170,7 +170,7 @@ function RightPanel({
   onDeleteItem: (id: string) => void;
   onBack: () => void;
 }) {
-  const selectedItem   = roomItems.find((i) => i.id === selectedItemId);
+  const selectedItem = roomItems.find((i) => i.id === selectedItemId);
   const selectedDetail = furniture.find((f) => f.id === selectedItemId);
 
   return (
@@ -203,7 +203,7 @@ function RightPanel({
               </p>
             ) : (
               roomItems.map((item) => {
-                const detail    = furniture.find((f) => f.id === item.id);
+                const detail = furniture.find((f) => f.id === item.id);
                 const isSelected = selectedItemId === item.id;
                 return (
                   <button
@@ -212,8 +212,8 @@ function RightPanel({
                     className={`w-full text-left px-4 py-3 border-b border-border
                                 transition-colors cursor-pointer min-h-[44px]
                                 ${isSelected
-                                  ? 'bg-accent/10 border-l-2 border-l-accent'
-                                  : 'hover:bg-background'}`}
+                        ? 'bg-accent/10 border-l-2 border-l-accent'
+                        : 'hover:bg-background'}`}
                   >
                     <div className="flex items-center gap-3">
                       {detail?.thumbnail_url && detail.thumbnail_url !== "PENDING_UPLOAD" ? (
@@ -255,34 +255,34 @@ function RightPanel({
 // ── EditRoom ──────────────────────────────────────────────────────────────────
 export default function EditRoom() {
   const { id: roomId } = useParams<{ id: string }>();
-  const location       = useLocation();
-  const navigate       = useNavigate();
-  const { user }       = useAuth();
-  const navState       = location.state as LocationState | null;
-  const isMobile       = useIsMobile();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const navState = location.state as LocationState | null;
+  const isMobile = useIsMobile();
   const { formatPrice } = useCurrency();
 
-  const [roomItems, setRoomItems]           = useState<PlacedItem[]>(navState?.items ?? []);
-  const [furniture, setFurniture]           = useState<FurnitureDetail[]>(navState?.furniture ?? []);
-  const [description, setDescription]       = useState(navState?.description ?? "");
-  const [loading, setLoading]               = useState(!navState?.items);
-  const [saving, setSaving]                 = useState(false);
+  const [roomItems, setRoomItems] = useState<PlacedItem[]>(navState?.items ?? []);
+  const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
+  const [description, setDescription] = useState(navState?.description ?? "");
+  const [loading, setLoading] = useState(!navState?.items);
+  const [saving, setSaving] = useState(false);
 
   // selectedItemId — right panel shows info card
   // editingItemId  — item is in drag mode (double click in canvas)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [editingItemId, setEditingItemId]   = useState<string | null>(null);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
-  const [undoStack, setUndoStack]           = useState<PlacedItem[][]>([]);
-  const [pickerItems, setPickerItems]       = useState<PickerItem[]>([]);
+  const [undoStack, setUndoStack] = useState<PlacedItem[][]>([]);
+  const [pickerItems, setPickerItems] = useState<PickerItem[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [pickerLoading, setPickerLoading]   = useState(true);
+  const [pickerLoading, setPickerLoading] = useState(true);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
-  const [posted, setPosted]                 = useState(false);
-  const [isCopy, setIsCopy]                 = useState(false);
+  const [posted, setPosted] = useState(false);
+  const [isCopy, setIsCopy] = useState(false);
   const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
-  const [roomName, setRoomName]             = useState(navState?.description || "My Room");
-  const [isEditingName, setIsEditingName]   = useState(false);
+  const [roomName, setRoomName] = useState(navState?.description || "My Room");
+  const [isEditingName, setIsEditingName] = useState(false);
 
   // Fetch room from DB if no nav state
   useEffect(() => {
@@ -458,8 +458,8 @@ export default function EditRoom() {
     activeCategory === "All"
       ? pickerItems
       : pickerItems.filter(
-          (i) => i.category?.toLowerCase() === CATEGORY_MAP[activeCategory]
-        );
+        (i) => i.category?.toLowerCase() === CATEGORY_MAP[activeCategory]
+      );
 
   if (loading) {
     return (
@@ -487,15 +487,15 @@ export default function EditRoom() {
               className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5
                           border transition-colors duration-200 min-h-[44px]
                           ${activeCategory === label
-                            ? "border-accent text-accent"
-                            : "border-border text-muted-foreground hover:text-foreground"}`}
+                  ? "border-accent text-accent"
+                  : "border-border text-muted-foreground hover:text-foreground"}`}
             >
               {label} ({count})
             </button>
           );
         })}
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-scroll overflow-x-hidden min-h-0">
         {pickerLoading ? (
           <div className="flex justify-center py-8">
             <div className="h-px w-16 bg-border overflow-hidden">
@@ -544,7 +544,7 @@ export default function EditRoom() {
   );
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
+    <div className="h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
 
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
       <div className="border-b border-border px-4 py-2 flex items-center gap-2
@@ -630,42 +630,51 @@ export default function EditRoom() {
         {/* Left: Furniture Picker (desktop only) */}
         {!isMobile && (
           <aside className="w-72 shrink-0 border-r border-border flex flex-col
-                            bg-surface overflow-hidden">
+                            bg-surface overflow-hidden min-h-0">
             {pickerContent}
           </aside>
         )}
 
         {/* Center: 3D Canvas — pure canvas, no sidebar inside */}
-        <div className="flex-1 min-h-0 min-w-0 flex flex-col">
-          <RoomCanvas
-            className="flex-1"
-            style={{ minHeight: isMobile ? '60vh' : '100%' }}
-            items={roomItems}
-            furniture={furniture}
-            selectedItemId={selectedItemId}
-            editingItemId={editingItemId}
-            onSelectItem={(id) => {
-              setSelectedItemId((prev) => prev === id ? null : id);
-              setEditingItemId(null);
-            }}
-            onEditItem={(id) => {
-              setSelectedItemId(id);
-              setEditingItemId((prev) => prev === id ? null : id);
-            }}
-            onPositionChange={(id, pos) => {
-              setRoomItems((prev) =>
-                prev.map((item) =>
-                  item.id === id ? { ...item, x: pos[0], y: pos[1], z: pos[2] } : item
-                )
-              );
-            }}
-          />
+        <div className="flex-1 min-h-0 min-w-0 relative">
+          <div className="absolute inset-0 flex flex-col">
+            <RoomCanvas
+              className="flex-1"
+              style={{ minHeight: isMobile ? '60vh' : '100%' }}
+              items={roomItems}
+              furniture={furniture}
+              selectedItemId={selectedItemId}
+              editingItemId={editingItemId}
+              onSelectItem={(id) => {
+                setSelectedItemId((prev) => prev === id ? null : id);
+                setEditingItemId(null);
+              }}
+              onEditItem={(id) => {
+                setSelectedItemId(id);
+                setEditingItemId((prev) => prev === id ? null : id);
+              }}
+              onPositionChange={(id, pos) => {
+                setRoomItems((prev) =>
+                  prev.map((item) =>
+                    item.id === id ? { ...item, x: pos[0], y: pos[1], z: pos[2] } : item
+                  )
+                );
+              }}
+              onRotationChange={(id, rot) => {
+                setRoomItems((prev) =>
+                  prev.map((item) =>
+                    item.id === id ? { ...item, rotation: (rot[1] * 180) / Math.PI } : item
+                  )
+                );
+              }}
+            />
+          </div>
         </div>
 
         {/* Right: switches between Room Items list and Item Info Card */}
         {!isMobile && (
           <aside className="w-80 shrink-0 border-l border-border flex flex-col
-                            bg-surface overflow-hidden">
+                            bg-surface overflow-hidden min-h-0">
             <RightPanel
               roomItems={roomItems}
               furniture={furniture}

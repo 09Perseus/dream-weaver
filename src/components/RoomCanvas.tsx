@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { useGenerateRoom, getDisplaySize } from "@/hooks/useGenerateRoom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+import { RotateCcw, RotateCw } from "lucide-react";
 
 function detectWebGL(): boolean {
   try {
@@ -46,6 +47,7 @@ interface RoomCanvasProps {
   onSelectItem?: (id: string) => void;
   onEditItem?: (id: string) => void;
   onPositionChange?: (id: string, pos: [number, number, number]) => void;
+  onRotationChange?: (id: string, rot: [number, number, number]) => void;
 }
 
 export interface FurnitureItem {
@@ -130,6 +132,8 @@ function MovableFurniture({
   onSingleClick,
   onDoubleClick,
   onPositionChange,
+  onRotationChange,
+  activeRotationDir,
 }: {
   furniture: FurnitureItem;
   isSelected: boolean;
@@ -137,6 +141,8 @@ function MovableFurniture({
   onSingleClick: () => void;
   onDoubleClick: () => void;
   onPositionChange: (pos: [number, number, number]) => void;
+  onRotationChange?: (rot: [number, number, number]) => void;
+  activeRotationDir?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const isDragging = useRef(false);
@@ -155,7 +161,13 @@ function MovableFurniture({
     dragOffset.current.set(intersection.x - furniture.position[0], 0, intersection.z - furniture.position[2]);
   };
 
-  useFrame(() => {
+  useFrame((state, delta) => {
+    if (isEditMode && activeRotationDir && onRotationChange) {
+      const currentRot = furniture.rotation || [0, 0, 0];
+      const speed = Math.PI / 3; // 60 degrees per second for precise control
+      onRotationChange([currentRot[0], currentRot[1] + activeRotationDir * speed * delta, currentRot[2]]);
+    }
+
     if (!isDragging.current || !isEditMode) return;
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
@@ -177,6 +189,27 @@ function MovableFurniture({
     };
   }, [gl]);
 
+  // Handle rotation via R key while editing
+  useEffect(() => {
+    if (!isEditMode || !onRotationChange) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "r") {
+        const r = furniture.rotation || [0, 0, 0];
+        onRotationChange([r[0], r[1] + Math.PI / 8, r[2]]);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isEditMode, furniture.rotation, onRotationChange]);
+
+  const handleWheel = (e: ThreeEvent<WheelEvent>) => {
+    if (!isEditMode || !onRotationChange) return;
+    e.stopPropagation();
+    const r = furniture.rotation || [0, 0, 0];
+    const delta = Math.sign(e.deltaY) * (Math.PI / 12);
+    onRotationChange([r[0], r[1] + delta, r[2]]);
+  };
+
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     if (clickTimer.current) {
@@ -197,6 +230,7 @@ function MovableFurniture({
       position={furniture.position}
       rotation={furniture.rotation}
       onPointerDown={handlePointerDown}
+      onWheel={handleWheel}
       onClick={handleClick}
     >
       {furniture.path && furniture.path !== "PENDING_UPLOAD" ? (
@@ -417,19 +451,22 @@ const CAMERA_SETTINGS = {
 
 function CameraController({ editId }: { editId: string | null }) {
   const { camera } = useThree();
+  const controlsRef = useRef<any>(null);
 
   useEffect(() => {
-    // Explicitly set the camera position once when the scene loads
-    camera.position.set(0, 12, 10);
-    camera.lookAt(0, 0, 0);
+    // Set camera position exactly once on mount
+    camera.position.set(3, 3, 5);
   }, [camera]);
 
   return (
     <OrbitControls
+      ref={controlsRef}
       makeDefault
       enableZoom
       enabled={!editId}
-      target={[0, 0, 0]}
+      // Omit 'target' entirely so it doesn't aggressively override user panning on React re-renders!
+      maxDistance={40}
+      minDistance={2}
     />
   );
 }
@@ -446,6 +483,7 @@ export default function RoomCanvas({
   onSelectItem: externalOnSelect,
   onEditItem: externalOnEdit,
   onPositionChange: externalOnPositionChange,
+  onRotationChange: externalOnRotationChange,
 }: RoomCanvasProps) {
   const isControlled = externalOnSelect !== undefined;
   const isViewerMode = !!(items && furniture);
@@ -458,6 +496,7 @@ export default function RoomCanvas({
 
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
   const [internalEditId, setInternalEditId] = useState<string | null>(null);
+  const [rotationDir, setRotationDir] = useState<number>(0);
 
   const selectedId = isControlled ? (controlledSelectedId ?? null) : internalSelectedId;
   const editId = isControlled ? (controlledEditingId ?? null) : internalEditId;
@@ -516,6 +555,14 @@ export default function RoomCanvas({
       externalOnPositionChange(id, [newPos[0], 0, newPos[2]]);
     } else {
       setFurnitures((prev) => prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f)));
+    }
+  };
+
+  const handleRotationChange = (id: string, rot: [number, number, number]) => {
+    if (externalOnRotationChange) {
+      externalOnRotationChange(id, rot);
+    } else {
+      setFurnitures((prev) => prev.map((f) => (f.id === id ? { ...f, rotation: rot } : f)));
     }
   };
 
@@ -587,6 +634,29 @@ export default function RoomCanvas({
           </div>
         )}
 
+        {editId && webglSupported && (
+          <div className="absolute bottom-6 right-6 z-20 flex gap-2">
+            <button
+              onPointerDown={() => setRotationDir(1)}
+              onPointerUp={() => setRotationDir(0)}
+              onPointerLeave={() => setRotationDir(0)}
+              className="p-3 bg-black/60 hover:bg-black/90 text-white rounded-full transition-colors border border-white/20 shadow-lg"
+              title="Rotate Left"
+            >
+              <RotateCcw className="w-5 h-5" />
+            </button>
+            <button
+              onPointerDown={() => setRotationDir(-1)}
+              onPointerUp={() => setRotationDir(0)}
+              onPointerLeave={() => setRotationDir(0)}
+              className="p-3 bg-black/60 hover:bg-black/90 text-white rounded-full transition-colors border border-white/20 shadow-lg"
+              title="Rotate Right"
+            >
+              <RotateCw className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
         {webglSupported && (
           <Canvas
             shadows
@@ -603,22 +673,41 @@ export default function RoomCanvas({
             <directionalLight position={[0, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
             <directionalLight position={[0, 4, 8]} intensity={0.5} />
 
-            {/* Room Geometry */}
-            <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
+            {/* Room Geometry - Outward normals with BackSide to achieve dollhouse visibility */}
+            {/* Floor (Outward normal faces -Y) */}
+            <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
               <planeGeometry args={[roomSize, roomSize]} />
-              <meshStandardMaterial color="#f0ece4" />
+              <meshStandardMaterial color="#f0ece4" side={THREE.BackSide} />
             </mesh>
-            <mesh position={[0, halfH, -halfW]} raycast={() => null}>
-              <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
+
+            {/* Roof (Outward normal faces +Y) */}
+            <mesh position={[0, roomHeight, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
+              <planeGeometry args={[roomSize, roomSize]} />
+              <meshStandardMaterial color="#faf7f2" side={THREE.BackSide} transparent opacity={0.9} />
             </mesh>
-            <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
+
+            {/* Back Wall (-Z) (Outward normal faces -Z) */}
+            <mesh position={[0, halfH, -halfW]} rotation={[0, Math.PI, 0]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
+              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.BackSide} />
             </mesh>
-            <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
+
+            {/* Front Wall (+Z) (Outward normal faces +Z) */}
+            <mesh position={[0, halfH, halfW]} rotation={[0, 0, 0]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
+              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.BackSide} />
+            </mesh>
+
+            {/* Left Wall (-X) (Outward normal faces -X) */}
+            <mesh position={[-halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
+              <planeGeometry args={[roomSize, roomHeight]} />
+              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.BackSide} />
+            </mesh>
+
+            {/* Right Wall (+X) (Outward normal faces +X) */}
+            <mesh position={[halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
+              <planeGeometry args={[roomSize, roomHeight]} />
+              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.BackSide} />
             </mesh>
             <gridHelper args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]} position={[0, 0.01, 0]} raycast={() => null} />
 
@@ -629,9 +718,11 @@ export default function RoomCanvas({
                 furniture={f}
                 isSelected={selectedId === f.id}
                 isEditMode={editId === f.id}
+                activeRotationDir={editId === f.id ? rotationDir : 0}
                 onSingleClick={() => handleSingleClick(f.id)}
                 onDoubleClick={() => handleDoubleClick(f.id)}
                 onPositionChange={(pos) => handlePositionChange(f.id, pos)}
+                onRotationChange={(rot) => handleRotationChange(f.id, rot)}
               />
             ))}
 

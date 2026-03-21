@@ -253,7 +253,8 @@ function assignPositions(
     const itemSize = getDisplaySize(item.path)
     const dynamicPadding = (itemSize / 2) + 0.15 // Offset by half the item's longest side
 
-    const candidates = getCandidateSlots(category, halfW)
+    // Randomize the predetermined slot templates so we get a unique primary layout
+    const candidates = getCandidateSlots(category, halfW).sort(() => Math.random() - 0.5)
     let chosen: Slot | null = null
 
     for (const candidate of candidates) {
@@ -269,14 +270,18 @@ function assignPositions(
 
     if (!chosen) {
       const step = 0.6
-      outer:
+      const validPoints = []
       for (let z = -(halfW - dynamicPadding); z <= halfW - dynamicPadding; z += step) {
         for (let x = -(halfW - dynamicPadding); x <= halfW - dynamicPadding; x += step) {
           if (!hasCollision(x, z, placed, Math.max(0.8, dynamicPadding))) {
-            chosen = { x, z, rotation: 0 }
-            break outer
+            // Fallback items receive a random organic rotation instead of 0
+            validPoints.push({ x, z, rotation: Math.random() * Math.PI * 2 })
           }
         }
+      }
+
+      if (validPoints.length > 0) {
+        chosen = validPoints[Math.floor(Math.random() * validPoints.length)]
       }
     }
 
