@@ -26,7 +26,17 @@ interface PickerItem {
   thumbnail_url: string | null;
 }
 
-const CATEGORIES = ["All", "Beds", "Sofas", "Tables", "Chairs", "Lamps", "Plants", "Rugs", "Shelves"];
+const CATEGORY_MAP: Record<string, string> = {
+  "All": "",
+  "Beds": "bed",
+  "Sofas": "sofa",
+  "Tables": "table",
+  "Chairs": "chair",
+  "Lamps": "lamp",
+  "Plants": "plant",
+  "Rugs": "rug",
+  "Shelves": "shelf",
+};
 
 export default function EditRoom() {
   const { id: roomId } = useParams<{ id: string }>();
