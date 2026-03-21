@@ -535,6 +535,20 @@ export default function RoomCanvas({
     setInternalEditId(null);
   };
 
+  // Keyboard delete support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "Delete" || e.key === "Backspace") && internalSelectedId && !isControlled) {
+        // Don't delete if user is typing in an input
+        if ((e.target as HTMLElement)?.tagName === "INPUT" || (e.target as HTMLElement)?.tagName === "TEXTAREA") return;
+        e.preventDefault();
+        handleInternalDelete(internalSelectedId);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [internalSelectedId, isControlled]);
+
   const webglSupported = useMemo(() => detectWebGL(), []);
 
   return (
