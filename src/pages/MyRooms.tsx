@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Eye, Pencil, Share2, EyeOff, Trash2 } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface Room {
   id: string;
@@ -27,6 +28,15 @@ export default function MyRooms() {
   const [postDialogRoomId, setPostDialogRoomId] = useState<string | null>(null);
   const [unposting, setUnposting] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { theme } = useTheme();
+
+  const buttonColors = {
+    view: "#4A90D9",
+    edit: theme === "dark" ? "#C8B89A" : "#E16F24",
+    post: theme === "dark" ? "#2EA043" : "#0969DA",
+    unpost: theme === "dark" ? "#1F6E2E" : "#6E7781",
+    delete: "#E5534B",
+  };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -211,7 +221,7 @@ export default function MyRooms() {
                       onClick={() => navigate(`/room/${room.id}`)}
                       title="View Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: "#4A90D9", border: "none" }}
+                      style={{ background: buttonColors.view, border: "none" }}
                     >
                       <Eye size={16} color="white" />
                     </button>
@@ -219,9 +229,9 @@ export default function MyRooms() {
                       onClick={() => navigate(`/room/${room.id}/edit`)}
                       title="Edit Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: "hsl(var(--accent))", border: "none" }}
+                      style={{ background: buttonColors.edit, border: "none" }}
                     >
-                      <Pencil size={16} color="hsl(var(--bg))" />
+                      <Pencil size={16} color={theme === "dark" ? "#0D1117" : "white"} />
                     </button>
                     {!room.is_copy && (
                       <button
@@ -229,7 +239,7 @@ export default function MyRooms() {
                         disabled={unposting === room.id}
                         title={isPosted ? "Remove from Community" : "Post to Community"}
                         className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
-                        style={{ background: isPosted ? "hsl(var(--success))" : "hsl(var(--accent))", border: "none" }}
+                        style={{ background: isPosted ? buttonColors.unpost : buttonColors.post, border: "none" }}
                       >
                         {isPosted ? <EyeOff size={16} color="white" /> : <Share2 size={16} color="white" />}
                       </button>
@@ -239,7 +249,7 @@ export default function MyRooms() {
                       disabled={deleting === room.id}
                       title="Delete Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
-                      style={{ background: "hsl(var(--destructive))", border: "none" }}
+                      style={{ background: buttonColors.delete, border: "none" }}
                     >
                       <Trash2 size={16} color="white" />
                     </button>
