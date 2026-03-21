@@ -259,6 +259,7 @@ export default function Cart() {
   }
 
   return (
+    <div className="container py-12 md:py-16 max-w-3xl">
       <h1 className="font-heading text-[2.5rem] font-light uppercase tracking-[0.05em] mb-10 animate-reveal-up">
         Cart
       </h1>
