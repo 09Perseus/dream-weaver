@@ -25,7 +25,7 @@ export default function SignIn() {
     setLoading(false);
 
     if (authError) {
-      setError(authError.message);
+      setError(friendlySupabaseError(authError));
       return;
     }
 
