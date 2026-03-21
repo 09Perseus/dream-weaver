@@ -38,6 +38,7 @@ export default function RoomView() {
   const [communityPost, setCommunityPost] = useState<any>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<FurnitureDetail | null>(null);
 
   useEffect(() => {
     if (!id || !user) return;
