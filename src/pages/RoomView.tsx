@@ -32,6 +32,7 @@ export default function RoomView() {
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
   const [roomOwnerId, setRoomOwnerId] = useState<string | null>(null);
+  const [roomIsCopy, setRoomIsCopy] = useState(false);
   const [copying, setCopying] = useState(false);
 
   useEffect(() => {
