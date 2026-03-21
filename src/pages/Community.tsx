@@ -31,6 +31,7 @@ export default function Community() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [processingLikes, setProcessingLikes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setLoading(true);
