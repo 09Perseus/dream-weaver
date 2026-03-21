@@ -147,6 +147,31 @@ export default function Index() {
   const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
   const navigate = useNavigate();
 
+  // Typing animation
+  const roomTypes = ["BEDROOM.", "LIVING ROOM.", "HOME OFFICE.", "DINING ROOM.", "STUDIO.", "SANCTUARY."];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const current = roomTypes[currentIndex];
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        setTypedText(current.substring(0, typedText.length + 1));
+        if (typedText.length + 1 === current.length) {
+          setTimeout(() => setIsDeleting(true), 1800);
+        }
+      } else {
+        setTypedText(current.substring(0, typedText.length - 1));
+        if (typedText.length - 1 === 0) {
+          setIsDeleting(false);
+          setCurrentIndex(prev => (prev + 1) % roomTypes.length);
+        }
+      }
+    }, isDeleting ? 60 : 100);
+    return () => clearTimeout(timeout);
+  }, [typedText, isDeleting, currentIndex]);
+
   useEffect(() => {
     supabase
       .from("community_posts")
