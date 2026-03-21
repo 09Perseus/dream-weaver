@@ -588,7 +588,7 @@ export default function RoomCanvas({
             shadows
             // ✅ DOLLHOUSE CAMERA — high above, angled down, looking at room center
             camera={{
-              position: [10, 12, 10], // directly above and slightly in front
+              position: [40, 12, 10], // directly above and slightly in front
               fov: 45, // narrower FOV for less distortion
               near: 0.1,
               far: 100,
