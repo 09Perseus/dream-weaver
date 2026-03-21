@@ -86,7 +86,7 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
 }
 
 // ── Model Error Boundary ──────────────────────────────────────────────────────
-class ModelErrorBoundary extends Component
+class ModelErrorBoundary extends Component<
   { children: ReactNode; itemId: string },
   { hasError: boolean }
 > {
