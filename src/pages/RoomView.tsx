@@ -171,6 +171,18 @@ export default function RoomView() {
             </Button>
           )}
 
+          {!isOwnRoom && (
+            <Button
+              variant="outline"
+              className="w-full"
+              disabled={copying}
+              onClick={handleCopyRoom}
+            >
+              <Copy className="h-4 w-4" />
+              {copying ? "Copying…" : "Copy This Room"}
+            </Button>
+          )}
+
           <div className="flex gap-2">
             <Button
               variant="outline"
