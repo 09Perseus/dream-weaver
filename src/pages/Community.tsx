@@ -6,7 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 const filters = ["Most Recent", "Most Liked"];
-const styleTags = ["Minimal", "Japanese", "Scandinavian", "Industrial", "Bohemian", "Modern"];
+const styleTags = ["minimalist", "japandi", "scandinavian", "industrial", "bohemian", "modern", "classic", "coastal", "dark", "bright"];
 
 interface CommunityPost {
   id: string;
@@ -17,6 +17,11 @@ interface CommunityPost {
   user_id: string;
   style_tags: string[] | null;
   created_at: string | null;
+  room_design_id: string;
+  room_designs: {
+    id: string;
+    description: string | null;
+  } | null;
 }
 
 export default function Community() {
@@ -27,19 +32,26 @@ export default function Community() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch posts
+  // Fetch posts with room_designs join
   useEffect(() => {
     const fetchPosts = async () => {
       const { data, error } = await supabase
         .from("community_posts")
-        .select("*")
+        .select(`
+          *,
+          room_designs (
+            id,
+            description
+          )
+        `)
         .eq("is_visible", true)
-        .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false });
+        .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
+        .limit(12);
 
       if (error) {
-        console.error("Failed to fetch posts:", error);
+        console.error("Community fetch error:", error);
       } else {
-        setPosts(data ?? []);
+        setPosts((data as unknown as CommunityPost[]) ?? []);
       }
       setLoading(false);
     };
@@ -211,8 +223,14 @@ export default function Community() {
             <CommunityCard
               key={post.id}
               id={post.id}
+              roomDesignId={post.room_design_id}
               title={post.title}
-              author={post.user_id === user?.id ? "You" : "Community Member"}
+              description={post.room_designs?.description ?? post.description}
+              author={
+                post.user_id === user?.id
+                  ? "You"
+                  : "Community Member"
+              }
               authorInitial={post.user_id === user?.id ? "Y" : "C"}
               thumbnailUrl={post.thumbnail_url ?? undefined}
               likeCount={post.like_count}
