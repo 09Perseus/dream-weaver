@@ -93,12 +93,18 @@ export default function Community() {
       toast({ title: "Sign in required", description: "Sign in to like rooms", variant: "destructive" });
       return;
     }
-    const isLiked = likedIds.has(postId);
-    setLikedIds((prev) => { const next = new Set(prev); if (isLiked) next.delete(postId); else next.add(postId); return next; });
-    setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: p.like_count + (isLiked ? -1 : 1) } : p));
+    if (processingLikes.has(postId)) return;
+
+    setProcessingLikes((prev) => new Set(prev).add(postId));
+
+    const alreadyLiked = likedIds.has(postId);
+
+    // Optimistic updates
+    setLikedIds((prev) => { const next = new Set(prev); alreadyLiked ? next.delete(postId) : next.add(postId); return next; });
+    setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: alreadyLiked ? Math.max(0, p.like_count - 1) : p.like_count + 1 } : p));
 
     try {
-      if (isLiked) {
+      if (alreadyLiked) {
         const { error } = await supabase.from("post_likes").delete().eq("post_id", postId).eq("user_id", user.id);
         if (error) throw error;
       } else {
@@ -107,11 +113,14 @@ export default function Community() {
       }
     } catch (err) {
       console.error("Like error:", err);
-      setLikedIds((prev) => { const next = new Set(prev); if (isLiked) next.add(postId); else next.delete(postId); return next; });
-      setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: p.like_count + (isLiked ? 1 : -1) } : p));
+      // Roll back
+      setLikedIds((prev) => { const next = new Set(prev); alreadyLiked ? next.add(postId) : next.delete(postId); return next; });
+      setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: alreadyLiked ? p.like_count + 1 : Math.max(0, p.like_count - 1) } : p));
       toast({ title: "Error", description: "Failed to update like.", variant: "destructive" });
+    } finally {
+      setProcessingLikes((prev) => { const next = new Set(prev); next.delete(postId); return next; });
     }
-  }, [user, likedIds, posts]);
+  }, [user, likedIds, processingLikes]);
 
   const filteredPosts = activeTag
     ? posts.filter((p) => p.style_tags?.some((t) => t.toLowerCase() === activeTag.toLowerCase()))
