@@ -201,7 +201,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
               </Link>
             ))}
             <Link
-              to="/cart"
+              to={session ? "/cart" : "/sign-in?redirect=/cart"}
               onClick={() => setMobileOpen(false)}
               className="font-body text-[0.8rem] tracking-[0.15em] uppercase px-6 py-4 border-b border-border min-h-[52px] flex items-center gap-2 text-muted-foreground"
             >
