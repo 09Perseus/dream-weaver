@@ -362,19 +362,21 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 flex flex-col items-center gap-2">
-          <span className="font-body text-[0.65rem] tracking-[0.2em] uppercase text-muted-foreground">
-            Scroll
-          </span>
-          <div
-            className="w-px bg-accent"
-            style={{
-              height: 32,
-              animation: "scroll-line 2s ease-in-out infinite",
-            }}
-          />
-        </div>
+        {/* Scroll indicator — hidden when input focused or has text */}
+        {!inputFocused && prompt.length === 0 && (
+          <div className="absolute bottom-6 flex flex-col items-center gap-2">
+            <span className="font-body text-[0.65rem] tracking-[0.2em] uppercase text-muted-foreground">
+              Scroll
+            </span>
+            <div
+              className="w-px bg-accent"
+              style={{
+                height: 32,
+                animation: "scroll-line 2s ease-in-out infinite",
+              }}
+            />
+          </div>
+        )}
       </section>
 
       <Divider />
