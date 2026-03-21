@@ -197,17 +197,19 @@ function MovableFurniture({
       onPointerUp={handlePointerUp}
       onClick={handleClick}
     >
-      {furniture.path && furniture.path !== 'PENDING_UPLOAD' && furniture.path.startsWith('http') ? (
-        <Suspense
-          fallback={
-            <mesh>
-              <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-              <meshStandardMaterial color="gray" wireframe />
-            </mesh>
-          }
-        >
-          <Model path={furniture.path} displaySize={furniture.displaySize} />
-        </Suspense>
+      {furniture.path && furniture.path !== 'PENDING_UPLOAD' ? (
+        <ModelErrorBoundary itemId={furniture.id}>
+          <Suspense
+            fallback={
+              <mesh>
+                <boxGeometry args={furniture.size ?? [1, 1, 1]} />
+                <meshStandardMaterial color="gray" wireframe />
+              </mesh>
+            }
+          >
+            <Model path={furniture.path} displaySize={furniture.displaySize} />
+          </Suspense>
+        </ModelErrorBoundary>
       ) : (
         <mesh castShadow receiveShadow>
           <boxGeometry args={furniture.size ?? [1, 1, 1]} />
