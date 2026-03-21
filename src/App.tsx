@@ -49,6 +49,7 @@ const App = React.forwardRef<HTMLDivElement>((_, ref) => (
                   }
                 />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-up" element={<SignUp />} />
                 <Route path="*" element={<NotFound />} />
