@@ -23,6 +23,7 @@ let isMounted = false;
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
+  const { formatPrice, currency } = useCurrency();
   const navigate = useNavigate();
 
   const [session, setSession] = useState<any>(null);
