@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useMemo, useCallback, Suspense, Component, type ReactNode } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -87,7 +86,7 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
 }
 
 // ── Model Error Boundary ──────────────────────────────────────────────────────
-class ModelErrorBoundary extends Component<
+class ModelErrorBoundary extends Component
   { children: ReactNode; itemId: string },
   { hasError: boolean }
 > {
@@ -139,8 +138,6 @@ function MovableFurniture({
     if (!isEditMode) return;
     e.stopPropagation();
     isDragging.current = true;
-
-    // Compute drag offset on the floor plane
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
     dragOffset.current.set(
@@ -150,9 +147,6 @@ function MovableFurniture({
     );
   };
 
-  // Use useFrame to continuously update position while dragging
-  // This avoids the R3F onPointerMove problem where events stop
-  // firing when the pointer leaves the mesh bounding box
   useFrame(() => {
     if (!isDragging.current || !isEditMode) return;
     raycaster.setFromCamera(pointer, camera);
@@ -162,13 +156,9 @@ function MovableFurniture({
     onPositionChange([newX, 0, newZ]);
   });
 
-  // Listen for pointerup on the canvas element so drag ends even if
-  // the pointer leaves the mesh
   useEffect(() => {
     const canvas = gl.domElement;
-    const handleUp = () => {
-      isDragging.current = false;
-    };
+    const handleUp = () => { isDragging.current = false; };
     canvas.addEventListener("pointerup", handleUp);
     canvas.addEventListener("pointerleave", handleUp);
     return () => {
@@ -222,7 +212,6 @@ function MovableFurniture({
         </mesh>
       )}
 
-      {/* Blue ring — selected, not editing */}
       {isSelected && !isEditMode && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
           <ringGeometry args={[0.55, 0.7, 32]} />
@@ -230,7 +219,6 @@ function MovableFurniture({
         </mesh>
       )}
 
-      {/* Amber ring — edit/drag mode */}
       {isSelected && isEditMode && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
           <ringGeometry args={[0.55, 0.7, 32]} />
@@ -387,7 +375,6 @@ function StandaloneSidebar({
                   ${isMobile ? "w-full h-64 border-t" : "w-72 border-l"}`}
     >
       {selectedFurniture ? (
-        // ✅ FIX 3 — InfoCard shows on single click, edit mode shows on double click
         <InfoCard
           furniture={selectedFurniture}
           isEditMode={editId === selectedFurniture.id}
@@ -519,7 +506,6 @@ export default function RoomCanvas({
     }
   };
 
-  // ✅ FIX 2 — always set selectedId on double click so InfoCard always shows
   const handleDoubleClick = (id: string) => {
     if (isControlled) {
       externalOnEdit!(id);
@@ -535,11 +521,9 @@ export default function RoomCanvas({
     setInternalEditId(null);
   };
 
-  // Keyboard delete support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "Delete" || e.key === "Backspace") && internalSelectedId && !isControlled) {
-        // Don't delete if user is typing in an input
         if ((e.target as HTMLElement)?.tagName === "INPUT" || (e.target as HTMLElement)?.tagName === "TEXTAREA") return;
         e.preventDefault();
         handleInternalDelete(internalSelectedId);
@@ -559,7 +543,6 @@ export default function RoomCanvas({
       <div className="relative flex-1 min-h-0 min-w-0">
         {!webglSupported && <WebGLUnavailable items={isViewerMode ? items : undefined} />}
 
-        {/* Prompt input — standalone mode only */}
         {!isViewerMode && !isControlled && webglSupported && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xl">
             <div className="flex gap-2">
@@ -585,7 +568,6 @@ export default function RoomCanvas({
           </div>
         )}
 
-        {/* Hint */}
         {activeFurnitures.length > 0 && !isGenerating && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
             <p className="text-[0.7rem] text-white/50 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">
@@ -594,7 +576,6 @@ export default function RoomCanvas({
           </div>
         )}
 
-        {/* Loading overlay */}
         {isGenerating && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
             <div className="text-center">
@@ -604,14 +585,12 @@ export default function RoomCanvas({
           </div>
         )}
 
-        {/* Error */}
         {error && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/90 text-white px-4 py-2 rounded-lg text-sm max-w-md text-center">
             {error}
           </div>
         )}
 
-        {/* Empty state */}
         {activeFurnitures.length === 0 && !isGenerating && (
           <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
             <p className="text-sm text-muted-foreground/60">
@@ -620,11 +599,16 @@ export default function RoomCanvas({
           </div>
         )}
 
-        {/* Canvas */}
         {webglSupported && (
           <Canvas
             shadows
-            camera={{ position: [10, 7, 10], fov: 50 }}
+            // ✅ DOLLHOUSE CAMERA — high above, angled down, looking at room center
+            camera={{
+              position: [0, 12, 10],   // directly above and slightly in front
+              fov: 45,                  // narrower FOV for less distortion
+              near: 0.1,
+              far: 100,
+            }}
             style={{ width: "100%", height: "100%" }}
             onPointerMissed={() => {
               if (!isControlled) {
@@ -638,7 +622,10 @@ export default function RoomCanvas({
               failIfMajorPerformanceCaveat: false,
               preserveDrawingBuffer: true,
             }}
-            onCreated={({ gl }) => {
+            onCreated={({ gl, camera }) => {
+              // Point camera at room center on load
+              (camera as THREE.PerspectiveCamera).lookAt(0, 0, 0);
+
               const canvas = gl.domElement;
               canvas.addEventListener("webglcontextlost", (e) => {
                 e.preventDefault();
@@ -649,48 +636,74 @@ export default function RoomCanvas({
               });
             }}
           >
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[20, 30, 20]} intensity={1.5} castShadow shadow-mapSize={[1024, 1024]} />
+            {/* Warm ambient + soft directional light from above */}
+            <ambientLight intensity={0.7} />
+            <directionalLight
+              position={[0, 10, 5]}
+              intensity={1.2}
+              castShadow
+              shadow-mapSize={[1024, 1024]}
+            />
+            {/* Fill light from the open front so interior is well lit */}
+            <directionalLight position={[0, 4, 8]} intensity={0.5} />
 
-            {/* Floor */}
-            <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
+            {/* ── Floor ───────────────────────────────────────────────── */}
+            <mesh
+              position={[0, 0, 0]}
+              rotation={[-Math.PI / 2, 0, 0]}
+              receiveShadow
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomSize]} />
-              <meshStandardMaterial color="#f0f0f0" />
+              <meshStandardMaterial color="#f0ece4" />
             </mesh>
 
-            {/* Ceiling */}
-            <mesh position={[0, roomHeight, 0]} rotation={[Math.PI / 2, 0, 0]} raycast={() => null}>
-              <planeGeometry args={[roomSize, roomSize]} />
-              <meshStandardMaterial color="#e8e8e8" />
-            </mesh>
+            {/* ── NO ceiling — dollhouse is open top ──────────────────── */}
 
-            {/* Back wall */}
+            {/* ── Back wall (always visible) ───────────────────────────── */}
             <mesh position={[0, halfH, -halfW]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
+              <meshStandardMaterial
+                map={wallTexture ?? undefined}
+                color="#faf7f2"
+                // DoubleSide so it renders from both front and back
+                side={THREE.DoubleSide}
+              />
             </mesh>
 
-            {/* Front wall */}
-            <mesh position={[0, halfH, halfW]} rotation={[0, Math.PI, 0]} raycast={() => null}>
+            {/* ── Left wall ───────────────────────────────────────────── */}
+            <mesh
+              position={[-halfW, halfH, 0]}
+              rotation={[0, Math.PI / 2, 0]}
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
+              <meshStandardMaterial
+                map={wallTexture ?? undefined}
+                color="#faf7f2"
+                side={THREE.DoubleSide}
+              />
             </mesh>
 
-            {/* Left wall */}
-            <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
+            {/* ── Right wall ──────────────────────────────────────────── */}
+            <mesh
+              position={[halfW, halfH, 0]}
+              rotation={[0, -Math.PI / 2, 0]}
+              raycast={() => null}
+            >
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
+              <meshStandardMaterial
+                map={wallTexture ?? undefined}
+                color="#faf7f2"
+                side={THREE.DoubleSide}
+              />
             </mesh>
 
-            {/* Right wall */}
-            <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
-              <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
-            </mesh>
+            {/* ── NO front wall — open face of the dollhouse ──────────── */}
 
-            {/* Grid */}
+            {/* ── Grid ────────────────────────────────────────────────── */}
             <gridHelper
-              args={[roomSize, roomSize, "#94a3b8", "#cbd5e1"]}
+              args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]}
               position={[0, 0.01, 0]}
               raycast={() => null}
             />
@@ -707,19 +720,21 @@ export default function RoomCanvas({
               />
             ))}
 
+            {/* ✅ DOLLHOUSE ORBIT — constrained so camera stays above */}
             <OrbitControls
               makeDefault
               enableZoom
               enabled={!editId}
-              target={[0, 0, 0]}
-              maxDistance={220}
-              minDistance={5}
+              target={[0, 0.5, 0]}       // look slightly above floor center
+              maxPolarAngle={Math.PI / 2.2}  // prevent going below floor level
+              minPolarAngle={Math.PI / 6}    // prevent going completely overhead
+              maxDistance={20}
+              minDistance={4}
             />
           </Canvas>
         )}
       </div>
 
-      {/* ✅ FIX 3 — sidebar only appears when an object is selected or being edited */}
       {!isControlled && (internalSelectedId || internalEditId) && (
         <StandaloneSidebar
           furnitures={activeFurnitures}
