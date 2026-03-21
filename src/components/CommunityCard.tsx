@@ -44,7 +44,12 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
     >
       <Link to={linkTo} className="block">
         <div className="overflow-hidden bg-card border border-border transition-all duration-200 hover:border-accent">
-          <div className="aspect-[16/10] bg-surface overflow-hidden">
+          <div className="relative aspect-[16/10] bg-surface overflow-hidden">
+            {isOwnPost && (
+              <span className="absolute top-0 left-0 z-10 font-body text-[0.6rem] tracking-[0.1em] uppercase bg-accent text-background px-2 py-0.5">
+                YOUR POST
+              </span>
+            )}
             {thumbnailUrl ? (
               <img
                 src={thumbnailUrl}
@@ -79,20 +84,16 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
                 />
                 <span className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">{author}</span>
               </div>
-              {isOwnPost ? (
-                <span className="font-body text-[0.65rem] text-muted-foreground">Your post</span>
-              ) : (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onLike?.();
-                  }}
-                  className="flex items-center gap-1 font-body text-[0.75rem] text-muted-foreground hover:text-accent transition-colors active:scale-95"
-                >
-                  <Heart className={`h-4 w-4 ${liked ? "fill-accent text-accent" : ""}`} />
-                  <span>{likeCount}</span>
-                </button>
-              )}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLike?.();
+                }}
+                className="flex items-center gap-1 font-body text-[0.75rem] text-muted-foreground hover:text-accent transition-colors active:scale-95"
+              >
+                <Heart className={`h-4 w-4 ${liked ? "fill-accent text-accent" : ""}`} />
+                <span>{likeCount}</span>
+              </button>
             </div>
           </div>
         </div>
