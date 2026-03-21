@@ -25,8 +25,11 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { currency, setCurrency } = useCurrency();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
