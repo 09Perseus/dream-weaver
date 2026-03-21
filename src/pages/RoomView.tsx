@@ -18,7 +18,9 @@ interface LocationState {
 export default function RoomView() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const { addItem } = useCart();
+  const { user } = useAuth();
 
   const navState = location.state as LocationState | null;
 
