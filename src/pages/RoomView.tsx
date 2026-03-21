@@ -24,6 +24,7 @@ export default function RoomView() {
   const location = useLocation();
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
 
   const navState = location.state as LocationState | null;
