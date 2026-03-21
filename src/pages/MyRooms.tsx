@@ -28,6 +28,15 @@ export default function MyRooms() {
   const [postDialogRoomId, setPostDialogRoomId] = useState<string | null>(null);
   const [unposting, setUnposting] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { theme } = useTheme();
+
+  const buttonColors = {
+    view: "#4A90D9",
+    edit: theme === "dark" ? "#C8B89A" : "#E16F24",
+    post: theme === "dark" ? "#2EA043" : "#0969DA",
+    unpost: theme === "dark" ? "#1F6E2E" : "#6E7781",
+    delete: "#E5534B",
+  };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
