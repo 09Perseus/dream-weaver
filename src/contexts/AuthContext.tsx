@@ -32,8 +32,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .eq("id", userId)
       .single();
     setProfile(data
-      ? { display_name: data.display_name, avatar_color: data.avatar_color ?? "#C8B89A", avatar_url: data.avatar_url ?? null }
-      : { display_name: null, avatar_color: "#C8B89A", avatar_url: null }
+      ? { display_name: data.display_name, avatar_color: data.avatar_color ?? null, avatar_url: data.avatar_url ?? null }
+      : { display_name: null, avatar_color: null, avatar_url: null }
     );
   };
 

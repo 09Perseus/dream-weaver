@@ -14,7 +14,7 @@ export default function UserAvatar({
   size = 36,
 }: UserAvatarProps) {
   const initial = (displayName?.[0] || email?.[0] || "?").toUpperCase();
-  const bg = avatarColor || "#C8B89A";
+  const bg = avatarColor || "hsl(var(--accent))";
 
   if (avatarUrl) {
     return (
