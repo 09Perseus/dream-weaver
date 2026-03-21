@@ -203,41 +203,45 @@ export default function MyRooms() {
                   <p className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">
                     {room.created_at ? format(new Date(room.created_at), "MMMM d, yyyy") : "Unknown date"}
                   </p>
-                  <div className={`grid gap-2 pt-1 ${room.is_copy ? 'grid-cols-3' : 'grid-cols-2'}`}>
-                    <Link to={`/room/${room.id}`}>
-                      <button className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]">
-                        VIEW
-                      </button>
-                    </Link>
-                    <Link to={`/room/${room.id}/edit`}>
-                      <button className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]">
-                        EDIT
-                      </button>
-                    </Link>
+                  <div
+                    className="flex items-center px-4 py-3 border-t border-border"
+                    style={{ justifyContent: room.is_copy ? "space-around" : "space-between" }}
+                  >
+                    <button
+                      onClick={() => navigate(`/room/${room.id}`)}
+                      title="View Room"
+                      className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
+                      style={{ background: "#4A90D9", border: "none" }}
+                    >
+                      <Eye size={16} color="white" />
+                    </button>
+                    <button
+                      onClick={() => navigate(`/room/${room.id}/edit`)}
+                      title="Edit Room"
+                      className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
+                      style={{ background: "#C8B89A", border: "none" }}
+                    >
+                      <Pencil size={16} color="#0F0E0C" />
+                    </button>
                     {!room.is_copy && (
-                      isPosted ? (
-                        <button
-                          onClick={() => handleUnpost(room.id)}
-                          disabled={unposting === room.id}
-                          className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer disabled:opacity-50 min-h-[44px]"
-                        >
-                          {unposting === room.id ? "…" : "UNPOST"}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setPostDialogRoomId(room.id)}
-                          className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer min-h-[44px]"
-                        >
-                          POST
-                        </button>
-                      )
+                      <button
+                        onClick={() => isPosted ? handleUnpost(room.id) : setPostDialogRoomId(room.id)}
+                        disabled={unposting === room.id}
+                        title={isPosted ? "Remove from Community" : "Post to Community"}
+                        className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
+                        style={{ background: isPosted ? "#6A8F6A" : "#7A6A9A", border: "none" }}
+                      >
+                        {isPosted ? <EyeOff size={16} color="white" /> : <Share2 size={16} color="white" />}
+                      </button>
                     )}
                     <button
                       onClick={() => handleDelete(room.id)}
                       disabled={deleting === room.id}
-                      className="w-full py-2 font-body text-[0.65rem] tracking-[0.08em] uppercase border border-destructive text-destructive hover:bg-destructive/10 transition-colors cursor-pointer disabled:opacity-50 min-h-[44px]"
+                      title="Delete Room"
+                      className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
+                      style={{ background: "#C0533A", border: "none" }}
                     >
-                      {deleting === room.id ? "…" : "DELETE"}
+                      <Trash2 size={16} color="white" />
                     </button>
                   </div>
                 </div>
