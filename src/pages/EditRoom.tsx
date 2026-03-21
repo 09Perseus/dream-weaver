@@ -39,6 +39,7 @@ export default function EditRoom() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const navState = location.state as LocationState | null;
+  const isMobile = useIsMobile();
 
   const [roomItems, setRoomItems] = useState<PlacedItem[]>(navState?.items ?? []);
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
@@ -52,6 +53,7 @@ export default function EditRoom() {
   const [pickerLoading, setPickerLoading] = useState(true);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
+  const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (navState?.items) return;
