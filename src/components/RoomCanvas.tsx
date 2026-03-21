@@ -130,17 +130,17 @@ function MovableFurniture({
   const groupRef = useRef<THREE.Group>(null);
   const isDragging = useRef(false);
   const dragOffset = useRef(new THREE.Vector3());
-  const intersection = useMemo(() => new THREE.Vector3(), []);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
+  const intersection = useMemo(() => new THREE.Vector3(), []);
   const { camera, gl, raycaster, pointer } = useThree();
 
-  // ✅ FIX 1 — only check isEditMode so drag works immediately after double click
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (!isEditMode) return;
     e.stopPropagation();
     isDragging.current = true;
-    gl.domElement.setPointerCapture(e.pointerId);
+
+    // Compute drag offset on the floor plane
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
     dragOffset.current.set(
@@ -150,23 +150,32 @@ function MovableFurniture({
     );
   };
 
-  const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
+  // Use useFrame to continuously update position while dragging
+  // This avoids the R3F onPointerMove problem where events stop
+  // firing when the pointer leaves the mesh bounding box
+  useFrame(() => {
     if (!isDragging.current || !isEditMode) return;
-    e.stopPropagation();
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
-    onPositionChange([
-      intersection.x - dragOffset.current.x,
-      0,
-      intersection.z - dragOffset.current.z,
-    ]);
-  };
+    const newX = intersection.x - dragOffset.current.x;
+    const newZ = intersection.z - dragOffset.current.z;
+    onPositionChange([newX, 0, newZ]);
+  });
 
-  const handlePointerUp = (e: ThreeEvent<PointerEvent>) => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    gl.domElement.releasePointerCapture(e.pointerId);
-  };
+  // Listen for pointerup on the canvas element so drag ends even if
+  // the pointer leaves the mesh
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const handleUp = () => {
+      isDragging.current = false;
+    };
+    canvas.addEventListener("pointerup", handleUp);
+    canvas.addEventListener("pointerleave", handleUp);
+    return () => {
+      canvas.removeEventListener("pointerup", handleUp);
+      canvas.removeEventListener("pointerleave", handleUp);
+    };
+  }, [gl]);
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
@@ -188,8 +197,6 @@ function MovableFurniture({
       position={furniture.position}
       rotation={furniture.rotation}
       onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
       onClick={handleClick}
     >
       {furniture.path && furniture.path !== "PENDING_UPLOAD" ? (
