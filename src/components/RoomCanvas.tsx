@@ -76,24 +76,20 @@ export interface FurnitureItem {
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
-  // Cache-bust to avoid stale LFS pointer responses
-  const cacheBustedPath = useMemo(() => {
-    const sep = path.includes('?') ? '&' : '?';
-    return `${path}${sep}_v=${Date.now()}`;
-  }, [path]);
+  const { scene } = useGLTF(path);
 
-  console.log("Loading GLB model:", cacheBustedPath);
-  const { scene } = useGLTF(cacheBustedPath);
-  const cloned = scene.clone();
+  const cloned = useMemo(() => {
+    const c = scene.clone(true);
+    const box = new THREE.Box3().setFromObject(c);
+    const size = box.getSize(new THREE.Vector3());
+    const longestSide = Math.max(size.x, size.y, size.z);
+    const scale = longestSide > 0 ? displaySize / longestSide : 1;
+    c.scale.setScalar(scale);
 
-  const box = new THREE.Box3().setFromObject(cloned);
-  const size = box.getSize(new THREE.Vector3());
-  const longestSide = Math.max(size.x, size.y, size.z);
-  const scale = longestSide > 0 ? displaySize / longestSide : 1;
-  cloned.scale.setScalar(scale);
-
-  const scaledBox = new THREE.Box3().setFromObject(cloned);
-  cloned.position.y -= scaledBox.min.y;
+    const scaledBox = new THREE.Box3().setFromObject(c);
+    c.position.y -= scaledBox.min.y;
+    return c;
+  }, [scene, displaySize]);
 
   return <primitive object={cloned} />;
 }
