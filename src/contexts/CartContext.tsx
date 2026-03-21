@@ -64,30 +64,28 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearTimeout(timer);
   }, [items]);
 
-  // Merge Supabase cart on sign-in
+  // One-time session check on mount — no auth listener to avoid conflicts with AuthContext
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          const { data } = await (supabase as any)
-            .from("carts")
-            .select("items")
-            .eq("user_id", session.user.id)
-            .maybeSingle();
-
-          if (data?.items && Array.isArray(data.items)) {
-            const supabaseItems = data.items as unknown as CartItem[];
-            skipSupabaseSync.current = true;
-            setItems((prev) => {
-              const supabaseIds = new Set(supabaseItems.map((i) => i.id));
-              const localOnly = prev.filter((i) => !supabaseIds.has(i.id));
-              return [...localOnly, ...supabaseItems];
-            });
-          }
-        }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        (supabase as any)
+          .from("carts")
+          .select("items")
+          .eq("user_id", session.user.id)
+          .maybeSingle()
+          .then(({ data }: { data: any }) => {
+            if (data?.items && Array.isArray(data.items)) {
+              const supabaseItems = data.items as unknown as CartItem[];
+              skipSupabaseSync.current = true;
+              setItems((prev) => {
+                const supabaseIds = new Set(supabaseItems.map((i) => i.id));
+                const localOnly = prev.filter((i) => !supabaseIds.has(i.id));
+                return [...localOnly, ...supabaseItems];
+              });
+            }
+          });
       }
-    );
-    return () => subscription.unsubscribe();
+    });
   }, []);
 
   const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
