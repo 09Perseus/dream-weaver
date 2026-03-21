@@ -352,7 +352,7 @@ export default function EditRoom() {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="font-body text-[0.8rem] text-foreground truncate">{detail?.name ?? item.id}</p>
-                        <p className="font-body text-[0.7rem] text-accent">{detail ? `$${detail.price.toLocaleString()}` : "—"}</p>
+                        <p className="font-body text-[0.7rem] text-accent">{detail ? formatPrice(detail.price) : "—"}</p>
                       </div>
                       {isSelected && (
                         <span className="font-body text-[0.6rem] tracking-[0.1em] uppercase text-accent shrink-0">Selected</span>
