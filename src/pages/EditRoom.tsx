@@ -48,6 +48,7 @@ export default function EditRoom() {
   const [pickerLoading, setPickerLoading] = useState(true);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
+  const [isCopy, setIsCopy] = useState(false);
   const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -55,8 +56,9 @@ export default function EditRoom() {
     if (!roomId) { setLoading(false); return; }
     const fetchRoom = async () => {
       try {
-        const { data: room, error } = await supabase.from("room_designs").select("*").eq("id", roomId).single();
+        const { data: room, error } = await supabase.from("room_designs").select("is_copy, user_id, description, items").eq("id", roomId).single();
         if (error || !room) { setLoading(false); return; }
+        setIsCopy(!!room.is_copy);
         setDescription(room.description ?? "");
         const items = (room.items as any as PlacedItem[]) ?? [];
         setRoomItems(items);
@@ -235,19 +237,21 @@ export default function EditRoom() {
           </Button>
         )}
         <div className="flex-1" />
-        <Button
-          variant="amber-outline"
-          size="sm"
-          disabled={posted}
-          className="min-h-[44px]"
-          onClick={() => {
-            if (!user) { toast({ title: "Sign in required", variant: "destructive" }); return; }
-            setPostDialogOpen(true);
-          }}
-        >
-          <Share2 className="h-4 w-4" />
-          <span className="hidden md:inline">{posted ? "Posted ✓" : "Post to Community"}</span>
-        </Button>
+        {!isCopy && (
+          <Button
+            variant="amber-outline"
+            size="sm"
+            disabled={posted}
+            className="min-h-[44px]"
+            onClick={() => {
+              if (!user) { toast({ title: "Sign in required", variant: "destructive" }); return; }
+              setPostDialogOpen(true);
+            }}
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="hidden md:inline">{posted ? "Posted ✓" : "Post to Community"}</span>
+          </Button>
+        )}
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row">
