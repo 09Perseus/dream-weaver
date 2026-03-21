@@ -1,5 +1,6 @@
 import type { FurnitureDetail } from "@/lib/edgeFunctions";
 import { useCart } from "@/contexts/CartContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
