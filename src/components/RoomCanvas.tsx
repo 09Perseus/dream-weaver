@@ -492,16 +492,6 @@ export default function RoomCanvas({
     }
   }, [items, furniture]);
 
-  // Clear useGLTF cache for all furniture URLs to avoid stale LFS pointer responses
-  useEffect(() => {
-    if (furniture && furniture.length > 0) {
-      furniture.forEach((item) => {
-        if (item.file_url && item.file_url !== 'PENDING_UPLOAD') {
-          try { useGLTF.clear(item.file_url); } catch { /* ignore */ }
-        }
-      });
-    }
-  }, [furniture]);
 
   // Viewer mode: convert PlacedItem[] + FurnitureDetail[] → FurnitureItem[]
   const viewerFurnitures: FurnitureItem[] = isViewerMode
