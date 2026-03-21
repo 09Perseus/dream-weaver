@@ -140,6 +140,12 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
     : [];
 
   const activeFurnitures = isViewerMode ? viewerFurnitures : generatedFurnitures;
+
+  // Load wall texture
+  useEffect(() => {
+    new THREE.TextureLoader().load(
+      '/furnitures/wallpapers/japanese_bamboo_pattern.png',
+      (texture) => {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         texture.repeat.set(4, 4);
