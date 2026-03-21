@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, LayoutGrid, ShoppingBag, Pencil, LogOut, Trash2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency, CURRENCIES, type CurrencyCode } from "@/contexts/CurrencyContext";
 import UserAvatar from "@/components/UserAvatar";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import DeleteAccountDialog from "@/components/DeleteAccountDialog";
