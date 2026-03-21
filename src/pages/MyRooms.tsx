@@ -239,7 +239,7 @@ export default function MyRooms() {
                       disabled={deleting === room.id}
                       title="Delete Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
-                      style={{ background: "#C0533A", border: "none" }}
+                      style={{ background: "hsl(var(--destructive))", border: "none" }}
                     >
                       <Trash2 size={16} color="white" />
                     </button>
