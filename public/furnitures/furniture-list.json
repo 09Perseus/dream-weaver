@@ -390,37 +390,6 @@
       "description": "Bring a fresh, natural touch to your space with this stylish potted greenery. Featuring lush, vibrant leaves set in a sleek rectangular planter, it adds a modern decorative accent to homes, offices, or patios. Perfect for creating a calm, inviting atmosphere with minimal effort."
     },
     {
-      "name": "ikea_lamp",
-      "path": "Lamps/ikea_lamp.glb",
-      "price": 129.99,
-      "currency": "USD",
-      "keywords": [
-        "floor lamp",
-        "standing lamp",
-        "tall lamp",
-        "modern floor lamp",
-        "classic floor lamp",
-        "minimalist lamp",
-        "contemporary floor lamp",
-        "traditional floor lamp",
-        "elegant lamp",
-        "slim floor lamp",
-        "metal floor lamp",
-        "brass floor lamp",
-        "vintage style lamp",
-        "white lampshade",
-        "fabric shade lamp",
-        "tapered shade lamp",
-        "ambient lighting lamp",
-        "soft light floor lamp",
-        "warm lighting lamp",
-        "living room floor lamp",
-        "bedroom floor lamp",
-        "reading lamp"
-      ],
-      "description": "A sleek and elegant floor lamp featuring a slim metallic stand and a classic tapered fabric shade. Its minimalist design adds a warm, ambient glow to any living space, making it perfect for modern or traditional interiors."
-    },
-    {
       "name": "desk_lamp",
       "path": "Lamps/desk_lamp.glb",
       "price": 89.99,
