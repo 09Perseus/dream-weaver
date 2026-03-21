@@ -116,11 +116,15 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
           const x = (i % cols) * spacing - (cols * spacing) / 2 + (spacing / 2);
           const z = Math.floor(i / cols) * spacing - 10;
 
+          const rawScale = Number(item.scale_factor) || 1;
+          const maxModelScale = 0.35;
+          const adjustedScale = Math.min(rawScale, maxModelScale);
+
           return {
             id: item.name,
             path: item.path,
             position: [x, floorY, z] as [number, number, number],
-            scale: item.scale_factor,
+            scale: adjustedScale,
           };
         });
 
