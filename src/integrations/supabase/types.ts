@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      carts: {
+        Row: {
+          id: string
+          items: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          items?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          items?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_posts: {
         Row: {
           created_at: string | null
@@ -168,35 +189,76 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_color: string | null
+          avatar_url: string | null
+          display_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_color?: string | null
+          avatar_url?: string | null
+          display_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_color?: string | null
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       room_designs: {
         Row: {
           created_at: string | null
           description: string | null
           id: string
+          is_copy: boolean | null
           is_shared: boolean
           items: Json | null
           share_token: string | null
+          source_room_id: string | null
+          thumbnail_url: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_copy?: boolean | null
           is_shared?: boolean
           items?: Json | null
           share_token?: string | null
+          source_room_id?: string | null
+          thumbnail_url?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_copy?: boolean | null
           is_shared?: boolean
           items?: Json | null
           share_token?: string | null
+          source_room_id?: string | null
+          thumbnail_url?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "room_designs_source_room_id_fkey"
+            columns: ["source_room_id"]
+            isOneToOne: false
+            referencedRelation: "room_designs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
