@@ -72,6 +72,7 @@ export default function EditRoom() {
         if (error || !room) { setLoading(false); return; }
         setIsCopy(!!room.is_copy);
         setDescription(room.description ?? "");
+        setRoomName(room.description || "My Room");
         const items = (room.items as any as PlacedItem[]) ?? [];
         setRoomItems(items);
         const itemIds = items.map((i) => i.id);
