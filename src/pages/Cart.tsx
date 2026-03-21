@@ -44,7 +44,12 @@ export default function Cart() {
           return;
         }
 
-        const payjpInstance = (window as any).Payjp(key);
+        // Reuse existing instance if already created (React strict mode / HMR)
+        if (!globalPayjp) {
+          globalPayjp = (window as any).Payjp(key);
+        }
+        const payjpInstance = globalPayjp;
+
         const elements = payjpInstance.elements();
         const card = elements.create("card", {
           style: {
