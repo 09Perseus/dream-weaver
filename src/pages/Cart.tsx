@@ -1,7 +1,10 @@
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Minus, Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
+import { createCheckout } from "@/lib/edgeFunctions";
+import { toast } from "@/hooks/use-toast";
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
