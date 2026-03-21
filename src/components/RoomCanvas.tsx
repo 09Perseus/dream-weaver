@@ -86,10 +86,7 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
 }
 
 // ── Model Error Boundary ──────────────────────────────────────────────────────
-class ModelErrorBoundary extends Component<
-  { children: ReactNode; itemId: string },
-  { hasError: boolean }
-> {
+class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() {
     return { hasError: true };
@@ -140,11 +137,7 @@ function MovableFurniture({
     isDragging.current = true;
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
-    dragOffset.current.set(
-      intersection.x - furniture.position[0],
-      0,
-      intersection.z - furniture.position[2]
-    );
+    dragOffset.current.set(intersection.x - furniture.position[0], 0, intersection.z - furniture.position[2]);
   };
 
   useFrame(() => {
@@ -158,7 +151,9 @@ function MovableFurniture({
 
   useEffect(() => {
     const canvas = gl.domElement;
-    const handleUp = () => { isDragging.current = false; };
+    const handleUp = () => {
+      isDragging.current = false;
+    };
     canvas.addEventListener("pointerup", handleUp);
     canvas.addEventListener("pointerleave", handleUp);
     return () => {
@@ -205,10 +200,7 @@ function MovableFurniture({
       ) : (
         <mesh castShadow receiveShadow>
           <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-          <meshStandardMaterial
-            color={furniture.color || "white"}
-            emissive={isSelected ? "#333333" : "#000000"}
-          />
+          <meshStandardMaterial color={furniture.color || "white"} emissive={isSelected ? "#333333" : "#000000"} />
         </mesh>
       )}
 
@@ -240,9 +232,7 @@ function ItemListRow({
   onClick: () => void;
 }) {
   const displayName =
-    furniture.name ??
-    furniture.path?.split("/").pop()?.replace(".glb", "").replace(/_/g, " ") ??
-    "Furniture";
+    furniture.name ?? furniture.path?.split("/").pop()?.replace(".glb", "").replace(/_/g, " ") ?? "Furniture";
 
   return (
     <button
@@ -259,9 +249,7 @@ function ItemListRow({
         <p className="font-body text-[0.7rem] text-accent">$1.00</p>
       </div>
       {isActive && (
-        <span className="font-body text-[0.6rem] tracking-[0.1em] uppercase text-accent shrink-0">
-          Selected
-        </span>
+        <span className="font-body text-[0.6rem] tracking-[0.1em] uppercase text-accent shrink-0">Selected</span>
       )}
     </button>
   );
@@ -280,9 +268,7 @@ function InfoCard({
   onBack: () => void;
 }) {
   const displayName =
-    furniture.name ??
-    furniture.path?.split("/").pop()?.replace(".glb", "").replace(/_/g, " ") ??
-    "Furniture";
+    furniture.name ?? furniture.path?.split("/").pop()?.replace(".glb", "").replace(/_/g, " ") ?? "Furniture";
 
   const size = furniture.displaySize ?? 1;
 
@@ -491,9 +477,7 @@ export default function RoomCanvas({
     if (externalOnPositionChange) {
       externalOnPositionChange(id, [newPos[0], 0, newPos[2]]);
     } else {
-      setFurnitures((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f))
-      );
+      setFurnitures((prev) => prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f)));
     }
   };
 
@@ -604,8 +588,8 @@ export default function RoomCanvas({
             shadows
             // ✅ DOLLHOUSE CAMERA — high above, angled down, looking at room center
             camera={{
-              position: [0, 12, 10],   // directly above and slightly in front
-              fov: 45,                  // narrower FOV for less distortion
+              position: [10, 12, 10], // directly above and slightly in front
+              fov: 45, // narrower FOV for less distortion
               near: 0.1,
               far: 100,
             }}
@@ -638,22 +622,12 @@ export default function RoomCanvas({
           >
             {/* Warm ambient + soft directional light from above */}
             <ambientLight intensity={0.7} />
-            <directionalLight
-              position={[0, 10, 5]}
-              intensity={1.2}
-              castShadow
-              shadow-mapSize={[1024, 1024]}
-            />
+            <directionalLight position={[0, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
             {/* Fill light from the open front so interior is well lit */}
             <directionalLight position={[0, 4, 8]} intensity={0.5} />
 
             {/* ── Floor ───────────────────────────────────────────────── */}
-            <mesh
-              position={[0, 0, 0]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              receiveShadow
-              raycast={() => null}
-            >
+            <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
               <planeGeometry args={[roomSize, roomSize]} />
               <meshStandardMaterial color="#f0ece4" />
             </mesh>
@@ -672,31 +646,15 @@ export default function RoomCanvas({
             </mesh>
 
             {/* ── Left wall ───────────────────────────────────────────── */}
-            <mesh
-              position={[-halfW, halfH, 0]}
-              rotation={[0, Math.PI / 2, 0]}
-              raycast={() => null}
-            >
+            <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial
-                map={wallTexture ?? undefined}
-                color="#faf7f2"
-                side={THREE.DoubleSide}
-              />
+              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
             </mesh>
 
             {/* ── Right wall ──────────────────────────────────────────── */}
-            <mesh
-              position={[halfW, halfH, 0]}
-              rotation={[0, -Math.PI / 2, 0]}
-              raycast={() => null}
-            >
+            <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
               <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial
-                map={wallTexture ?? undefined}
-                color="#faf7f2"
-                side={THREE.DoubleSide}
-              />
+              <meshStandardMaterial map={wallTexture ?? undefined} color="#faf7f2" side={THREE.DoubleSide} />
             </mesh>
 
             {/* ── NO front wall — open face of the dollhouse ──────────── */}
@@ -725,9 +683,9 @@ export default function RoomCanvas({
               makeDefault
               enableZoom
               enabled={!editId}
-              target={[0, 0.5, 0]}       // look slightly above floor center
-              maxPolarAngle={Math.PI / 2.2}  // prevent going below floor level
-              minPolarAngle={Math.PI / 6}    // prevent going completely overhead
+              target={[0, 0.5, 0]} // look slightly above floor center
+              maxPolarAngle={Math.PI / 2.2} // prevent going below floor level
+              minPolarAngle={Math.PI / 6} // prevent going completely overhead
               maxDistance={20}
               minDistance={4}
             />
