@@ -158,7 +158,7 @@ export default function Cart() {
       if (result?.error) {
         toast({
           title: "Card error",
-          description: result.error.message,
+          description: ensureEnglishError(result.error.message),
           variant: "destructive",
         });
         setLoading(false);
