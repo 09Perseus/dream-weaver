@@ -105,7 +105,8 @@ function MovableFurniture({
 }
 
 // ── RoomCanvas ────────────────────────────────────────────────────────────────
-export default function RoomCanvas({ className = '' }: RoomCanvasProps) {
+export default function RoomCanvas({ className = '', items, furniture }: RoomCanvasProps) {
+  const isViewerMode = !!(items && furniture);
   const roomSize = 7;
   const roomHeight = 3.5;
   const halfW = roomSize / 2;
@@ -116,7 +117,7 @@ export default function RoomCanvas({ className = '' }: RoomCanvasProps) {
   const [description, setDescription] = useState('');
 
   const {
-    furnitures,
+    furnitures: generatedFurnitures,
     setFurnitures,
     isGenerating,
     loadingMessage,
@@ -124,11 +125,21 @@ export default function RoomCanvas({ className = '' }: RoomCanvasProps) {
     generate,
   } = useGenerateRoom({ roomSize, roomHeight });
 
-  // Load wall texture
-  useEffect(() => {
-    new THREE.TextureLoader().load(
-      '/furnitures/wallpapers/japanese_bamboo_pattern.png',
-      (texture) => {
+  // In viewer mode, convert PlacedItem[] + FurnitureDetail[] → FurnitureItem[]
+  const viewerFurnitures: FurnitureItem[] = isViewerMode
+    ? items.map((item) => {
+        const detail = furniture.find((f) => f.id === item.id);
+        return {
+          id: `${item.id}_${item.x}_${item.z}`,
+          position: [item.x, 0, item.z] as [number, number, number],
+          rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
+          path: detail?.file_url ?? undefined,
+          displaySize: detail ? getDisplaySize(detail.category) : 1,
+        };
+      })
+    : [];
+
+  const activeFurnitures = isViewerMode ? viewerFurnitures : generatedFurnitures;
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         texture.repeat.set(4, 4);
