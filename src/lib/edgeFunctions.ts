@@ -2,20 +2,33 @@ import { supabase } from "@/integrations/supabase/client";
 
 // ── Types ──────────────────────────────────────────────
 
-export interface RoomItem {
-  furniture_id: string;
-  name: string;
+export interface PlacedItem {
+  id: string;
   x: number;
   y: number;
   z: number;
-  rotation_y: number;
+  rotation: number;
+  scale: number;
+}
+
+export interface FurnitureDetail {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  file_url: string | null;
+  thumbnail_url: string | null;
+  real_width: number | null;
+  real_depth: number | null;
+  real_height: number | null;
+  floor_offset: number | null;
+  style_tags: string[] | null;
+  buy_url: string | null;
 }
 
 export interface GenerateRoomResponse {
-  room: {
-    description: string;
-    items: RoomItem[];
-  };
+  items: PlacedItem[];
+  furniture: FurnitureDetail[];
 }
 
 export interface CheckoutItem {
