@@ -421,10 +421,8 @@ export default function Index() {
         </div>
       </section>
 
-      <Divider />
-
       {/* ═══ FEATURE 2 — Shop the Room ═══ */}
-      <section className="min-h-[80vh] flex items-center">
+      <section className="feature-section feature-pattern-2 min-h-[80vh] flex items-center">
         <div className="container py-20 md:py-28">
           <RevealSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
