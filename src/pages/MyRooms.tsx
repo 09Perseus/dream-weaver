@@ -14,6 +14,7 @@ interface Room {
   is_shared: boolean;
   is_copy?: boolean;
   source_room_id?: string | null;
+  thumbnail_url?: string | null;
 }
 
 export default function MyRooms() {
@@ -171,15 +172,28 @@ export default function MyRooms() {
                 className="border border-border bg-surface animate-reveal-up overflow-hidden min-w-0"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
-                <div className="relative h-[200px] bg-surface flex items-center justify-center border-b border-border">
+                <div className="relative h-[200px] bg-surface border-b border-border overflow-hidden">
                   {room.is_copy && (
                     <span className="absolute top-0 left-0 z-10 font-body text-[0.6rem] tracking-[0.1em] uppercase bg-surface border border-border text-muted-foreground px-2 py-0.5">
                       COPIED
                     </span>
                   )}
-                  <p className="font-heading italic text-[0.85rem] text-muted-foreground px-6 text-center truncate">
-                    {displayDesc}
-                  </p>
+                  {(room as any).thumbnail_url ? (
+                    <img
+                      src={(room as any).thumbnail_url}
+                      alt={displayDesc}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center flex-col gap-2">
+                      <span className="font-heading italic text-[0.85rem] text-muted-foreground px-6 text-center truncate">
+                        {displayDesc}
+                      </span>
+                      <span className="font-body text-[0.65rem] tracking-[0.1em] uppercase text-muted-foreground opacity-50">
+                        Preview pending
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-4 space-y-3">
                   <h3 className="font-heading text-[1.1rem] font-normal text-foreground truncate">

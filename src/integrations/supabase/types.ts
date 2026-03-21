@@ -223,6 +223,7 @@ export type Database = {
           items: Json | null
           share_token: string | null
           source_room_id: string | null
+          thumbnail_url: string | null
           user_id: string
         }
         Insert: {
@@ -234,6 +235,7 @@ export type Database = {
           items?: Json | null
           share_token?: string | null
           source_room_id?: string | null
+          thumbnail_url?: string | null
           user_id: string
         }
         Update: {
@@ -245,6 +247,7 @@ export type Database = {
           items?: Json | null
           share_token?: string | null
           source_room_id?: string | null
+          thumbnail_url?: string | null
           user_id?: string
         }
         Relationships: [
