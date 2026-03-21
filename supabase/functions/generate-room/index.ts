@@ -82,6 +82,13 @@ serve(async (req) => {
 
     console.log(`Fetched ${furnitureItems.length} furniture items`);
 
+    if (furnitureItems.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No furniture items in the catalogue. Please seed the furniture_items table first." }),
+        { status: 400, headers: jsonHeaders }
+      );
+    }
+
     // Build prompt
     const catalogue = JSON.stringify(
       furnitureItems.map((f) => ({
