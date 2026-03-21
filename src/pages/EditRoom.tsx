@@ -174,17 +174,22 @@ export default function EditRoom() {
   const pickerContent = (
     <>
       <div className="flex flex-wrap gap-1 p-3 border-b border-border">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 min-h-[44px] ${
-              activeCategory === cat ? "border-accent text-accent" : "border-border text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+        {Object.entries(CATEGORY_MAP).map(([label, value]) => {
+          const count = value === ""
+            ? pickerItems.length
+            : pickerItems.filter((i) => i.category?.toLowerCase() === value).length;
+          return (
+            <button
+              key={label}
+              onClick={() => setActiveCategory(label)}
+              className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 min-h-[44px] ${
+                activeCategory === label ? "border-accent text-accent" : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label} ({count})
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex-1 overflow-y-auto">
