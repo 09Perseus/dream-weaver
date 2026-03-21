@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Profile {
   display_name: string | null;
   avatar_color: string;
+  avatar_url: string | null;
 }
 
 interface AuthContextType {
@@ -27,10 +28,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("display_name, avatar_color")
+      .select("display_name, avatar_color, avatar_url")
       .eq("id", userId)
       .single();
-    setProfile(data ? { display_name: data.display_name, avatar_color: data.avatar_color ?? "#C8B89A" } : { display_name: null, avatar_color: "#C8B89A" });
+    setProfile(data
+      ? { display_name: data.display_name, avatar_color: data.avatar_color ?? "#C8B89A", avatar_url: data.avatar_url ?? null }
+      : { display_name: null, avatar_color: "#C8B89A", avatar_url: null }
+    );
   };
 
   const refreshProfile = async () => {
