@@ -77,26 +77,50 @@ export default function RoomView() {
 
   const handleAddAll = () => { furniture.forEach(handleAddItem); };
 
+  const performCopy = async () => {
+    const { data, error } = await (supabase as any)
+      .from("room_designs")
+      .insert({
+        user_id: user!.id,
+        description,
+        items: items as any,
+        share_token: crypto.randomUUID(),
+        source_room_id: id,
+        is_copy: true,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    toast({ title: "Room copied to your account!" });
+    navigate(`/room/${data.id}/edit`);
+  };
+
   const handleCopyRoom = async () => {
     if (!user) {
       toast({ title: "Sign in to copy this room", variant: "destructive" });
       return;
     }
+    if (copying) return;
     setCopying(true);
     try {
-      const { data, error } = await supabase
+      // Check for existing copy
+      const { data: existing } = await (supabase as any)
         .from("room_designs")
-        .insert({
-          user_id: user.id,
-          description,
-          items: items as any,
-          share_token: crypto.randomUUID(),
-        })
         .select("id")
-        .single();
-      if (error) throw error;
-      toast({ title: "Room copied to your account!" });
-      navigate(`/room/${data.id}/edit`);
+        .eq("user_id", user.id)
+        .eq("source_room_id", id)
+        .maybeSingle();
+
+      if (existing) {
+        toast({
+          title: "You already have a copy of this room",
+          description: "Check My Rooms, or click the button again to create another copy.",
+        });
+        setCopying(false);
+        return;
+      }
+
+      await performCopy();
     } catch (err) {
       console.error("Copy room error:", err);
       toast({ title: "Failed to copy room", variant: "destructive" });

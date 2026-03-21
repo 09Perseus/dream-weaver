@@ -154,9 +154,11 @@ export default function MyRooms() {
                 </div>
                 <div className="p-4 space-y-3">
                   <h3 className="font-heading text-[1.1rem] font-normal text-foreground">
-                    {room.description
-                      ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
-                      : "Untitled Room"}
+                    {room.is_copy
+                      ? `Copy of ${(room.description ?? "Untitled Room").slice(0, 50)}`
+                      : room.description
+                        ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
+                        : "Untitled Room"}
                   </h3>
                   <p className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">
                     {room.created_at ? format(new Date(room.created_at), "MMMM d, yyyy") : "Unknown date"}
