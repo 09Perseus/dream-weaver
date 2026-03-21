@@ -33,17 +33,6 @@ export default function Community() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("Community useEffect fired");
-    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL ? "SET" : "MISSING");
-    console.log("Supabase Key:", import.meta.env.VITE_SUPABASE_ANON_KEY ? "SET" : "MISSING");
-
-    supabase
-      .from("community_posts")
-      .select("count", { count: "exact", head: true })
-      .then(({ count, error: countErr }) => {
-        console.log("Connection test - count:", count, "error:", countErr);
-      });
-
     setLoading(true);
     setError(null);
 
@@ -52,31 +41,22 @@ export default function Community() {
       setError("Loading timed out. Please refresh the page.");
     }, 8000);
 
-    const fetchPosts = async () => {
-      try {
-        const { data, error: fetchErr } = await supabase
-          .from("community_posts")
-          .select("*")
-          .eq("is_visible", true)
-          .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
-          .limit(12);
-
-        if (fetchErr) {
-          console.error("Community fetch error:", fetchErr);
-          setError("Failed to load: " + fetchErr.message);
-          return;
-        }
-
-        setPosts((data as unknown as CommunityPost[]) ?? []);
-      } catch (err: any) {
-        console.error("Unexpected community error:", err);
-        setError("Unexpected error: " + err.message);
-      } finally {
+    supabase
+      .from("community_posts")
+      .select("*")
+      .eq("is_visible", true)
+      .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
+      .limit(12)
+      .then(({ data, error: fetchErr }) => {
         clearTimeout(timeout);
+        console.log("Community posts:", data?.length, fetchErr);
+        if (fetchErr) {
+          setError("Failed to load: " + fetchErr.message);
+        } else {
+          setPosts((data as unknown as CommunityPost[]) ?? []);
+        }
         setLoading(false);
-      }
-    };
-    fetchPosts();
+      });
 
     return () => clearTimeout(timeout);
   }, [activeFilter]);
