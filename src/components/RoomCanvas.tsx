@@ -518,11 +518,12 @@ export default function RoomCanvas({
         const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
         const fileUrl = detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
                           ? detail.file_url : undefined;
-        console.log("Model path for", item.id, ":", fileUrl);
+        const clampedX = Math.max(-4, Math.min(4, item.x));
+        const clampedZ = Math.max(-4, Math.min(4, item.z));
         return {
           id:          item.id,
           name:        detail?.name,
-          position:    [item.x, 0, item.z] as [number, number, number],
+          position:    [clampedX, 0, clampedZ] as [number, number, number],
           rotation:    [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
           path:        fileUrl,
           displaySize: fileUrl
