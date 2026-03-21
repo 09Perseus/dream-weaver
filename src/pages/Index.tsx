@@ -207,7 +207,6 @@ export default function Index() {
               id={post.id}
               title={post.title}
               author={post.author}
-              authorInitial={post.authorInitial}
               thumbnailUrl={post.thumbnailUrl}
               likeCount={post.likeCount}
               delay={100 + i * 80}
