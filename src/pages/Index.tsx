@@ -380,7 +380,7 @@ export default function Index() {
       <Divider />
 
       {/* ═══ FEATURE 1 — AI Room Generator ═══ */}
-      <section className="min-h-[80vh] flex items-center">
+      <section className="feature-section feature-pattern-1 min-h-[80vh] flex items-center">
         <div className="container py-20 md:py-28">
           <RevealSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
