@@ -76,7 +76,7 @@ export interface FurnitureItem {
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
-  const { scene } = useGLTF(`/furnitures/${path}`);
+  const { scene } = useGLTF(path.startsWith('/') ? path : `/furnitures/${path}`);
   const cloned = scene.clone();
 
   const box = new THREE.Box3().setFromObject(cloned);
