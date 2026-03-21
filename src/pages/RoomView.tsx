@@ -55,6 +55,7 @@ export default function RoomView() {
 
         setDescription(room.description ?? "");
         setRoomOwnerId(room.user_id);
+        setRoomIsCopy(!!room.is_copy);
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
         setItems(roomItems);
 
