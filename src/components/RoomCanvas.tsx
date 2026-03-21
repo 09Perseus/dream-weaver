@@ -1,6 +1,6 @@
 
-import { useState, useRef, useEffect, useMemo, Suspense, Component, type ReactNode } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { useState, useRef, useEffect, useMemo, useCallback, Suspense, Component, type ReactNode } from "react";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
