@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Plus, Share2, Pencil, Loader2, Check } from "lucide-react";
+import { Plus, Pencil, Check, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
@@ -32,17 +32,10 @@ export default function RoomView() {
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
 
-  // Check if already posted
   useEffect(() => {
     if (!id || !user) return;
     const checkPosted = async () => {
-      const { data } = await supabase
-        .from("community_posts")
-        .select("id")
-        .eq("room_design_id", id)
-        .eq("user_id", user.id)
-        .eq("is_visible", true)
-        .maybeSingle();
+      const { data } = await supabase.from("community_posts").select("id").eq("room_design_id", id).eq("user_id", user.id).eq("is_visible", true).maybeSingle();
       if (data) setPosted(true);
     };
     checkPosted();
@@ -50,24 +43,12 @@ export default function RoomView() {
 
   useEffect(() => {
     if (navState?.items) return;
-    if (!id || id === "new") {
-      setLoading(false);
-      return;
-    }
+    if (!id || id === "new") { setLoading(false); return; }
 
     const fetchRoom = async () => {
       try {
-        const { data: room, error } = await supabase
-          .from("room_designs")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (error || !room) {
-          console.error("Failed to fetch room:", error);
-          setLoading(false);
-          return;
-        }
+        const { data: room, error } = await supabase.from("room_designs").select("*").eq("id", id).single();
+        if (error || !room) { setLoading(false); return; }
 
         setDescription(room.description ?? "");
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
@@ -75,14 +56,8 @@ export default function RoomView() {
 
         const itemIds = roomItems.map((i) => i.id);
         if (itemIds.length > 0) {
-          const { data: furnitureData, error: fErr } = await supabase
-            .from("furniture_items")
-            .select("*")
-            .in("id", itemIds);
-
-          if (!fErr && furnitureData) {
-            setFurniture(furnitureData as unknown as FurnitureDetail[]);
-          }
+          const { data: furnitureData } = await supabase.from("furniture_items").select("*").in("id", itemIds);
+          if (furnitureData) setFurniture(furnitureData as unknown as FurnitureDetail[]);
         }
       } catch (err) {
         console.error("Error fetching room:", err);
@@ -90,156 +65,108 @@ export default function RoomView() {
         setLoading(false);
       }
     };
-
     fetchRoom();
   }, [id, navState]);
 
   const handleAddItem = (item: FurnitureDetail) => {
-    addItem({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      thumbnailUrl: item.thumbnail_url ?? "",
-    });
+    addItem({ id: item.id, name: item.name, price: item.price, thumbnailUrl: item.thumbnail_url ?? "" });
   };
 
-  const handleAddAll = () => {
-    furniture.forEach(handleAddItem);
-  };
+  const handleAddAll = () => { furniture.forEach(handleAddItem); };
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="text-center space-y-4 animate-fade-in">
-          <Loader2 className="h-10 w-10 text-amber animate-spin mx-auto" />
-          <p className="text-muted-foreground">Loading room...</p>
+      <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center">
+        <div className="h-px w-32 bg-border overflow-hidden">
+          <div className="h-full w-1/3 bg-accent animate-line-progress" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col lg:flex-row">
+    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
       {/* Canvas */}
       <div className="flex-1 p-4 lg:p-6">
-        <RoomCanvas
-          className="w-full h-[50vh] lg:h-[calc(100vh-7rem)]"
-          items={items}
-          furniture={furniture}
-        />
+        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} />
       </div>
 
       {/* Sidebar */}
-      <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-border/50 p-6 space-y-6 animate-reveal-up">
-        <div>
-          <h2 className="text-xl font-semibold mb-1">Generated Room</h2>
-          <p className="text-sm text-muted-foreground">
-            {description || "Your custom design"}
-          </p>
+      <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-border bg-surface">
+        <div className="p-6 border-b border-border">
+          <h2 className="font-heading text-[1.5rem] font-normal mb-1">Generated Room</h2>
+          <p className="font-body text-[0.75rem] text-muted-foreground">{description || "Your custom design"}</p>
         </div>
 
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+        <div className="p-6 border-b border-border">
+          <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground mb-4">
             Furniture in this room
           </h3>
           {furniture.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No furniture items yet
-            </p>
+            <p className="font-body text-[0.75rem] text-muted-foreground">No furniture items yet</p>
           ) : (
-            <div className="space-y-2">
+            <div>
               {furniture.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-surface border border-border/50 hover:border-amber/20 transition-colors"
-                >
+                <div key={item.id} className="flex items-center gap-3 py-4 border-b border-border last:border-b-0">
                   {item.thumbnail_url && item.thumbnail_url !== "PENDING_UPLOAD" ? (
-                    <img
-                      src={item.thumbnail_url}
-                      alt={item.name}
-                      className="h-12 w-12 rounded-md object-cover bg-muted"
-                    />
+                    <img src={item.thumbnail_url} alt={item.name} className="h-12 w-12 object-cover bg-surface flex-shrink-0" />
                   ) : (
-                    <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">
-                      3D
+                    <div className="h-12 w-12 bg-surface border border-border flex items-center justify-center flex-shrink-0">
+                      <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.name}</p>
-                    <p className="text-sm text-amber font-semibold">
-                      ${item.price.toLocaleString()}
-                    </p>
+                    <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
+                    <p className="font-body text-[0.75rem] text-accent">${item.price.toLocaleString()}</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                  <button
                     onClick={() => handleAddItem(item)}
-                    className="h-8 w-8 shrink-0"
+                    className="font-body text-[0.65rem] tracking-[0.1em] uppercase text-accent hover:underline shrink-0"
                   >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                    ADD →
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {furniture.length > 0 && (
-          <Button variant="amber" className="w-full" onClick={handleAddAll}>
-            <ShoppingCart className="h-4 w-4" />
-            Add All to Cart
-          </Button>
-        )}
+        <div className="p-6 space-y-3">
+          {furniture.length > 0 && (
+            <Button variant="amber" className="w-full" onClick={handleAddAll}>
+              Add All to Cart
+            </Button>
+          )}
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => {
-              if (!user) {
-                toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" });
-                return;
-              }
-              navigate(`/room/${id}/edit`);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-            Edit Room
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1"
-            disabled={posted}
-            onClick={() => {
-              if (!user) {
-                toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" });
-                return;
-              }
-              setPostDialogOpen(true);
-            }}
-          >
-            {posted ? (
-              <>
-                <Check className="h-4 w-4" />
-                Posted ✓
-              </>
-            ) : (
-              <>
-                <Share2 className="h-4 w-4" />
-                Post
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                if (!user) { toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" }); return; }
+                navigate(`/room/${id}/edit`);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1"
+              disabled={posted}
+              onClick={() => {
+                if (!user) { toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" }); return; }
+                setPostDialogOpen(true);
+              }}
+            >
+              {posted ? <><Check className="h-4 w-4" />Posted ✓</> : <><Share2 className="h-4 w-4" />Post</>}
+            </Button>
+          </div>
         </div>
       </aside>
 
       {id && (
-        <PostToCommunityDialog
-          open={postDialogOpen}
-          onOpenChange={setPostDialogOpen}
-          roomId={id}
-          onPosted={() => setPosted(true)}
-        />
+        <PostToCommunityDialog open={postDialogOpen} onOpenChange={setPostDialogOpen} roomId={id} onPosted={() => setPosted(true)} />
       )}
     </div>
   );
