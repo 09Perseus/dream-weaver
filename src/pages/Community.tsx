@@ -1,13 +1,162 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import CommunityCard from "@/components/CommunityCard";
-import { mockCommunityPosts } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const filters = ["Most Recent", "Most Liked"];
 const styleTags = ["Minimal", "Japanese", "Scandinavian", "Industrial", "Bohemian", "Modern"];
 
+interface CommunityPost {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  like_count: number;
+  user_id: string;
+  style_tags: string[] | null;
+  created_at: string | null;
+}
+
 export default function Community() {
+  const { user } = useAuth();
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState("Most Recent");
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch posts
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const { data, error } = await supabase
+        .from("community_posts")
+        .select("*")
+        .eq("is_visible", true)
+        .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false });
+
+      if (error) {
+        console.error("Failed to fetch posts:", error);
+      } else {
+        setPosts(data ?? []);
+      }
+      setLoading(false);
+    };
+    fetchPosts();
+  }, [activeFilter]);
+
+  // Fetch user's likes
+  useEffect(() => {
+    if (!user) {
+      setLikedIds(new Set());
+      return;
+    }
+    const fetchLikes = async () => {
+      const { data } = await supabase
+        .from("post_likes")
+        .select("post_id")
+        .eq("user_id", user.id);
+      setLikedIds(new Set(data?.map((l) => l.post_id) ?? []));
+    };
+    fetchLikes();
+  }, [user]);
+
+  // Realtime subscription for like count updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("community-likes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "community_posts",
+          filter: "is_visible=eq.true",
+        },
+        (payload) => {
+          setPosts((current) =>
+            current.map((post) =>
+              post.id === payload.new.id
+                ? { ...post, like_count: (payload.new as any).like_count }
+                : post
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleLike = useCallback(
+    async (postId: string) => {
+      if (!user) {
+        toast({ title: "Sign in required", description: "Sign in to like rooms", variant: "destructive" });
+        return;
+      }
+
+      const isLiked = likedIds.has(postId);
+      const post = posts.find((p) => p.id === postId);
+      if (!post) return;
+
+      // Optimistic update
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (isLiked) next.delete(postId);
+        else next.add(postId);
+        return next;
+      });
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, like_count: p.like_count + (isLiked ? -1 : 1) }
+            : p
+        )
+      );
+
+      try {
+        if (isLiked) {
+          const { error: delErr } = await supabase
+            .from("post_likes")
+            .delete()
+            .eq("post_id", postId)
+            .eq("user_id", user.id);
+          if (delErr) throw delErr;
+        } else {
+          const { error: insErr } = await supabase
+            .from("post_likes")
+            .insert({ post_id: postId, user_id: user.id });
+          if (insErr) throw insErr;
+        }
+      } catch (err) {
+        console.error("Like error:", err);
+        // Rollback
+        setLikedIds((prev) => {
+          const next = new Set(prev);
+          if (isLiked) next.add(postId);
+          else next.delete(postId);
+          return next;
+        });
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, like_count: p.like_count + (isLiked ? 1 : -1) }
+              : p
+          )
+        );
+        toast({ title: "Error", description: "Failed to update like. Please try again.", variant: "destructive" });
+      }
+    },
+    [user, likedIds, posts]
+  );
+
+  // Filter by style tag
+  const filteredPosts = activeTag
+    ? posts.filter((p) => p.style_tags?.some((t) => t.toLowerCase() === activeTag.toLowerCase()))
+    : posts;
 
   return (
     <div className="container py-8 md:py-12">
@@ -48,20 +197,33 @@ export default function Community() {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockCommunityPosts.map((post, i) => (
-          <CommunityCard
-            key={post.id}
-            id={post.id}
-            title={post.title}
-            author={post.author}
-            authorInitial={post.authorInitial}
-            thumbnailUrl={post.thumbnailUrl}
-            likeCount={post.likeCount}
-            delay={80 * i}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 text-amber animate-spin" />
+        </div>
+      ) : filteredPosts.length === 0 ? (
+        <div className="text-center py-20 animate-reveal-up">
+          <p className="text-muted-foreground">No community posts yet. Be the first to share a room!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPosts.map((post, i) => (
+            <CommunityCard
+              key={post.id}
+              id={post.id}
+              title={post.title}
+              author={post.user_id === user?.id ? "You" : "Community Member"}
+              authorInitial={post.user_id === user?.id ? "Y" : "C"}
+              thumbnailUrl={post.thumbnail_url ?? undefined}
+              likeCount={post.like_count}
+              liked={likedIds.has(post.id)}
+              isOwnPost={post.user_id === user?.id}
+              onLike={() => handleLike(post.id)}
+              delay={80 * i}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
