@@ -76,8 +76,14 @@ export interface FurnitureItem {
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
-  console.log("Loading GLB model:", path);
-  const { scene } = useGLTF(path);
+  // Cache-bust to avoid stale LFS pointer responses
+  const cacheBustedPath = useMemo(() => {
+    const sep = path.includes('?') ? '&' : '?';
+    return `${path}${sep}_v=${Date.now()}`;
+  }, [path]);
+
+  console.log("Loading GLB model:", cacheBustedPath);
+  const { scene } = useGLTF(cacheBustedPath);
   const cloned = scene.clone();
 
   const box = new THREE.Box3().setFromObject(cloned);
