@@ -10,6 +10,7 @@ interface Props {
 
 export default function FurnitureDetailPanel({ item, onBack }: Props) {
   const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
 
   const handleAdd = () => {
     addItem({
