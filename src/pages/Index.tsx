@@ -145,23 +145,12 @@ export default function Index() {
               <Button
                 variant="amber"
                 size="lg"
-                className="w-full"
+                className={`w-full ${loading ? "button-loading" : ""}`}
                 onClick={handleGenerate}
                 disabled={loading}
               >
                 {loading ? "Generating…" : "Generate Room"}
               </Button>
-
-              {loading && (
-                <div className="space-y-3">
-                  <div className="h-px w-full bg-border overflow-hidden">
-                    <div className="h-full w-1/3 bg-accent animate-line-progress" />
-                  </div>
-                  <p className="font-heading italic text-[1rem] text-muted-foreground">
-                    {loadingMessages[loadingStep]}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </div>
