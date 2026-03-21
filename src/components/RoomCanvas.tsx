@@ -76,7 +76,7 @@ export interface FurnitureItem {
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
-  const { scene } = useGLTF(path.startsWith('/') ? path : `/furnitures/${path}`);
+  const { scene } = useGLTF(path);
   const cloned = scene.clone();
 
   const box = new THREE.Box3().setFromObject(cloned);
@@ -176,7 +176,7 @@ function MovableFurniture({
       onPointerUp={handlePointerUp}
       onClick={handleClick}
     >
-      {furniture.path && furniture.path !== 'PENDING_UPLOAD' ? (
+      {furniture.path && furniture.path !== 'PENDING_UPLOAD' && furniture.path.startsWith('http') ? (
         <Suspense
           fallback={
             <mesh>
