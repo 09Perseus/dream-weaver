@@ -102,10 +102,15 @@ export default function Cart() {
     };
 
     tryMount();
+
+    return () => {
+      isMounted = false;
+      globalCardElement = null;
+    };
   }, []);
 
   const totalJPY = Math.round(
-    items.reduce((sum, i) => sum + i.price * i.quantity * USD_TO_JPY, 0)
+    items.reduce((sum, i) => sum + i.price * i.quantity * USD_TO_JPY, 0),
   );
 
   const handleCheckout = async () => {
@@ -115,7 +120,11 @@ export default function Cart() {
     console.log("payjpReady:", payjpReady);
 
     if (!payjp || !cardElement) {
-      toast({ title: "Card form is not ready", description: "Please wait and try again.", variant: "destructive" });
+      toast({
+        title: "Card form is not ready",
+        description: "Please wait and try again.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -132,7 +141,11 @@ export default function Cart() {
       console.log("PAY.JP result:", JSON.stringify(result));
 
       if (result?.error) {
-        toast({ title: "Card error", description: result.error.message, variant: "destructive" });
+        toast({
+          title: "Card error",
+          description: result.error.message,
+          variant: "destructive",
+        });
         setLoading(false);
         return;
       }
@@ -141,7 +154,11 @@ export default function Cart() {
       console.log("Token ID:", tokenId);
 
       if (!tokenId) {
-        toast({ title: "Could not create card token", description: "Check console for details.", variant: "destructive" });
+        toast({
+          title: "Could not create card token",
+          description: "Check console for details.",
+          variant: "destructive",
+        });
         setLoading(false);
         return;
       }
@@ -155,19 +172,26 @@ export default function Cart() {
         quantity: i.quantity,
       }));
 
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          token: tokenId,
-          amount: totalJPY,
-          items: checkoutItems,
-          currency: "jpy",
+      const { data, error } = await supabase.functions.invoke(
+        "create-checkout",
+        {
+          body: {
+            token: tokenId,
+            amount: totalJPY,
+            items: checkoutItems,
+            currency: "jpy",
+          },
         },
-      });
+      );
 
       console.log("Edge function response:", data, error);
 
       if (error || data?.error) {
-        toast({ title: "Payment failed", description: data?.error || error?.message || "Please try again.", variant: "destructive" });
+        toast({
+          title: "Payment failed",
+          description: data?.error || error?.message || "Please try again.",
+          variant: "destructive",
+        });
         setLoading(false);
         return;
       }
@@ -186,7 +210,11 @@ export default function Cart() {
       }
     } catch (err: any) {
       console.error("Checkout error:", err);
-      toast({ title: "Unexpected error", description: err.message, variant: "destructive" });
+      toast({
+        title: "Unexpected error",
+        description: err.message,
+        variant: "destructive",
+      });
       setLoading(false);
     }
   };
@@ -200,12 +228,10 @@ export default function Cart() {
       {items.length === 0 ? (
         <>
           {/* Hidden but in DOM so PAY.JP can mount */}
-          <div
-            id="payjp-card-element"
-            style={{ visibility: "hidden", height: 0, overflow: "hidden", pointerEvents: "none" }}
-          />
           <div className="text-center py-20 animate-reveal-up">
-            <h3 className="font-heading text-[1.5rem] font-normal mb-2">Your cart is empty</h3>
+            <h3 className="font-heading text-[1.5rem] font-normal mb-2">
+              Your cart is empty
+            </h3>
             <p className="font-body text-[0.8rem] text-muted-foreground mb-6">
               Browse rooms and add furniture you love
             </p>
@@ -218,13 +244,22 @@ export default function Cart() {
         <div className="space-y-8 animate-reveal-up delay-100">
           <div>
             {items.map((item) => (
-              <div key={item.id} className="flex items-center gap-4 py-5 border-b border-border">
+              <div
+                key={item.id}
+                className="flex items-center gap-4 py-5 border-b border-border"
+              >
                 <div className="h-14 w-14 bg-surface border border-border flex items-center justify-center flex-shrink-0">
-                  <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
+                  <span className="font-body text-[0.6rem] text-muted-foreground">
+                    3D
+                  </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-body text-[0.85rem] text-foreground truncate">{item.name}</p>
-                  <p className="font-body text-[0.75rem] text-accent">${item.price.toLocaleString()}</p>
+                  <p className="font-body text-[0.85rem] text-foreground truncate">
+                    {item.name}
+                  </p>
+                  <p className="font-body text-[0.75rem] text-accent">
+                    ${item.price.toLocaleString()}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -233,7 +268,9 @@ export default function Cart() {
                   >
                     <Minus className="h-3 w-3" />
                   </button>
-                  <span className="font-body text-[0.8rem] w-6 text-center tabular-nums">{item.quantity}</span>
+                  <span className="font-body text-[0.8rem] w-6 text-center tabular-nums">
+                    {item.quantity}
+                  </span>
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     className="h-8 w-8 border border-border flex items-center justify-center text-muted-foreground hover:border-accent hover:text-accent transition-colors"
@@ -258,7 +295,9 @@ export default function Cart() {
             </label>
 
             {payjpError && (
-              <p className="font-body text-[0.8rem] text-destructive mb-2">{payjpError}</p>
+              <p className="font-body text-[0.8rem] text-destructive mb-2">
+                {payjpError}
+              </p>
             )}
 
             <div
@@ -268,18 +307,26 @@ export default function Cart() {
             />
 
             {!payjpReady && !payjpError && (
-              <p className="font-body text-[0.7rem] text-muted-foreground">Loading card form...</p>
+              <p className="font-body text-[0.7rem] text-muted-foreground">
+                Loading card form...
+              </p>
             )}
           </div>
 
           <div className="border-t border-border pt-6 space-y-4">
             <div className="flex justify-between font-body text-[0.8rem]">
-              <span className="text-muted-foreground uppercase tracking-[0.08em]">Subtotal</span>
+              <span className="text-muted-foreground uppercase tracking-[0.08em]">
+                Subtotal
+              </span>
               <span className="tabular-nums">${subtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between font-body text-[0.75rem]">
-              <span className="text-muted-foreground uppercase tracking-[0.08em]">Total (JPY)</span>
-              <span className="tabular-nums text-accent">¥{totalJPY.toLocaleString()}</span>
+              <span className="text-muted-foreground uppercase tracking-[0.08em]">
+                Total (JPY)
+              </span>
+              <span className="tabular-nums text-accent">
+                ¥{totalJPY.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between items-baseline">
               <span className="font-heading text-[1.2rem]">Total</span>
@@ -294,7 +341,11 @@ export default function Cart() {
               onClick={handleCheckout}
               disabled={loading || !payjpReady || items.length === 0}
             >
-              {loading ? "Processing payment…" : !payjpReady ? "Loading payment form…" : "Proceed to Checkout"}
+              {loading
+                ? "Processing payment…"
+                : !payjpReady
+                  ? "Loading payment form…"
+                  : "Proceed to Checkout"}
             </Button>
             <button
               onClick={clearCart}
