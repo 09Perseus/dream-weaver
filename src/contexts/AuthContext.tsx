@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .from("profiles")
       .select("display_name, avatar_color, avatar_url")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
     setProfile(data
       ? { display_name: data.display_name, avatar_color: data.avatar_color ?? null, avatar_url: data.avatar_url ?? null }
       : { display_name: null, avatar_color: null, avatar_url: null }

@@ -5,6 +5,7 @@ import CommunityCard from "@/components/CommunityCard";
 import GeneratingOverlay from "@/components/GeneratingOverlay";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
