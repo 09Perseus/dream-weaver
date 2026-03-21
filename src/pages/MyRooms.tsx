@@ -229,7 +229,7 @@ export default function MyRooms() {
                         disabled={unposting === room.id}
                         title={isPosted ? "Remove from Community" : "Post to Community"}
                         className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
-                        style={{ background: isPosted ? "#6A8F6A" : "#7A6A9A", border: "none" }}
+                        style={{ background: isPosted ? "hsl(var(--success))" : "hsl(var(--accent))", border: "none" }}
                       >
                         {isPosted ? <EyeOff size={16} color="white" /> : <Share2 size={16} color="white" />}
                       </button>
