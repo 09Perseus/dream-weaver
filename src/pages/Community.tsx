@@ -166,7 +166,6 @@ export default function Community() {
               title={post.title}
               description={post.room_designs?.description ?? post.description}
               author={post.user_id === user?.id ? "You" : "Community Member"}
-              authorInitial={post.user_id === user?.id ? "Y" : "C"}
               thumbnailUrl={post.thumbnail_url ?? undefined}
               likeCount={post.like_count}
               liked={likedIds.has(post.id)}
