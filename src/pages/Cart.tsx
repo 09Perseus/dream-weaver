@@ -112,7 +112,7 @@ export default function Cart() {
         console.log("PAY.JP card element mounted successfully");
       } catch (err: any) {
         console.error("PAY.JP mount error:", err);
-        setPayjpError("Card form failed to load: " + err.message);
+        setPayjpError(ensureEnglishError(err.message));
       }
     };
 
