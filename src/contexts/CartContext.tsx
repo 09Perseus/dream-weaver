@@ -117,12 +117,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem(STORAGE_KEY);
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      await supabase
+      await (supabase as any)
         .from("carts")
         .upsert(
           {
             user_id: session.user.id,
-            items: [] as unknown as Record<string, unknown>[],
+            items: [],
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id" }
