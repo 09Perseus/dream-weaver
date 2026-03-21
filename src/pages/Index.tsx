@@ -1,27 +1,106 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
 import { mockCommunityPosts } from "@/data/mockData";
-import { generateRoom } from "@/lib/edgeFunctions";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+
+const loadingMessages = [
+  "Designing your room...",
+  "Placing furniture...",
+  "Adding finishing touches...",
+  "Welcome home...",
+];
 
 export default function Index() {
   const [prompt, setPrompt] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
   const navigate = useNavigate();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!loading) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+    setLoadingStep(0);
+    intervalRef.current = setInterval(() => {
+      setLoadingStep((prev) =>
+        prev < loadingMessages.length - 1 ? prev + 1 : 0
+      );
+    }, 1500);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [loading]);
+
+  const validate = (): boolean => {
+    if (!prompt.trim()) {
+      setError("Please describe your dream room first");
+      return false;
+    }
+    if (prompt.trim().length < 10) {
+      setError("Please add a bit more detail");
+      return false;
+    }
+    setError("");
+    return true;
+  };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+    if (!validate()) return;
     setLoading(true);
     try {
-      const result = await generateRoom(prompt);
-      console.log("Generated room:", result);
-      // Use a placeholder id until real persistence is wired up
-      navigate(`/room/new?prompt=${encodeURIComponent(prompt)}`);
+      const { data, error: fnError } = await supabase.functions.invoke(
+        "generate-room",
+        { body: { description: prompt.trim() } }
+      );
+
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+
+      const items: PlacedItem[] = data.items;
+      const furniture: FurnitureDetail[] = data.furniture;
+
+      // Get current user (may be null for anonymous)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      // Save to room_designs
+      const { data: room, error: insertError } = await supabase
+        .from("room_designs")
+        .insert({
+          description: prompt.trim(),
+          items: items as any,
+          user_id: user?.id ?? "00000000-0000-0000-0000-000000000000",
+          share_token: crypto.randomUUID(),
+        })
+        .select("id")
+        .single();
+
+      if (insertError) {
+        console.error("Failed to save room:", insertError);
+        // Still navigate even if save fails — use a temp id
+      }
+
+      const roomId = room?.id ?? "new";
+      navigate(`/room/${roomId}`, {
+        state: { items, furniture, description: prompt.trim() },
+      });
     } catch (err: any) {
-      toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+      console.error("Generate room error:", err);
+      toast({
+        title: "Something went wrong",
+        description:
+          "Something went wrong generating your room. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -43,7 +122,8 @@ export default function Index() {
               <span className="text-amber">See it built.</span>
             </h1>
             <p className="text-muted-foreground text-lg md:text-xl max-w-md mx-auto text-pretty">
-              AI-powered interior design that turns words into furnished 3D rooms you can shop.
+              AI-powered interior design that turns words into furnished 3D
+              rooms you can shop.
             </p>
           </div>
 
@@ -51,28 +131,54 @@ export default function Index() {
             <div className="relative">
               <textarea
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(e) => {
+                  setPrompt(e.target.value);
+                  if (error) setError("");
+                }}
                 placeholder="Describe your dream room... e.g. cozy Japanese bedroom with warm lighting"
                 rows={3}
-                className="w-full bg-surface border border-border/70 rounded-xl px-5 py-4 text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none focus:ring-2 focus:ring-amber/40 focus:border-amber/40 transition-all"
+                className={`w-full bg-surface border rounded-xl px-5 py-4 text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none focus:ring-2 transition-all ${
+                  error
+                    ? "border-destructive focus:ring-destructive/40 focus:border-destructive/40"
+                    : "border-border/70 focus:ring-amber/40 focus:border-amber/40"
+                }`}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     handleGenerate();
                   }
                 }}
+                disabled={loading}
               />
+              {error && (
+                <p className="text-destructive text-sm mt-1.5 text-left">
+                  {error}
+                </p>
+              )}
             </div>
-            <Button
-              variant="amber"
-              size="lg"
-              className="w-full md:w-auto min-w-[200px] text-base"
-              onClick={handleGenerate}
-              disabled={!prompt.trim() || loading}
-            >
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-              {loading ? "Generating…" : "Generate Room"}
-            </Button>
+
+            <div className="space-y-3">
+              <Button
+                variant="amber"
+                size="lg"
+                className="w-full md:w-auto min-w-[200px] text-base"
+                onClick={handleGenerate}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-5 w-5" />
+                )}
+                {loading ? "Generating…" : "Generate Room"}
+              </Button>
+
+              {loading && (
+                <p className="text-amber text-sm font-medium animate-pulse">
+                  {loadingMessages[loadingStep]}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -80,8 +186,12 @@ export default function Index() {
       {/* Community Feed */}
       <section className="container pb-20">
         <div className="animate-reveal-up delay-300">
-          <h2 className="text-2xl md:text-3xl font-semibold mb-2">Community Rooms</h2>
-          <p className="text-muted-foreground mb-8">Explore designs created by the community</p>
+          <h2 className="text-2xl md:text-3xl font-semibold mb-2">
+            Community Rooms
+          </h2>
+          <p className="text-muted-foreground mb-8">
+            Explore designs created by the community
+          </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockCommunityPosts.map((post, i) => (
