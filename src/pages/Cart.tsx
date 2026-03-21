@@ -73,14 +73,22 @@ export default function Cart() {
         }
 
         if (!isMounted) {
-          const mountPoint = document.getElementById("payjp-card-element");
-          if (!mountPoint) {
-            console.error("Mount point #payjp-card-element not found");
-            setPayjpError("Card form could not load");
-            return;
-          }
-          globalCardElement.mount("#payjp-card-element");
-          isMounted = true;
+          // Small delay to ensure DOM is fully rendered
+          setTimeout(() => {
+            const mountPoint = document.getElementById("payjp-card-element");
+            if (!mountPoint) {
+              console.error("Mount point #payjp-card-element not found");
+              setTimeout(tryMount, 300);
+              return;
+            }
+            globalCardElement.mount("#payjp-card-element");
+            isMounted = true;
+            setPayjp(globalPayjp);
+            setCardElement(globalCardElement);
+            setPayjpReady(true);
+            console.log("PAY.JP card element mounted successfully");
+          }, 100);
+          return;
         }
 
         setPayjp(globalPayjp);
@@ -189,27 +197,23 @@ export default function Cart() {
         Cart
       </h1>
 
-      {/* Single PAY.JP mount point — always in DOM, hidden when cart empty */}
-      <div
-        id="payjp-card-element"
-        className="border-b border-border py-3"
-        style={{
-          display: items.length === 0 ? "none" : "block",
-          background: "transparent",
-          minHeight: 44,
-        }}
-      />
-
       {items.length === 0 ? (
-        <div className="text-center py-20 animate-reveal-up">
-          <h3 className="font-heading text-[1.5rem] font-normal mb-2">Your cart is empty</h3>
-          <p className="font-body text-[0.8rem] text-muted-foreground mb-6">
-            Browse rooms and add furniture you love
-          </p>
-          <Link to="/community">
-            <Button variant="amber">Browse Community</Button>
-          </Link>
-        </div>
+        <>
+          {/* Hidden but in DOM so PAY.JP can mount */}
+          <div
+            id="payjp-card-element"
+            style={{ visibility: "hidden", height: 0, overflow: "hidden", pointerEvents: "none" }}
+          />
+          <div className="text-center py-20 animate-reveal-up">
+            <h3 className="font-heading text-[1.5rem] font-normal mb-2">Your cart is empty</h3>
+            <p className="font-body text-[0.8rem] text-muted-foreground mb-6">
+              Browse rooms and add furniture you love
+            </p>
+            <Link to="/community">
+              <Button variant="amber">Browse Community</Button>
+            </Link>
+          </div>
+        </>
       ) : (
         <div className="space-y-8 animate-reveal-up delay-100">
           <div>
@@ -257,7 +261,11 @@ export default function Cart() {
               <p className="font-body text-[0.8rem] text-destructive mb-2">{payjpError}</p>
             )}
 
-            {/* Card element is rendered above, outside conditionals */}
+            <div
+              id="payjp-card-element"
+              className="border-b border-border py-3 mb-2"
+              style={{ background: "transparent", minHeight: 44 }}
+            />
 
             {!payjpReady && !payjpError && (
               <p className="font-body text-[0.7rem] text-muted-foreground">Loading card form...</p>
