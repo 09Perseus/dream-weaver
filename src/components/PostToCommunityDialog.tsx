@@ -45,6 +45,13 @@ export default function PostToCommunityDialog({ open, onOpenChange, roomId, onPo
         return;
       }
 
+      // Fetch room thumbnail
+      const { data: roomData } = await supabase
+        .from("room_designs")
+        .select("thumbnail_url")
+        .eq("id", roomId)
+        .single();
+
       const { error } = await supabase
         .from("community_posts")
         .insert({
@@ -53,7 +60,7 @@ export default function PostToCommunityDialog({ open, onOpenChange, roomId, onPo
           title: title.trim(),
           description: description.trim() || null,
           style_tags: selectedTags.length > 0 ? selectedTags : null,
-          thumbnail_url: null,
+          thumbnail_url: (roomData as any)?.thumbnail_url ?? null,
           like_count: 0,
           is_visible: true,
         })
