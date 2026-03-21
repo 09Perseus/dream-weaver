@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      carts: {
+        Row: {
+          id: string
+          items: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          items?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          items?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_posts: {
         Row: {
           created_at: string | null
