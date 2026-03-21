@@ -254,7 +254,14 @@ export default function Index() {
 
       const items: PlacedItem[] = data.items;
       const furniture: FurnitureDetail[] = data.furniture;
-      const { data: { session } } = await supabase.auth.getSession();
+
+      let session: any = null;
+      try {
+        const { data: authData } = await supabase.auth.getSession();
+        session = authData?.session;
+      } catch (authErr) {
+        console.warn("Auth check failed, proceeding as guest:", authErr);
+      }
 
       if (!session?.user?.id) {
         // Not logged in — navigate directly to room view without saving
@@ -263,18 +270,27 @@ export default function Index() {
         return;
       }
 
-      const { data: room, error: insertError } = await supabase
-        .from("room_designs")
-        .insert({ description: prompt.trim(), items: items as any, user_id: session.user.id, share_token: crypto.randomUUID() })
-        .select("id")
-        .single();
+      try {
+        const { data: room, error: insertError } = await supabase
+          .from("room_designs")
+          .insert({ description: prompt.trim(), items: items as any, user_id: session.user.id, share_token: crypto.randomUUID() })
+          .select("id")
+          .single();
 
-      if (insertError || !room?.id) {
-        toast({ title: "Failed to save room", description: "Please try again.", variant: "destructive" });
-        setLoading(false);
-        return;
+        if (insertError || !room?.id) {
+          console.error("Room save error:", insertError);
+          // Still navigate even if save fails — show the room
+          toast({ title: "Room generated!", description: "Could not save to your account, but you can still view it.", variant: "default" });
+          navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
+          setLoading(false);
+          return;
+        }
+        navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
+      } catch (saveErr) {
+        console.error("Room save exception:", saveErr);
+        // Navigate anyway so user sees their generated room
+        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
       }
-      navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
     } catch (err: any) {
       console.error("Unexpected error:", err);
       toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
