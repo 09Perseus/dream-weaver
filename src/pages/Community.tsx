@@ -172,6 +172,16 @@ export default function Community() {
             <div className="h-full w-1/3 bg-accent animate-line-progress" />
           </div>
         </div>
+      ) : error ? (
+        <div className="text-center py-16">
+          <p className="font-body text-[0.85rem] text-destructive mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-accent border border-border px-6 py-2 bg-transparent cursor-pointer hover:border-accent transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       ) : filteredPosts.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
           <p className="font-body text-[0.8rem] text-muted-foreground">No community posts yet. Be the first to share a room!</p>
