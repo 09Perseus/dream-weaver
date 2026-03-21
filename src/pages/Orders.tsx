@@ -79,11 +79,19 @@ export default function Orders() {
       </h1>
 
       {loading && (
-        <div className="flex flex-col items-center py-20 gap-3">
-          <Loader2 className="h-6 w-6 text-accent animate-spin" />
-          <p className="font-body text-[0.75rem] text-muted-foreground tracking-[0.1em]">
-            Loading your orders...
-          </p>
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="border border-border bg-surface p-6 animate-skeleton-pulse">
+              <div className="flex justify-between mb-3">
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted w-32" />
+                  <div className="h-3 bg-muted w-24" />
+                </div>
+                <div className="h-6 bg-muted w-20" />
+              </div>
+              <div className="h-4 bg-muted w-48" />
+            </div>
+          ))}
         </div>
       )}
 
