@@ -1,5 +1,9 @@
+import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+
 interface RoomCanvasProps {
   className?: string;
+  items?: PlacedItem[];
+  furniture?: FurnitureDetail[];
 }
 
 export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
