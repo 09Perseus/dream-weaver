@@ -23,16 +23,16 @@ export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
   const navigate = useNavigate();
 
-  // Redirect unauthenticated users
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate("/sign-in?redirect=/cart");
-    });
-  }, []);
+  const [session, setSession] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") navigate("/sign-in?redirect=/cart");
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -232,6 +232,31 @@ export default function Cart() {
       setLoading(false);
     }
   };
+
+  if (authLoading) return null;
+
+  if (!session) {
+    return (
+      <div className="container py-12 md:py-16 max-w-3xl">
+        <h1 className="font-heading text-[2.5rem] font-light uppercase tracking-[0.05em] mb-10">
+          Cart
+        </h1>
+        <div className="text-center py-20">
+          <p className="font-heading text-[1.5rem] font-light text-foreground mb-3">
+            Welcome back.
+          </p>
+          <p className="font-body text-[0.8rem] text-muted-foreground tracking-[0.05em] mb-8">
+            Sign in to view your cart and checkout
+          </p>
+          <Link to="/sign-in?redirect=/cart">
+            <button className="bg-primary text-primary-foreground border-none px-8 py-3 font-body text-[0.75rem] tracking-[0.12em] uppercase cursor-pointer hover:opacity-90 transition-opacity">
+              SIGN IN
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-12 md:py-16 max-w-3xl">
