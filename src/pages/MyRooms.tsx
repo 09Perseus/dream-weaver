@@ -117,13 +117,13 @@ export default function MyRooms() {
 
   return (
     <div className="container py-12 md:py-16">
-      <div className="flex items-center justify-between mb-10 animate-reveal-up">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 animate-reveal-up">
         <div>
-          <h1 className="font-heading text-[2.5rem] font-light uppercase tracking-[0.05em]">My Rooms</h1>
+          <h1 className="font-heading text-[2rem] md:text-[2.5rem] font-light uppercase tracking-[0.05em]">My Rooms</h1>
           <p className="font-body text-[0.8rem] tracking-[0.08em] uppercase text-muted-foreground mt-2">Your saved designs</p>
         </div>
         <Link to="/">
-          <Button variant="amber">Create New Room</Button>
+          <Button variant="amber" className="w-full sm:w-auto min-h-[44px]">Create New Room</Button>
         </Link>
       </div>
 
