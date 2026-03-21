@@ -25,44 +25,36 @@ export default function MyRooms() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-
     const timeout = setTimeout(() => {
       setLoading(false);
       setError("Loading timed out. Please refresh the page.");
     }, 8000);
 
-    const fetchRooms = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { navigate("/sign-in?redirect=/my-rooms"); return; }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout);
 
-        const [roomsRes, postsRes] = await Promise.all([
-          supabase.from("room_designs").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }),
-          supabase.from("community_posts").select("room_design_id").eq("user_id", session.user.id).eq("is_visible", true),
-        ]);
-
-        if (roomsRes.error) {
-          console.error("My rooms error:", roomsRes.error);
-          setError("Failed to load rooms: " + roomsRes.error.message);
-          return;
-        }
-
-        setRooms(roomsRes.data ?? []);
-        setPostedRoomIds(new Set(postsRes.data?.map((p) => p.room_design_id) ?? []));
-      } catch (err: any) {
-        console.error("Unexpected my rooms error:", err);
-        setError("Unexpected error: " + err.message);
-      } finally {
-        clearTimeout(timeout);
-        setLoading(false);
+      if (!session) {
+        navigate("/sign-in?redirect=/my-rooms");
+        return;
       }
-    };
-    fetchRooms();
+
+      Promise.all([
+        supabase.from("room_designs").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }),
+        supabase.from("community_posts").select("room_design_id").eq("user_id", session.user.id).eq("is_visible", true),
+      ]).then(([roomsRes, postsRes]) => {
+        console.log("Rooms:", roomsRes.data?.length, roomsRes.error);
+        if (roomsRes.error) {
+          setError("Failed to load rooms: " + roomsRes.error.message);
+        } else {
+          setRooms(roomsRes.data ?? []);
+          setPostedRoomIds(new Set(postsRes.data?.map((p) => p.room_design_id) ?? []));
+        }
+        setLoading(false);
+      });
+    });
 
     return () => clearTimeout(timeout);
-  }, [navigate]);
+  }, []);
 
   const handleDelete = async (roomId: string) => {
     setDeleting(roomId);
