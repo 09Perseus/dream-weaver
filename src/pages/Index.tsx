@@ -289,7 +289,7 @@ export default function Index() {
       {loading && <GeneratingOverlay />}
 
       {/* ═══ HERO ═══ */}
-      <section className="relative flex flex-col items-center justify-center px-4 min-h-[calc(100vh-3.5rem)]">
+      <section className="relative flex flex-col items-center justify-center px-4 min-h-[100vh] pb-24">
         <div className="max-w-3xl w-full text-center space-y-8">
           {/* Eyebrow */}
           <div className="animate-reveal-up flex items-center justify-center gap-0">
