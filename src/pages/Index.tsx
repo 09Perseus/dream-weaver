@@ -1,18 +1,42 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
 import GeneratingOverlay from "@/components/GeneratingOverlay";
-import { mockCommunityPosts } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+
+interface FeaturedPost {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  like_count: number;
+  room_design_id: string;
+  user_id: string;
+}
 
 export default function Index() {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase
+      .from("community_posts")
+      .select("*")
+      .eq("is_visible", true)
+      .order("like_count", { ascending: false })
+      .limit(6)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setFeaturedPosts(data as unknown as FeaturedPost[]);
+        }
+      });
+  }, []);
 
   const validate = (): boolean => {
     if (!prompt.trim()) {
