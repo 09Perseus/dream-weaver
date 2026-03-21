@@ -8,6 +8,28 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    setCheckoutLoading(true);
+    try {
+      const checkoutItems = items.map((i) => ({
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+      }));
+      const { url } = await createCheckout(
+        checkoutItems,
+        `${window.location.origin}/cart?success=true`,
+        `${window.location.origin}/cart`
+      );
+      window.location.href = url;
+    } catch (err: any) {
+      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   return (
     <div className="container py-8 md:py-12 max-w-3xl">
