@@ -87,15 +87,8 @@ function PromptInput({
   onFocusChange?: (focused: boolean) => void;
 }) {
   return (
-    <div className="space-y-6 max-w-[600px] w-full mx-auto">
+    <div className="space-y-4 max-w-[600px] w-full mx-auto" style={{ marginTop: "1.5rem" }}>
       <div className="relative">
-        {/* Subtle glow behind the input */}
-        <div
-          className="absolute -inset-px pointer-events-none"
-          style={{
-            background: "linear-gradient(135deg, hsl(var(--accent) / 0.08), transparent 60%)",
-          }}
-        />
         <textarea
           value={prompt}
           onChange={(e) => {
@@ -104,9 +97,11 @@ function PromptInput({
           }}
           placeholder="A cozy Japanese bedroom with warm lighting…"
           rows={2}
-          className="w-full bg-background font-heading text-[1.15rem] py-3 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none transition-all duration-200 resize-none relative"
+          className="w-full bg-background font-heading text-[1.15rem] text-foreground placeholder:text-muted-foreground focus:outline-none transition-all duration-200 resize-none relative"
           style={{
-            border: "1px solid hsl(var(--accent))",
+            border: "1.5px solid hsl(var(--accent))",
+            borderRadius: "8px",
+            padding: "0.875rem 1.25rem",
             lineHeight: 1.5,
           }}
           onKeyDown={(e) => {
@@ -119,7 +114,7 @@ function PromptInput({
             onFocusChange?.(true);
             e.currentTarget.style.borderColor = "hsl(var(--accent-hover))";
             e.currentTarget.style.boxShadow =
-              "0 0 0 1px hsl(var(--accent)), 0 4px 24px hsl(var(--accent) / 0.15)";
+              "0 0 0 3px rgba(var(--accent-rgb), 0.15)";
           }}
           onBlur={(e) => {
             onFocusChange?.(false);
@@ -148,6 +143,7 @@ function PromptInput({
         variant="amber"
         size="lg"
         className={`w-full ${loading ? "button-loading" : ""}`}
+        style={{ borderRadius: "8px", marginTop: "0.5rem" }}
         onClick={onGenerate}
         disabled={loading}
       >
@@ -289,8 +285,8 @@ export default function Index() {
       {loading && <GeneratingOverlay />}
 
       {/* ═══ HERO ═══ */}
-      <section className="relative flex flex-col items-center justify-center px-4 min-h-[100vh] pb-24">
-        <div className="max-w-3xl w-full text-center space-y-8">
+      <section className="hero-section relative flex flex-col items-center justify-center px-4 min-h-[100vh]" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
+        <div className="max-w-3xl w-full text-center space-y-4">
           {/* Eyebrow */}
           <div className="animate-reveal-up flex items-center justify-center gap-0">
             <span
@@ -303,7 +299,7 @@ export default function Index() {
                 animation: "pulse-dot 2s ease-in-out infinite",
               }}
             />
-            <span className="font-body text-[0.7rem] tracking-[0.25em] uppercase text-accent">
+            <span className="font-body tracking-[0.25em] uppercase text-accent" style={{ fontSize: "clamp(0.6rem, 1vw, 0.7rem)" }}>
               AI-POWERED INTERIOR DESIGN
             </span>
           </div>
@@ -312,7 +308,7 @@ export default function Index() {
           <div className="animate-reveal-up delay-100">
             <h1
               className="font-heading font-light uppercase tracking-[0.04em] text-foreground leading-[1.05]"
-              style={{ fontSize: "clamp(3.5rem, 9vw, 8rem)" }}
+              style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
             >
               DESCRIBE YOUR DREAM
               <br />
@@ -323,6 +319,7 @@ export default function Index() {
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
+                  fontSize: "clamp(2rem, 5vw, 4rem)",
                 }}
               >
                 {typedText}
@@ -344,7 +341,7 @@ export default function Index() {
           {/* Sub-headline */}
           <p
             className="animate-reveal-up delay-200 font-body text-muted-foreground tracking-[0.05em]"
-            style={{ fontSize: "clamp(0.85rem, 2vw, 1.1rem)", marginTop: "1.5rem" }}
+            style={{ fontSize: "clamp(0.75rem, 1.5vw, 0.9rem)", marginTop: "0.75rem" }}
           >
             Walk into it in seconds. Buy what you see.
           </p>
@@ -380,10 +377,11 @@ export default function Index() {
         )}
       </section>
 
-      <Divider />
+
+
 
       {/* ═══ FEATURE 1 — AI Room Generator ═══ */}
-      <section className="min-h-[80vh] flex items-center">
+      <section className="feature-section feature-pattern-1 min-h-[80vh] flex items-center">
         <div className="container py-20 md:py-28">
           <RevealSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
@@ -424,10 +422,8 @@ export default function Index() {
         </div>
       </section>
 
-      <Divider />
-
       {/* ═══ FEATURE 2 — Shop the Room ═══ */}
-      <section className="min-h-[80vh] flex items-center">
+      <section className="feature-section feature-pattern-2 min-h-[80vh] flex items-center">
         <div className="container py-20 md:py-28">
           <RevealSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
@@ -457,10 +453,8 @@ export default function Index() {
         </div>
       </section>
 
-      <Divider />
-
       {/* ═══ FEATURE 3 — Community ═══ */}
-      <section className="min-h-[60vh] flex items-center">
+      <section className="feature-section feature-pattern-3 min-h-[60vh] flex items-center">
         <div className="container py-20 md:py-28 w-full">
           <RevealSection>
             <div className="text-center max-w-2xl mx-auto mb-14 space-y-4">
