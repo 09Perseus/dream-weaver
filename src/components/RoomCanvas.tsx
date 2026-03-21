@@ -2,9 +2,13 @@ import { useState, useRef, useEffect, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, TransformControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import React, { forwardRef } from "react";
+import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
 interface RoomCanvasProps {
   className?: string;
+  items?: PlacedItem[];
+  furniture?: FurnitureDetail[];
 }
 
 export interface FurnitureItem {
@@ -149,8 +153,10 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
     setFurnitures(prev => prev.map(f => f.id === id ? { ...f, position: newPos } : f));
   };
 
+const RoomCanvas = forwardRef<HTMLDivElement, RoomCanvasProps>(({ className = "", items = [], furniture = [] }, ref) => {
   return (
     <div
+      ref={ref}
       id="room-canvas"
       className={`room-canvas relative bg-zinc-900 rounded-lg border border-border/50 overflow-hidden ${className}`}
     >
@@ -260,4 +266,8 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
       </Canvas>
     </div>
   );
-}
+});
+
+RoomCanvas.displayName = "RoomCanvas";
+
+export default RoomCanvas;
