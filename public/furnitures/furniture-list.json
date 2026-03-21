@@ -1,0 +1,332 @@
+{
+  "furnitures": [
+    {
+      "name": "psx_wooden_table",
+      "path": "Tables/psx_wooden_table.glb",
+      "keywords": [
+        "psx_wooden_table",
+        "psx",
+        "wooden"
+      ],
+      "description": "Tables 3D model",
+      "dimension": "2.0864 x 1.1119 x 0.9641"
+    },
+    {
+      "name": "office_table_desk",
+      "path": "Tables/office_table_desk.glb",
+      "keywords": [
+        "office_table_desk",
+        "office",
+        "desk"
+      ],
+      "description": "Tables 3D model",
+      "dimension": "1.8137 x 0.7956 x 0.9124"
+    },
+    {
+      "name": "coffee_table",
+      "path": "Tables/coffee_table.glb",
+      "keywords": [
+        "coffee_table",
+        "coffee"
+      ],
+      "description": "Tables 3D model",
+      "dimension": "135.8997 x 58.5083 x 43.4797"
+    },
+    {
+      "name": "serving_table_01",
+      "path": "Tables/serving_table_01.glb",
+      "keywords": [
+        "serving_table_01",
+        "serving"
+      ],
+      "description": "Tables 3D model",
+      "dimension": "1.0622 x 0.5542 x 0.8127"
+    },
+    {
+      "name": "victorian_style_tabledesk",
+      "path": "Tables/victorian_style_tabledesk.glb",
+      "keywords": [
+        "victorian_style_tabledesk",
+        "victorian",
+        "style"
+      ],
+      "description": "Tables 3D model",
+      "dimension": "3.0000 x 7.4997 x 6.0997"
+    },
+    {
+      "name": "hexagonal_table_01",
+      "path": "Tables/hexagonal_table_01.glb",
+      "keywords": [
+        "hexagonal_table_01",
+        "hexagonal"
+      ],
+      "description": "Tables 3D model",
+      "dimension": "0.5880 x 0.5092 x 0.5400"
+    },
+    {
+      "name": "realistic_bed_3d_model",
+      "path": "Bed/realistic_bed_3d_model.glb",
+      "keywords": [
+        "realistic_bed_3d_model",
+        "realistic"
+      ],
+      "description": "Bed 3D model",
+      "dimension": "2.6608 x 2.0000 x 0.9097"
+    },
+    {
+      "name": "paper_mario_sticker_star_luxurious_bed",
+      "path": "Bed/paper_mario_sticker_star_luxurious_bed.glb",
+      "keywords": [
+        "paper_mario_sticker_star_luxurious_bed",
+        "paper",
+        "mario",
+        "sticker",
+        "star",
+        "luxurious"
+      ],
+      "description": "Bed 3D model",
+      "dimension": "34.7248 x 41.2778 x 48.5208"
+    },
+    {
+      "name": "ornate_carved_bed",
+      "path": "Bed/ornate_carved_bed.glb",
+      "keywords": [
+        "ornate_carved_bed",
+        "ornate",
+        "carved"
+      ],
+      "description": "Bed 3D model",
+      "dimension": "1.7255 x 1.4886 x 1.8990"
+    },
+    {
+      "name": "bed",
+      "path": "Bed/bed.glb",
+      "keywords": [
+        "bed"
+      ],
+      "description": "Bed 3D model",
+      "dimension": "1998.7700 x 2208.9194 x 1168.2238"
+    },
+    {
+      "name": "tall_house_plant",
+      "path": "Plants/tall_house_plant.glb",
+      "keywords": [
+        "tall_house_plant",
+        "tall",
+        "house"
+      ],
+      "description": "Plants 3D model",
+      "dimension": "2.6199 x 2.1198 x 5.4497"
+    },
+    {
+      "name": "majesty_palm_plant",
+      "path": "Plants/majesty_palm_plant.glb",
+      "keywords": [
+        "majesty_palm_plant",
+        "majesty",
+        "palm"
+      ],
+      "description": "Plants 3D model",
+      "dimension": "3.6161 x 3.1515 x 6.6979"
+    },
+    {
+      "name": "house_palm_plant",
+      "path": "Plants/house_palm_plant.glb",
+      "keywords": [
+        "house_palm_plant",
+        "house",
+        "palm"
+      ],
+      "description": "Plants 3D model",
+      "dimension": "1.9415 x 2.0834 x 2.3076"
+    },
+    {
+      "name": "aglaonema_plant",
+      "path": "Plants/aglaonema_plant.glb",
+      "keywords": [
+        "aglaonema_plant",
+        "aglaonema"
+      ],
+      "description": "Plants 3D model",
+      "dimension": "7.3080 x 7.3785 x 7.2346"
+    },
+    {
+      "name": "low-poly_snake_plant",
+      "path": "Plants/low-poly_snake_plant.glb",
+      "keywords": [
+        "low-poly_snake_plant",
+        "snake"
+      ],
+      "description": "Plants 3D model",
+      "dimension": "5.2044 x 16.2732 x 10.3294"
+    },
+    {
+      "name": "airport_plant",
+      "path": "Plants/airport_plant.glb",
+      "keywords": [
+        "airport_plant",
+        "airport"
+      ],
+      "description": "Plants 3D model",
+      "dimension": "1.0081 x 1.6336 x 1.6260"
+    },
+    {
+      "name": "ikea_lamp",
+      "path": "Lamps/ikea_lamp.glb",
+      "keywords": [
+        "ikea_lamp",
+        "ikea"
+      ],
+      "description": "Lamps 3D model",
+      "dimension": "35.5269 x 35.7226 x 150.8659"
+    },
+    {
+      "name": "desk_lamp",
+      "path": "Lamps/desk_lamp.glb",
+      "keywords": [
+        "desk_lamp",
+        "desk"
+      ],
+      "description": "Lamps 3D model",
+      "dimension": "3.0606 x 1.2827 x 3.8205"
+    },
+    {
+      "name": "retro_lowpoly_lamp",
+      "path": "Lamps/retro_lowpoly_lamp.glb",
+      "keywords": [
+        "retro_lowpoly_lamp",
+        "retro",
+        "lowpoly"
+      ],
+      "description": "Lamps 3D model",
+      "dimension": "0.4523 x 0.7429 x 0.4523"
+    },
+    {
+      "name": "titanic_lamp",
+      "path": "Lamps/titanic_lamp.glb",
+      "keywords": [
+        "titanic_lamp",
+        "titanic"
+      ],
+      "description": "Lamps 3D model",
+      "dimension": "0.2064 x 0.2040 x 0.6417"
+    },
+    {
+      "name": "barcelona_chair",
+      "path": "Chair/barcelona_chair.glb",
+      "keywords": [
+        "barcelona_chair",
+        "barcelona"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "57.6090 x 71.1785 x 28.1058"
+    },
+    {
+      "name": "chair",
+      "path": "Chair/chair.glb",
+      "keywords": [
+        "chair"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "0.4236 x 0.4890 x 0.9960"
+    },
+    {
+      "name": "gaming_chair",
+      "path": "Chair/gaming_chair.glb",
+      "keywords": [
+        "gaming_chair",
+        "gaming"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "17.4484 x 31.2585 x 17.0495"
+    },
+    {
+      "name": "woven_lounge_chair",
+      "path": "Chair/woven_lounge_chair.glb",
+      "keywords": [
+        "woven_lounge_chair",
+        "woven",
+        "lounge"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "1.4762 x 2.0003 x 1.7335"
+    },
+    {
+      "name": "old_western_saloon_chair",
+      "path": "Chair/old_western_saloon_chair.glb",
+      "keywords": [
+        "old_western_saloon_chair",
+        "old",
+        "western",
+        "saloon"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "2.5940 x 2.2261 x 3.1670"
+    },
+    {
+      "name": "leather_chair",
+      "path": "Chair/leather_chair.glb",
+      "keywords": [
+        "leather_chair",
+        "leather"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "1.3459 x 1.2678 x 1.9071"
+    },
+    {
+      "name": "vintage_zen_dining_chair",
+      "path": "Chair/vintage_zen_dining_chair.glb",
+      "keywords": [
+        "vintage_zen_dining_chair",
+        "vintage",
+        "zen",
+        "dining"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "0.5096 x 0.8305 x 0.5535"
+    },
+    {
+      "name": "chair (1)",
+      "path": "Chair/chair (1).glb",
+      "keywords": [
+        "chair (1)"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "7.2678 x 4.9948 x 9.5676"
+    },
+    {
+      "name": "alko_chair",
+      "path": "Chair/alko_chair.glb",
+      "keywords": [
+        "alko_chair",
+        "alko"
+      ],
+      "description": "Chair 3D model",
+      "dimension": "71.9228 x 83.0734 x 72.1123"
+    },
+    {
+      "name": "antique_heriz_8708_golden_horn_beige_rugs",
+      "path": "Carpet/antique_heriz_8708_golden_horn_beige_rugs.glb",
+      "keywords": [
+        "antique_heriz_8708_golden_horn_beige_rugs",
+        "antique",
+        "heriz",
+        "golden",
+        "horn",
+        "beige",
+        "rugs"
+      ],
+      "description": "Carpet 3D model",
+      "dimension": "1.4996 x 0.0080 x 0.8000"
+    },
+    {
+      "name": "mat",
+      "path": "Carpet/mat.glb",
+      "keywords": [
+        "mat"
+      ],
+      "description": "Carpet 3D model",
+      "dimension": "1.6778 x 0.1098 x 2.3711"
+    }
+  ]
+}
