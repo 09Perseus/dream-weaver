@@ -4,13 +4,31 @@ import { OrbitControls, TransformControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGenerateRoom, getDisplaySize } from '@/hooks/useGenerateRoom';
 
-// Error boundary to catch WebGL context failures gracefully
-class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
+// Error boundary with retry support for WebGL context loss
+class WebGLErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean; retryKey: number }
+> {
+  state = { hasError: false, retryKey: 0 };
   static getDerivedStateFromError() { return { hasError: true }; }
+  retry = () => this.setState((s) => ({ hasError: false, retryKey: s.retryKey + 1 }));
   render() {
-    if (this.state.hasError) return this.props.fallback;
-    return this.props.children;
+    if (this.state.hasError) {
+      return (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted rounded-lg gap-3">
+          <p className="text-sm text-muted-foreground text-center px-4">
+            3D preview lost — WebGL context was interrupted.
+          </p>
+          <button
+            onClick={this.retry}
+            className="px-4 py-2 rounded-lg bg-accent text-white text-sm hover:opacity-90 transition-opacity"
+          >
+            Retry 3D View
+          </button>
+        </div>
+      );
+    }
+    return <div key={this.state.retryKey}>{this.props.children}</div>;
   }
 }
 
