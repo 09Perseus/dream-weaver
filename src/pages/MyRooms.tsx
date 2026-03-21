@@ -219,9 +219,9 @@ export default function MyRooms() {
                       onClick={() => navigate(`/room/${room.id}/edit`)}
                       title="Edit Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: "#C8B89A", border: "none" }}
+                      style={{ background: "hsl(var(--accent))", border: "none" }}
                     >
-                      <Pencil size={16} color="#0F0E0C" />
+                      <Pencil size={16} color="hsl(var(--bg))" />
                     </button>
                     {!room.is_copy && (
                       <button
