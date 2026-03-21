@@ -32,6 +32,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
   likeCount,
   liked = false,
   isOwnPost = false,
+  likeDisabled = false,
   onLike,
   delay = 0,
 }, ref) => {
