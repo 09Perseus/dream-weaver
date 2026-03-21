@@ -34,6 +34,9 @@ export default function RoomView() {
   const [roomOwnerId, setRoomOwnerId] = useState<string | null>(null);
   const [roomIsCopy, setRoomIsCopy] = useState(false);
   const [copying, setCopying] = useState(false);
+  const [communityPost, setCommunityPost] = useState<any>(null);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -43,6 +46,37 @@ export default function RoomView() {
     };
     checkPosted();
   }, [id, user]);
+
+  // Fetch community post for this room
+  useEffect(() => {
+    if (!id) return;
+    supabase
+      .from("community_posts")
+      .select("*")
+      .eq("room_design_id", id)
+      .eq("is_visible", true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setCommunityPost(data);
+      });
+  }, [id]);
+
+  // Check if current user liked this post
+  useEffect(() => {
+    if (!communityPost) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      supabase
+        .from("post_likes")
+        .select("id")
+        .eq("post_id", communityPost.id)
+        .eq("user_id", session.user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          setIsLiked(!!data);
+        });
+    });
+  }, [communityPost?.id]);
 
   useEffect(() => {
     if (navState?.items) return;
@@ -78,6 +112,30 @@ export default function RoomView() {
   };
 
   const handleAddAll = () => { furniture.forEach(handleAddItem); };
+
+  const handleLike = async () => {
+    if (!communityPost) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({ title: "Sign in to like rooms", variant: "destructive" });
+      return;
+    }
+    if (likeLoading) return;
+    setLikeLoading(true);
+    try {
+      if (isLiked) {
+        await supabase.from("post_likes").delete().eq("post_id", communityPost.id).eq("user_id", session.user.id);
+        setCommunityPost((prev: any) => ({ ...prev, like_count: Math.max(0, prev.like_count - 1) }));
+        setIsLiked(false);
+      } else {
+        await supabase.from("post_likes").insert({ post_id: communityPost.id, user_id: session.user.id });
+        setCommunityPost((prev: any) => ({ ...prev, like_count: prev.like_count + 1 }));
+        setIsLiked(true);
+      }
+    } finally {
+      setLikeLoading(false);
+    }
+  };
 
   const performCopy = async () => {
     const { data, error } = await (supabase as any)
@@ -169,6 +227,41 @@ export default function RoomView() {
 
       {/* Sidebar */}
       <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-border bg-surface">
+        {communityPost && (
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="font-heading text-[1.1rem] font-normal text-foreground mb-1 truncate">
+                {communityPost.title}
+              </p>
+              {communityPost.description && (
+                <p className="font-body text-[0.75rem] text-muted-foreground">{communityPost.description}</p>
+              )}
+              {communityPost.style_tags?.length > 0 && (
+                <div className="flex gap-1.5 flex-wrap mt-2">
+                  {communityPost.style_tags.map((tag: string) => (
+                    <span key={tag} className="font-body text-[0.6rem] tracking-[0.08em] uppercase border border-border text-muted-foreground px-1.5 py-0.5">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={handleLike}
+              disabled={likeLoading}
+              className="flex flex-col items-center gap-1 bg-transparent border border-border px-3 py-2 cursor-pointer transition-all duration-150 shrink-0 ml-4 hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ borderColor: isLiked ? "hsl(var(--accent))" : undefined }}
+            >
+              <span className={`text-[1.2rem] ${isLiked ? "text-accent" : "text-muted-foreground"}`}>
+                {isLiked ? "♥" : "♡"}
+              </span>
+              <span className={`font-body text-[0.65rem] tracking-[0.08em] ${isLiked ? "text-accent" : "text-muted-foreground"}`}>
+                {communityPost.like_count}
+              </span>
+            </button>
+          </div>
+        )}
+
         <div className="p-6 border-b border-border">
           <h2 className="font-heading text-[1.5rem] font-normal mb-1">Generated Room</h2>
           <p className="font-body text-[0.75rem] text-muted-foreground">{description || "Your custom design"}</p>
