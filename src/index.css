@@ -56,6 +56,7 @@
   :root[data-theme="light"] {
     --bg: 0 0% 100%;
     --surface: 210 17% 97%;
+    --accent-rgb: 31, 136, 61;
     --surface-2: 210 14% 92%;
     --border: 210 13% 83%;
     --accent: 140 48% 33%;
