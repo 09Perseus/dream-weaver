@@ -10,33 +10,34 @@ const corsHeaders = {
 
 const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 
-async function callClaude(prompt: string, apiKey: string, retries = 1): Promise<string> {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
+async function callClaudeWithTimeout(prompt: string, apiKey: string): Promise<string> {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("Claude API timeout")), 25000)
+  );
 
-    if (res.ok) {
-      const data = await res.json();
-      return data.content?.[0]?.text ?? "";
-    }
+  const claudeFetch = fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1024,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
 
-    console.error(`Claude API attempt ${attempt + 1} failed: ${res.status} ${await res.text()}`);
-    if (attempt === retries) {
-      throw new Error(`Claude API failed after ${retries + 1} attempts`);
-    }
+  const res = await Promise.race([claudeFetch, timeout]);
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Claude API error ${res.status}: ${body}`);
   }
-  throw new Error("Unreachable");
+
+  const data = await res.json();
+  return data.content?.[0]?.text ?? "";
 }
 
 serve(async (req) => {
@@ -67,7 +68,8 @@ serve(async (req) => {
 
     console.log("Received description:", description);
 
-    // Fetch furniture catalogue from Supabase
+    // Fetch furniture catalogue
+    console.log("Fetching furniture library...");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
@@ -80,12 +82,12 @@ serve(async (req) => {
       throw new Error(`Failed to fetch furniture: ${dbError?.message}`);
     }
 
-    console.log(`Fetched ${furnitureItems.length} furniture items`);
+    console.log("Furniture items loaded:", furnitureItems.length);
 
     if (furnitureItems.length === 0) {
       return new Response(
-        JSON.stringify({ error: "No furniture items in the catalogue. Please seed the furniture_items table first." }),
-        { status: 400, headers: jsonHeaders }
+        JSON.stringify({ error: "Furniture library is empty. Please add items to the furniture_items table first." }),
+        { status: 500, headers: jsonHeaders }
       );
     }
 
@@ -103,7 +105,7 @@ serve(async (req) => {
       }))
     );
 
-    const prompt = `You are an expert interior designer AI. The user wants this room:
+    const basePrompt = `You are an expert interior designer AI. The user wants this room:
 "${description}"
 
 Available furniture library:
@@ -143,9 +145,44 @@ Return ONLY a raw JSON array. No explanation, no markdown, no code fences. Exact
   { "id": "lamp_001", "x": 1.5, "y": 0, "z": -3, "rotation": 0, "scale": 1 }
 ]`;
 
-    // Call Claude (with 1 retry)
-    const rawText = await callClaude(prompt, anthropicKey);
-    console.log("Claude raw response:", rawText);
+    // Retry logic: up to 2 attempts
+    let rawText = "";
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      console.log("Claude attempt:", attempt);
+      try {
+        const promptToSend = attempt === 1
+          ? basePrompt
+          : basePrompt + "\n\nIMPORTANT: Return ONLY a raw JSON array. No markdown, no code fences, no explanation.";
+
+        console.log("Calling Claude API...");
+        rawText = await callClaudeWithTimeout(promptToSend, anthropicKey);
+        console.log("Claude responded, parsing...");
+        console.log("Claude raw response:", rawText);
+        lastError = null;
+        break;
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        console.error(`Claude attempt ${attempt} failed:`, lastError.message);
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 1000));
+        }
+      }
+    }
+
+    if (lastError) {
+      const isTimeout = lastError.message.includes("timeout");
+      return new Response(
+        JSON.stringify({
+          error: isTimeout
+            ? "Room generation timed out. Please try again."
+            : "Claude API failed after 2 attempts",
+          details: lastError.message,
+        }),
+        { status: 500, headers: jsonHeaders }
+      );
+    }
 
     // Clean markdown formatting before parsing
     const cleaned = rawText
@@ -153,34 +190,50 @@ Return ONLY a raw JSON array. No explanation, no markdown, no code fences. Exact
       .replace(/```/g, "")
       .trim();
 
-    // Parse & validate
-    let items: any[];
+    let parsed: any[];
     try {
-      items = JSON.parse(cleaned);
+      parsed = JSON.parse(cleaned);
     } catch {
       throw new Error("Claude returned invalid JSON");
     }
 
-    if (!Array.isArray(items)) {
+    if (!Array.isArray(parsed)) {
       throw new Error("Claude response is not an array");
     }
 
+    // Validate and sanitize items
     const validIds = new Set(furnitureItems.map((f) => f.id));
 
-    for (const item of items) {
-      if (!item.id || item.x == null || item.y == null || item.z == null || item.rotation == null || item.scale == null) {
-        throw new Error(`Item missing required fields: ${JSON.stringify(item)}`);
-      }
-      if (!validIds.has(item.id)) {
-        throw new Error(`Item id "${item.id}" not found in furniture catalogue`);
-      }
+    const validated = parsed
+      .filter((item) => {
+        if (!item.id || !validIds.has(item.id)) return false;
+        if (typeof item.x !== "number" || typeof item.z !== "number") return false;
+        if (item.x < -5 || item.x > 5 || item.z < -5 || item.z > 5) return false;
+        return true;
+      })
+      .map((item) => ({
+        id: item.id,
+        x: Math.max(-4, Math.min(4, item.x)),
+        y: 0,
+        z: Math.max(-4, Math.min(4, item.z)),
+        rotation: [0, 90, 180, 270].includes(item.rotation) ? item.rotation : 0,
+        scale: 1,
+      }));
+
+    console.log("Validated items:", validated.length);
+
+    if (validated.length < 3) {
+      return new Response(
+        JSON.stringify({ error: "Claude did not return enough valid furniture items" }),
+        { status: 500, headers: jsonHeaders }
+      );
     }
 
     // Build furniture detail map for selected items
-    const selectedIds = new Set(items.map((i) => i.id));
+    const selectedIds = new Set(validated.map((i) => i.id));
     const furniture = furnitureItems.filter((f) => selectedIds.has(f.id));
 
-    return new Response(JSON.stringify({ items, furniture }), {
+    return new Response(JSON.stringify({ items: validated, furniture }), {
       status: 200, headers: jsonHeaders,
     });
   } catch (error) {

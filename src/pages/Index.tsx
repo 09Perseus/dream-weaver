@@ -61,8 +61,22 @@ export default function Index() {
         { body: { description: prompt.trim() } }
       );
 
-      if (fnError) throw fnError;
-      if (data?.error) throw new Error(data.error);
+      const errorMessage = fnError?.message || data?.error || "";
+
+      if (fnError || data?.error) {
+        console.error("Generate room error:", fnError || data?.error);
+        if (errorMessage.includes("empty")) {
+          toast({ title: "No furniture available", description: "No furniture in the library yet. Check back soon!", variant: "destructive" });
+        } else if (errorMessage.includes("timeout")) {
+          toast({ title: "Timed out", description: "Room generation timed out. Please try again.", variant: "destructive" });
+        } else if (errorMessage.includes("valid furniture")) {
+          toast({ title: "Design failed", description: "Could not design a room with this description. Try being more specific.", variant: "destructive" });
+        } else {
+          toast({ title: "Something went wrong", description: "Something went wrong generating your room. Please try again.", variant: "destructive" });
+        }
+        setLoading(false);
+        return;
+      }
 
       const items: PlacedItem[] = data.items;
       const furniture: FurnitureDetail[] = data.furniture;
@@ -99,11 +113,10 @@ export default function Index() {
         state: { items, furniture, description: prompt.trim() },
       });
     } catch (err: any) {
-      console.error("Generate room error:", err);
+      console.error("Unexpected error:", err);
       toast({
         title: "Something went wrong",
-        description:
-          "Something went wrong generating your room. Please try again.",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
