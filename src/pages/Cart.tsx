@@ -189,10 +189,16 @@ export default function Cart() {
         Cart
       </h1>
 
-      {/* Hidden mount point when cart is empty so useEffect can find it */}
-      {items.length === 0 && (
-        <div id="payjp-card-element" style={{ position: "absolute", visibility: "hidden", pointerEvents: "none" }} />
-      )}
+      {/* Single PAY.JP mount point — always in DOM, hidden when cart empty */}
+      <div
+        id="payjp-card-element"
+        className="border-b border-border py-3"
+        style={{
+          display: items.length === 0 ? "none" : "block",
+          background: "transparent",
+          minHeight: 44,
+        }}
+      />
 
       {items.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
