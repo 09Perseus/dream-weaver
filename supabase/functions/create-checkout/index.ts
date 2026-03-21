@@ -21,7 +21,7 @@ serve(async (req) => {
 
   try {
     // Read secret (will be used when Stripe integration is implemented)
-    const _stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const _payjpKey = Deno.env.get("PAYJP_SECRET_KEY");
 
     const body = await req.json();
     const { items, success_url, cancel_url } = body;
