@@ -345,7 +345,7 @@ export default function Cart() {
             </div>
             <Button
               variant="amber"
-              className="w-full"
+              className="w-full min-h-[52px]"
               size="lg"
               onClick={handleCheckout}
               disabled={loading || !payjpReady || items.length === 0}
