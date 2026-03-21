@@ -408,7 +408,7 @@ export default function EditRoom() {
     }
   };
 
-  const handleAddFromPicker = (pickerItem: PickerItem) => {
+  const handleAddFromPicker = async (pickerItem: PickerItem) => {
     if (roomItems.some((ri) => ri.id === pickerItem.id)) {
       toast({ title: "Already added", description: "This item is already in the room." });
       return;
@@ -419,24 +419,37 @@ export default function EditRoom() {
       { id: pickerItem.id, x: 0, y: 0, z: 0, rotation: 0, scale: 1 },
     ]);
     setSelectedItemId(pickerItem.id);
+
+    // Fetch full furniture detail (including file_url) from DB
     if (!furniture.find((f) => f.id === pickerItem.id)) {
-      setFurniture((prev) => [
-        ...prev,
-        {
-          id: pickerItem.id,
-          name: pickerItem.name,
-          category: pickerItem.category,
-          price: pickerItem.price,
-          thumbnail_url: pickerItem.thumbnail_url,
-          file_url: null,
-          real_width: null,
-          real_depth: null,
-          real_height: null,
-          floor_offset: null,
-          style_tags: null,
-          buy_url: null,
-        },
-      ]);
+      const { data: fullDetail } = await supabase
+        .from("furniture_items")
+        .select("*")
+        .eq("id", pickerItem.id)
+        .maybeSingle();
+
+      if (fullDetail) {
+        setFurniture((prev) => [...prev, fullDetail as unknown as FurnitureDetail]);
+      } else {
+        // Fallback with picker data if full fetch fails
+        setFurniture((prev) => [
+          ...prev,
+          {
+            id: pickerItem.id,
+            name: pickerItem.name,
+            category: pickerItem.category,
+            price: pickerItem.price,
+            thumbnail_url: pickerItem.thumbnail_url,
+            file_url: null,
+            real_width: null,
+            real_depth: null,
+            real_height: null,
+            floor_offset: null,
+            style_tags: null,
+            buy_url: null,
+          },
+        ]);
+      }
     }
     toast({ title: "Item added", description: "Reposition it in the room." });
   };
