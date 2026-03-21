@@ -350,3 +350,63 @@
     font-size: 16px !important;
   }
 }
+
+/* Feature section patterns */
+.feature-section {
+  position: relative;
+  border-top: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.feature-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.feature-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+.feature-pattern-1 {
+  background-color: hsl(var(--surface));
+}
+.feature-pattern-1::before {
+  background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.feature-pattern-2 {
+  background-color: hsl(var(--surface-2));
+}
+.feature-pattern-2::before {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    hsl(var(--border)) 8px,
+    hsl(var(--border)) 9px
+  );
+}
+
+.feature-pattern-3 {
+  background-color: hsl(var(--surface));
+}
+.feature-pattern-3::before {
+  background-image:
+    linear-gradient(hsl(var(--border)) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Hero viewport fit */
+@media (min-height: 600px) and (min-width: 768px) {
+  .hero-section {
+    height: 100vh;
+    overflow: hidden;
+  }
+}
