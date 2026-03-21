@@ -147,7 +147,7 @@ export default function PostToCommunityDialog({ open, onOpenChange, roomId, onPo
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={posting}>
             Cancel
           </Button>
-          <Button variant="amber" onClick={handlePost} disabled={posting || !title.trim()}>
+          <Button variant="amber" onClick={handlePost} disabled={posting || !title.trim() || selectedTags.length === 0}>
             {posting ? "Posting…" : "Post"}
           </Button>
         </DialogFooter>
