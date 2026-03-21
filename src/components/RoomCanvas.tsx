@@ -518,8 +518,9 @@ export default function RoomCanvas({
         const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
         const fileUrl = detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
                           ? detail.file_url : undefined;
-        const clampedX = Math.max(-4, Math.min(4, item.x));
-        const clampedZ = Math.max(-4, Math.min(4, item.z));
+        const ROOM_HALF = 4.5;
+        const clampedX = Math.max(-ROOM_HALF, Math.min(ROOM_HALF, item.x));
+        const clampedZ = Math.max(-ROOM_HALF, Math.min(ROOM_HALF, item.z));
         return {
           id:          item.id,
           name:        detail?.name,
