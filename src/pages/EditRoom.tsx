@@ -226,7 +226,7 @@ export default function EditRoom() {
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
-                  <p className="font-body text-[0.7rem] text-accent">${item.price}</p>
+                  <p className="font-body text-[0.7rem] text-accent">{formatPrice(item.price)}</p>
                 </div>
                 <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
               </div>
