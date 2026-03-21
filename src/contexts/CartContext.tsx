@@ -49,12 +49,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const timer = setTimeout(async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      await supabase
+      await (supabase as any)
         .from("carts")
         .upsert(
           {
             user_id: session.user.id,
-            items: items as unknown as Record<string, unknown>[],
+            items: items,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id" }
