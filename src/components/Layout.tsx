@@ -1,21 +1,21 @@
+import React, { useState, forwardRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { useState } from "react";
 
 const navLinks = [
   { label: "Community", to: "/community" },
   { label: "My Rooms", to: "/my-rooms" },
 ];
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => {
   const { totalItems } = useCart();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div ref={ref} className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
@@ -96,4 +96,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1">{children}</main>
     </div>
   );
-}
+});
+
+Layout.displayName = "Layout";
+
+export default Layout;
