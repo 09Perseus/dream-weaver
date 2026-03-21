@@ -257,11 +257,7 @@ export default function Cart() {
               <p className="font-body text-[0.8rem] text-destructive mb-2">{payjpError}</p>
             )}
 
-            <div
-              id="payjp-card-element"
-              className="border-b border-border py-3 mb-2"
-              style={{ background: "transparent", minHeight: 44 }}
-            />
+            {/* Card element is rendered above, outside conditionals */}
 
             {!payjpReady && !payjpError && (
               <p className="font-body text-[0.7rem] text-muted-foreground">Loading card form...</p>
