@@ -1,7 +1,6 @@
 import React, { useState, forwardRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -30,98 +29,100 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
 
   return (
     <div ref={ref} className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="h-8 w-8 rounded-lg bg-amber flex items-center justify-center">
-              <span className="text-amber-foreground font-bold text-sm">R</span>
-            </div>
-            <span className="font-display text-lg font-semibold tracking-tight">
-              Room<span className="text-amber">AI</span>
+      <header className="sticky top-0 z-50 border-b border-border bg-background">
+        <div className="w-full flex h-14 items-center justify-between px-8">
+          <Link to="/" className="flex items-center">
+            <span className="font-heading text-[1.25rem] tracking-[0.2em] uppercase text-accent">
+              ROOMAI
             </span>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <Link key={link.to} to={link.to}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={location.pathname === link.to ? "text-amber" : "text-muted-foreground"}
-                >
-                  {link.label}
-                </Button>
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`font-body text-[0.75rem] tracking-[0.15em] uppercase transition-colors duration-200 ${
+                  location.pathname === link.to
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {link.label}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-6">
             <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-amber text-amber-foreground text-xs font-bold flex items-center justify-center">
-                    {totalItems}
-                  </span>
-                )}
-              </Button>
+              <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-accent" />
+              )}
             </Link>
 
             {user ? (
-              <div className="hidden md:flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">{truncatedEmail}</span>
-                <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4" />
+              <div className="hidden md:flex items-center gap-4">
+                <span className="font-body text-[0.75rem] text-muted-foreground">{truncatedEmail}</span>
+                <button
+                  onClick={handleSignOut}
+                  className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Sign Out
-                </Button>
+                </button>
               </div>
             ) : (
-              <Link to="/sign-in" className="hidden md:block">
-                <Button variant="amber-outline" size="sm">
-                  Sign In
-                </Button>
+              <Link
+                to="/sign-in"
+                className="hidden md:block font-body text-[0.75rem] tracking-[0.1em] uppercase text-accent hover:underline transition-all"
+              >
+                Sign In
               </Link>
             )}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
+            <button
+              className="md:hidden text-muted-foreground hover:text-foreground"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Mobile nav */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-border/50 bg-background p-4 animate-fade-in">
-            <nav className="flex flex-col gap-2">
+          <div className="md:hidden border-t border-border bg-background p-6 animate-fade-in">
+            <nav className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)}>
-                  <Button
-                    variant="ghost"
-                    className={`w-full justify-start ${location.pathname === link.to ? "text-amber" : ""}`}
-                  >
-                    {link.label}
-                  </Button>
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setMobileOpen(false)}
+                  className={`font-body text-[0.75rem] tracking-[0.15em] uppercase ${
+                    location.pathname === link.to ? "text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  {link.label}
                 </Link>
               ))}
               {user ? (
                 <>
-                  <span className="text-sm text-muted-foreground px-4 py-2">{truncatedEmail}</span>
-                  <Button variant="ghost" className="w-full justify-start" onClick={() => { setMobileOpen(false); handleSignOut(); }}>
-                    <LogOut className="h-4 w-4" />
+                  <span className="font-body text-[0.75rem] text-muted-foreground">{truncatedEmail}</span>
+                  <button
+                    onClick={() => { setMobileOpen(false); handleSignOut(); }}
+                    className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-muted-foreground text-left"
+                  >
                     Sign Out
-                  </Button>
+                  </button>
                 </>
               ) : (
-                <Link to="/sign-in" onClick={() => setMobileOpen(false)}>
-                  <Button variant="amber-outline" className="w-full">
-                    Sign In
-                  </Button>
+                <Link
+                  to="/sign-in"
+                  onClick={() => setMobileOpen(false)}
+                  className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-accent"
+                >
+                  Sign In
                 </Link>
               )}
             </nav>
