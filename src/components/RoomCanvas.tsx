@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useMemo, Suspense, Component, type ReactNode } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -24,10 +25,7 @@ function detectWebGL(): boolean {
 // ── WebGL unavailable fallback ────────────────────────────────────────────────
 function WebGLUnavailable({ items }: { items?: { id: string }[] }) {
   return (
-    <div
-      className="absolute inset-0 flex flex-col items-center justify-center
-                    bg-muted/50 rounded-lg gap-4 p-8"
-    >
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/50 rounded-lg gap-4 p-8">
       <div className="text-4xl">🛋️</div>
       <p className="font-heading text-lg text-foreground text-center">Room Generated Successfully!</p>
       <p className="text-sm text-muted-foreground text-center max-w-md">
@@ -45,12 +43,8 @@ function WebGLUnavailable({ items }: { items?: { id: string }[] }) {
 interface RoomCanvasProps {
   className?: string;
   style?: React.CSSProperties;
-
-  // Viewer / EditRoom mode
   items?: PlacedItem[];
   furniture?: FurnitureDetail[];
-
-  // Controlled selection — passed from EditRoom
   selectedItemId?: string | null;
   editingItemId?: string | null;
   onSelectItem?: (id: string) => void;
@@ -72,14 +66,10 @@ export interface FurnitureItem {
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
-  // Clean the path regardless of what format it arrives in
   const cleanPath = path
-    .replace(/^\/+/, "") // strip leading slashes
-    .replace(/^furnitures\//, "") // strip furnitures/ prefix
-    .replace(/\/\//g, "/"); // fix any double slashes
-
-  // Add logging to debug model paths
-  console.log("Loading model path:", path);
+    .replace(/^\/+/, "")
+    .replace(/^furnitures\//, "")
+    .replace(/\/\//g, "/");
 
   const { scene } = useGLTF(`/furnitures/${cleanPath}`);
   const cloned = scene.clone();
@@ -94,6 +84,31 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   cloned.position.y -= scaledBox.min.y;
 
   return <primitive object={cloned} />;
+}
+
+// ── Model Error Boundary ──────────────────────────────────────────────────────
+class ModelErrorBoundary extends Component
+  { children: ReactNode; itemId: string },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any) {
+    console.error("Model failed to load:", (this.props as any).itemId, error?.message || error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <mesh>
+          <boxGeometry args={[0.5, 0.5, 0.5]} />
+          <meshStandardMaterial color="#ef4444" wireframe />
+        </mesh>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 // ── MovableFurniture ──────────────────────────────────────────────────────────
@@ -117,27 +132,34 @@ function MovableFurniture({
   const dragOffset = useRef(new THREE.Vector3());
   const intersection = useMemo(() => new THREE.Vector3(), []);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
-
   const { camera, gl, raycaster, pointer } = useThree();
 
+  // ✅ FIX 1 — only check isEditMode so drag works immediately after double click
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    if (!isEditMode || !isSelected) return;
+    if (!isEditMode) return;
     e.stopPropagation();
     isDragging.current = true;
     gl.domElement.setPointerCapture(e.pointerId);
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
-    dragOffset.current.set(intersection.x - furniture.position[0], 0, intersection.z - furniture.position[2]);
+    dragOffset.current.set(
+      intersection.x - furniture.position[0],
+      0,
+      intersection.z - furniture.position[2]
+    );
   };
 
   const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
-    if (!isDragging.current || !isEditMode || !isSelected) return;
+    if (!isDragging.current || !isEditMode) return;
     e.stopPropagation();
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
-    onPositionChange([intersection.x - dragOffset.current.x, 0, intersection.z - dragOffset.current.z]);
+    onPositionChange([
+      intersection.x - dragOffset.current.x,
+      0,
+      intersection.z - dragOffset.current.z,
+    ]);
   };
 
   const handlePointerUp = (e: ThreeEvent<PointerEvent>) => {
@@ -171,20 +193,25 @@ function MovableFurniture({
       onClick={handleClick}
     >
       {furniture.path && furniture.path !== "PENDING_UPLOAD" ? (
-        <Suspense
-          fallback={
-            <mesh>
-              <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-              <meshStandardMaterial color="gray" wireframe />
-            </mesh>
-          }
-        >
-          <Model path={furniture.path} displaySize={furniture.displaySize} />
-        </Suspense>
+        <ModelErrorBoundary itemId={furniture.id}>
+          <Suspense
+            fallback={
+              <mesh>
+                <boxGeometry args={furniture.size ?? [1, 1, 1]} />
+                <meshStandardMaterial color="gray" wireframe />
+              </mesh>
+            }
+          >
+            <Model path={furniture.path} displaySize={furniture.displaySize} />
+          </Suspense>
+        </ModelErrorBoundary>
       ) : (
         <mesh castShadow receiveShadow>
           <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-          <meshStandardMaterial color={furniture.color || "white"} emissive={isSelected ? "#333333" : "#000000"} />
+          <meshStandardMaterial
+            color={furniture.color || "white"}
+            emissive={isSelected ? "#333333" : "#000000"}
+          />
         </mesh>
       )}
 
@@ -207,7 +234,7 @@ function MovableFurniture({
   );
 }
 
-// ── Item List Row (standalone mode only) ──────────────────────────────────────
+// ── Item List Row ─────────────────────────────────────────────────────────────
 function ItemListRow({
   furniture,
   isActive,
@@ -218,7 +245,9 @@ function ItemListRow({
   onClick: () => void;
 }) {
   const displayName =
-    furniture.name ?? furniture.path?.split("/").pop()?.replace(".glb", "").replace(/_/g, " ") ?? "Furniture";
+    furniture.name ??
+    furniture.path?.split("/").pop()?.replace(".glb", "").replace(/_/g, " ") ??
+    "Furniture";
 
   return (
     <button
@@ -227,10 +256,7 @@ function ItemListRow({
                   cursor-pointer min-h-[44px] flex items-center gap-3
                   ${isActive ? "bg-accent/10 border-l-2 border-l-accent" : "hover:bg-background"}`}
     >
-      <div
-        className="h-10 w-10 shrink-0 border border-border bg-muted rounded
-                      flex items-center justify-center"
-      >
+      <div className="h-10 w-10 shrink-0 border border-border bg-muted rounded flex items-center justify-center">
         <span className="text-lg">🛋️</span>
       </div>
       <div className="min-w-0 flex-1">
@@ -238,10 +264,7 @@ function ItemListRow({
         <p className="font-body text-[0.7rem] text-accent">$1.00</p>
       </div>
       {isActive && (
-        <span
-          className="font-body text-[0.6rem] tracking-[0.1em] uppercase
-                         text-accent shrink-0"
-        >
+        <span className="font-body text-[0.6rem] tracking-[0.1em] uppercase text-accent shrink-0">
           Selected
         </span>
       )}
@@ -249,7 +272,7 @@ function ItemListRow({
   );
 }
 
-// ── Info Card (standalone mode only) ──────────────────────────────────────────
+// ── Info Card ─────────────────────────────────────────────────────────────────
 function InfoCard({
   furniture,
   isEditMode,
@@ -262,7 +285,9 @@ function InfoCard({
   onBack: () => void;
 }) {
   const displayName =
-    furniture.name ?? furniture.path?.split("/").pop()?.replace(".glb", "").replace(/_/g, " ") ?? "Furniture";
+    furniture.name ??
+    furniture.path?.split("/").pop()?.replace(".glb", "").replace(/_/g, " ") ??
+    "Furniture";
 
   const size = furniture.displaySize ?? 1;
 
@@ -276,19 +301,13 @@ function InfoCard({
         >
           ← Back
         </button>
-        <span
-          className="font-body text-[0.7rem] tracking-[0.1em] uppercase
-                         text-muted-foreground ml-auto"
-        >
+        <span className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground ml-auto">
           {isEditMode ? "Edit Mode" : "Item Details"}
         </span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <div
-          className="w-full aspect-square bg-muted rounded-lg border border-border
-                        flex items-center justify-center"
-        >
+        <div className="w-full aspect-square bg-muted rounded-lg border border-border flex items-center justify-center">
           <span className="text-6xl">🛋️</span>
         </div>
 
@@ -320,17 +339,14 @@ function InfoCard({
         )}
 
         <div className="space-y-2 pt-1">
-          <button
-            className="w-full py-2 px-4 bg-accent text-white text-sm font-body
-                             rounded-lg hover:opacity-90 transition-opacity"
-          >
+          <button className="w-full py-2 px-4 bg-accent text-white text-sm font-body rounded-lg hover:opacity-90 transition-opacity">
             Add to Cart
           </button>
+          {/* ✅ FIX 2 — delete button always visible in edit mode */}
           {isEditMode && (
             <button
               onClick={onDelete}
-              className="w-full py-2 px-4 bg-destructive text-white text-sm font-body
-                         rounded-lg hover:opacity-90 transition-opacity"
+              className="w-full py-2 px-4 bg-destructive text-white text-sm font-body rounded-lg hover:opacity-90 transition-opacity"
             >
               Delete from Room
             </button>
@@ -341,7 +357,7 @@ function InfoCard({
   );
 }
 
-// ── Standalone Sidebar (used only when NOT in EditRoom) ───────────────────────
+// ── Standalone Sidebar ────────────────────────────────────────────────────────
 function StandaloneSidebar({
   furnitures,
   selectedId,
@@ -367,6 +383,7 @@ function StandaloneSidebar({
                   ${isMobile ? "w-full h-64 border-t" : "w-72 border-l"}`}
     >
       {selectedFurniture ? (
+        // ✅ FIX 3 — InfoCard shows on single click, edit mode shows on double click
         <InfoCard
           furniture={selectedFurniture}
           isEditMode={editId === selectedFurniture.id}
@@ -376,19 +393,13 @@ function StandaloneSidebar({
       ) : (
         <>
           <div className="p-4 border-b border-border shrink-0">
-            <h3
-              className="font-body text-[0.7rem] tracking-[0.1em] uppercase
-                           text-muted-foreground"
-            >
+            <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground">
               Room Items ({furnitures.length})
             </h3>
           </div>
           <div className="flex-1 overflow-y-auto">
             {furnitures.length === 0 ? (
-              <p
-                className="font-body text-[0.75rem] text-muted-foreground
-                            text-center py-8 px-4"
-              >
+              <p className="font-body text-[0.75rem] text-muted-foreground text-center py-8 px-4">
                 No furniture yet. Generate a room to get started.
               </p>
             ) : (
@@ -420,10 +431,7 @@ export default function RoomCanvas({
   onEditItem: externalOnEdit,
   onPositionChange: externalOnPositionChange,
 }: RoomCanvasProps) {
-  // Is this canvas being controlled by EditRoom?
   const isControlled = externalOnSelect !== undefined;
-
-  // Is this canvas being used as a viewer (EditRoom passes items + furniture)?
   const isViewerMode = !!(items && furniture);
 
   const roomSize = 5;
@@ -432,11 +440,9 @@ export default function RoomCanvas({
   const halfH = roomHeight / 2;
   const isMobile = useIsMobile();
 
-  // Internal state — only used when NOT controlled by EditRoom
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
   const [internalEditId, setInternalEditId] = useState<string | null>(null);
 
-  // Resolve which state to use
   const selectedId = isControlled ? (controlledSelectedId ?? null) : internalSelectedId;
   const editId = isControlled ? (controlledEditingId ?? null) : internalEditId;
 
@@ -452,7 +458,6 @@ export default function RoomCanvas({
     generate,
   } = useGenerateRoom({ roomSize, roomHeight });
 
-  // Viewer mode: convert PlacedItem[] + FurnitureDetail[] → FurnitureItem[]
   const viewerFurnitures: FurnitureItem[] = isViewerMode
     ? items.map((item) => {
         const detail = furniture.find((f) => f.id === item.id);
@@ -475,7 +480,6 @@ export default function RoomCanvas({
       })
     : [];
 
-  // Force all generated items to y = 0
   const normalizedGenerated = generatedFurnitures.map((f) => ({
     ...f,
     position: [f.position[0], 0, f.position[2]] as [number, number, number],
@@ -492,16 +496,16 @@ export default function RoomCanvas({
     });
   }, []);
 
-  // Position change — internal or external
   const handlePositionChange = (id: string, newPos: [number, number, number]) => {
     if (externalOnPositionChange) {
       externalOnPositionChange(id, [newPos[0], 0, newPos[2]]);
     } else {
-      setFurnitures((prev) => prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f)));
+      setFurnitures((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f))
+      );
     }
   };
 
-  // Single click handler
   const handleSingleClick = (id: string) => {
     if (isControlled) {
       externalOnSelect!(id);
@@ -511,7 +515,7 @@ export default function RoomCanvas({
     }
   };
 
-  // Double click handler
+  // ✅ FIX 2 — always set selectedId on double click so InfoCard always shows
   const handleDoubleClick = (id: string) => {
     if (isControlled) {
       externalOnEdit!(id);
@@ -521,7 +525,6 @@ export default function RoomCanvas({
     }
   };
 
-  // Internal delete
   const handleInternalDelete = (id: string) => {
     setFurnitures((prev) => prev.filter((f) => f.id !== id));
     setInternalSelectedId(null);
@@ -535,11 +538,10 @@ export default function RoomCanvas({
       className={`relative flex ${isMobile ? "flex-col" : "flex-row"} ${className}`}
       style={{ width: "100%", height: "100%", minHeight: "400px", ...style }}
     >
-      {/* ── 3D Viewport ──────────────────────────────────────────────────── */}
       <div className="relative flex-1 min-h-0 min-w-0">
         {!webglSupported && <WebGLUnavailable items={isViewerMode ? items : undefined} />}
 
-        {/* Prompt input — standalone generate mode only */}
+        {/* Prompt input — standalone mode only */}
         {!isViewerMode && !isControlled && webglSupported && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xl">
             <div className="flex gap-2">
@@ -568,10 +570,7 @@ export default function RoomCanvas({
         {/* Hint */}
         {activeFurnitures.length > 0 && !isGenerating && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-            <p
-              className="text-[0.7rem] text-white/50 bg-black/30 backdrop-blur-sm
-                          px-3 py-1 rounded-full"
-            >
+            <p className="text-[0.7rem] text-white/50 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">
               Click to inspect · Double-click to move
             </p>
           </div>
@@ -579,10 +578,7 @@ export default function RoomCanvas({
 
         {/* Loading overlay */}
         {isGenerating && (
-          <div
-            className="absolute inset-0 z-10 flex items-center justify-center
-                          bg-black/70 backdrop-blur-sm rounded-lg"
-          >
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
             <div className="text-center">
               <p className="text-2xl mb-3">✦</p>
               <p className="text-sm text-white/80 animate-pulse">{loadingMessage}</p>
@@ -592,37 +588,28 @@ export default function RoomCanvas({
 
         {/* Error */}
         {error && (
-          <div
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20
-                          bg-destructive/90 text-white px-4 py-2 rounded-lg
-                          text-sm max-w-md text-center"
-          >
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/90 text-white px-4 py-2 rounded-lg text-sm max-w-md text-center">
             {error}
           </div>
         )}
 
         {/* Empty state */}
         {activeFurnitures.length === 0 && !isGenerating && (
-          <div
-            className="absolute inset-0 z-[5] flex items-center justify-center
-                          pointer-events-none"
-          >
+          <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
             <p className="text-sm text-muted-foreground/60">
               {isControlled ? "Add furniture from the picker on the left" : "Describe a room above to get started"}
             </p>
           </div>
         )}
 
-        {/* Three.js Canvas */}
+        {/* Canvas */}
         {webglSupported && (
           <Canvas
             shadows
             camera={{ position: [10, 7, 10], fov: 50 }}
             style={{ width: "100%", height: "100%" }}
             onPointerMissed={() => {
-              if (isControlled) {
-                // don't clear — EditRoom manages its own state
-              } else {
+              if (!isControlled) {
                 setInternalSelectedId(null);
                 setInternalEditId(null);
               }
@@ -714,8 +701,8 @@ export default function RoomCanvas({
         )}
       </div>
 
-      {/* ── Standalone sidebar — only shown when NOT controlled by EditRoom ── */}
-      {!isControlled && (
+      {/* ✅ FIX 3 — sidebar only appears when an object is selected or being edited */}
+      {!isControlled && (internalSelectedId || internalEditId) && (
         <StandaloneSidebar
           furnitures={activeFurnitures}
           selectedId={internalSelectedId}
