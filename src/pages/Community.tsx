@@ -194,7 +194,7 @@ export default function Community() {
               id={post.id}
               roomDesignId={post.room_design_id}
               title={post.title}
-              description={post.room_designs?.description ?? post.description}
+              description={post.description}
               author={post.user_id === user?.id ? "You" : "Community Member"}
               thumbnailUrl={post.thumbnail_url ?? undefined}
               likeCount={post.like_count}
