@@ -215,7 +215,7 @@ export default function RoomView() {
           {!isOwnRoom && (
             <Button
               variant="outline"
-              className="w-full"
+              className={`w-full ${copying ? "button-loading" : ""}`}
               disabled={copying}
               onClick={handleCopyRoom}
             >
