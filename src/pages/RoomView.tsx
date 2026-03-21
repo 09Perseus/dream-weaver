@@ -238,17 +238,19 @@ export default function RoomView() {
               <Pencil className="h-4 w-4" />
               Edit
             </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              disabled={posted}
-              onClick={() => {
-                if (!user) { toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" }); return; }
-                setPostDialogOpen(true);
-              }}
-            >
-              {posted ? <><Check className="h-4 w-4" />Posted ✓</> : <><Share2 className="h-4 w-4" />Post</>}
-            </Button>
+            {!roomIsCopy && (
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={posted}
+                onClick={() => {
+                  if (!user) { toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" }); return; }
+                  setPostDialogOpen(true);
+                }}
+              >
+                {posted ? <><Check className="h-4 w-4" />Posted ✓</> : <><Share2 className="h-4 w-4" />Post</>}
+              </Button>
+            )}
           </div>
         </div>
       </aside>
