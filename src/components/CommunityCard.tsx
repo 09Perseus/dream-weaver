@@ -15,6 +15,7 @@ interface CommunityCardProps {
   likeCount: number;
   liked?: boolean;
   isOwnPost?: boolean;
+  likeDisabled?: boolean;
   onLike?: () => void;
   delay?: number;
 }
@@ -31,6 +32,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
   likeCount,
   liked = false,
   isOwnPost = false,
+  likeDisabled = false,
   onLike,
   delay = 0,
 }, ref) => {
@@ -85,11 +87,12 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
                 <span className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">{author}</span>
               </div>
               <button
+                disabled={likeDisabled}
                 onClick={(e) => {
                   e.preventDefault();
                   onLike?.();
                 }}
-                className="flex items-center gap-1 font-body text-[0.75rem] text-muted-foreground hover:text-accent transition-colors active:scale-95"
+                className={`flex items-center gap-1 font-body text-[0.75rem] text-muted-foreground hover:text-accent transition-colors active:scale-95 ${likeDisabled ? "opacity-50 pointer-events-none" : ""}`}
               >
                 <Heart className={`h-4 w-4 ${liked ? "fill-accent text-accent" : ""}`} />
                 <span>{likeCount}</span>
