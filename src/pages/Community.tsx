@@ -33,6 +33,17 @@ export default function Community() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("Community useEffect fired");
+    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL ? "SET" : "MISSING");
+    console.log("Supabase Key:", import.meta.env.VITE_SUPABASE_ANON_KEY ? "SET" : "MISSING");
+
+    supabase
+      .from("community_posts")
+      .select("count", { count: "exact", head: true })
+      .then(({ count, error: countErr }) => {
+        console.log("Connection test - count:", count, "error:", countErr);
+      });
+
     setLoading(true);
     setError(null);
 
