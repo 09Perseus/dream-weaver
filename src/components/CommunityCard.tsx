@@ -40,7 +40,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
       style={{ animationDelay: `${delay}ms` }}
     >
       <Link to={linkTo} className="block">
-        <div className="rounded-xl overflow-hidden bg-card border border-border/50 transition-all duration-300 hover:border-amber/30 hover:shadow-lg hover:shadow-amber/5">
+        <div className="overflow-hidden bg-card border border-border transition-all duration-200 hover:border-accent">
           <div className="aspect-[16/10] bg-surface overflow-hidden">
             {thumbnailUrl ? (
               <img
