@@ -23,7 +23,7 @@ export default function OrderConfirmation() {
   if (!state) return null;
 
   return (
-    <div className="container py-16 max-w-lg text-center animate-reveal-up">
+    <div className="container py-16 max-w-lg text-center animate-reveal-up px-6">
       {/* Checkmark */}
       <div
         className="mx-auto mb-8 flex items-center justify-center"
