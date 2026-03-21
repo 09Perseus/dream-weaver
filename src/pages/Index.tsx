@@ -357,6 +357,7 @@ export default function Index() {
               setError={setError}
               loading={loading}
               onGenerate={handleGenerate}
+              onFocusChange={setInputFocused}
             />
           </div>
         </div>
