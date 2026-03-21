@@ -155,7 +155,7 @@ export default function Orders() {
                       {order.status.toUpperCase()}
                     </span>
                     <span className="font-heading text-[1.3rem] text-accent">
-                      {formatJPY(order.total_usd)}
+                      {formatPrice(order.total_usd)}
                     </span>
                   </div>
                 </div>

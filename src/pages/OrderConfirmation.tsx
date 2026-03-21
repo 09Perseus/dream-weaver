@@ -59,7 +59,7 @@ export default function OrderConfirmation() {
         <div className="flex justify-between font-body text-[0.75rem]">
           <span className="text-muted-foreground uppercase tracking-[0.08em]">Total</span>
           <span className="text-accent font-heading text-[1.25rem]">
-            ¥{state.amount.toLocaleString()}
+            ¥{state.amount.toLocaleString()} <span className="font-body text-[0.7rem] text-muted-foreground">({formatPrice(state.amount / 150)})</span>
           </span>
         </div>
 
