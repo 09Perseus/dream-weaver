@@ -13,6 +13,7 @@ import EditRoom from "./pages/EditRoom";
 import Community from "./pages/Community";
 import MyRooms from "./pages/MyRooms";
 import Cart from "./pages/Cart";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
