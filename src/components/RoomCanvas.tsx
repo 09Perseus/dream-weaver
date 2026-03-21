@@ -1,8 +1,23 @@
-import { useState, useRef, useEffect, Suspense, Component, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useMemo, Suspense, Component, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, TransformControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGenerateRoom, getDisplaySize } from '@/hooks/useGenerateRoom';
+
+// Detect WebGL support once
+function detectWebGL(): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) return false;
+    // Test the exact call that Three.js uses
+    const glCtx = gl as WebGLRenderingContext;
+    const result = glCtx.getShaderPrecisionFormat(glCtx.VERTEX_SHADER, glCtx.HIGH_FLOAT);
+    return result !== null && result.precision > 0;
+  } catch {
+    return false;
+  }
+}
 
 // Error boundary with retry support for WebGL context loss
 class WebGLErrorBoundary extends Component<
@@ -32,6 +47,21 @@ class WebGLErrorBoundary extends Component<
   }
 }
 
+// Fallback when WebGL is not available
+function WebGLUnavailable({ items }: { items?: { id: string }[] }) {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/50 rounded-lg gap-4 p-8">
+      <div className="text-4xl">🛋️</div>
+      <p className="font-heading text-lg text-foreground text-center">Room Generated Successfully!</p>
+      <p className="text-sm text-muted-foreground text-center max-w-md">
+        3D preview requires WebGL support. Open this page in a full browser (Chrome, Firefox, Safari) to see the interactive 3D view.
+      </p>
+      {items && items.length > 0 && (
+        <p className="text-xs text-muted-foreground">{items.length} furniture items placed</p>
+      )}
+    </div>
+  );
+}
 import type { PlacedItem, FurnitureDetail } from '@/lib/edgeFunctions';
 
 interface RoomCanvasProps {
