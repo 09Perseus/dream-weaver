@@ -255,9 +255,17 @@ export default function Index() {
       const items: PlacedItem[] = data.items;
       const furniture: FurnitureDetail[] = data.furniture;
       const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.user?.id) {
+        // Not logged in — navigate directly to room view without saving
+        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
+        setLoading(false);
+        return;
+      }
+
       const { data: room, error: insertError } = await supabase
         .from("room_designs")
-        .insert({ description: prompt.trim(), items: items as any, user_id: session?.user?.id, share_token: crypto.randomUUID() })
+        .insert({ description: prompt.trim(), items: items as any, user_id: session.user.id, share_token: crypto.randomUUID() })
         .select("id")
         .single();
 
