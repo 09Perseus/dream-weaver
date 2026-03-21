@@ -1,3 +1,4 @@
+import React, { forwardRef } from "react";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -13,7 +14,7 @@ interface CommunityCardProps {
   delay?: number;
 }
 
-export default function CommunityCard({
+const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
   id,
   title,
   author,
@@ -23,9 +24,10 @@ export default function CommunityCard({
   liked = false,
   onLike,
   delay = 0,
-}: CommunityCardProps) {
+}, ref) => {
   return (
     <div
+      ref={ref}
       className="group animate-reveal-up"
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -73,4 +75,8 @@ export default function CommunityCard({
       </Link>
     </div>
   );
-}
+});
+
+CommunityCard.displayName = "CommunityCard";
+
+export default CommunityCard;
