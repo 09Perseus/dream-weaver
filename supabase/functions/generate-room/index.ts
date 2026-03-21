@@ -103,29 +103,44 @@ serve(async (req) => {
       }))
     );
 
-    const prompt = `You are an interior designer AI. The user wants: "${description}"
+    const prompt = `You are an expert interior designer AI. The user wants this room:
+"${description}"
 
-Here is the available furniture library:
+Available furniture library:
 ${catalogue}
 
-Return a JSON array of 6 to 8 furniture items selected from the library above that best match the user's description.
+Select 6 to 8 items from the library that best match the user's description and style. Return their placement in the room as a JSON array.
 
-Rules:
-- Only use item IDs that exist in the library above
+ROOM RULES:
+- The room is 10 x 10 metres. The centre is x=0, z=0.
 - x must be between -4 and 4
 - z must be between -4 and 4
-- y must always be 0
-- rotation is in degrees (0, 90, 180, or 270)
+- y is always 0 (floor level)
+- rotation is in degrees: 0, 90, 180, or 270 only
 - scale is always 1
-- No two items should be placed within 0.5 metres of each other
-- Place large items like beds and sofas against walls (x or z near -4 or 4)
-- Place tables and chairs in the centre area
-- Lamps go in corners or beside beds and sofas
+- Minimum 0.8 metres gap between any two item centres
+- Account for each item's width and depth when placing — do not let bounding boxes overlap
 
-Return ONLY a valid JSON array with no explanation, no markdown, no code fences. Example format:
+PLACEMENT STYLE RULES:
+- Beds go against the back wall: z near -4, centred on x=0
+- Sofas face the room centre, z near 2 to 3
+- Coffee tables go directly in front of sofas, z near 0 to 1
+- Dining tables go centre room x=0, z=0
+- Chairs cluster around tables or face sofas
+- Floor lamps go in corners or beside beds and sofas
+- Plants go in corners, x near ±3.5, z near ±3.5
+- Rugs go flat at room centre under the main seating area
+- Shelves go against side walls, x near -4 or 4
+
+STYLE MATCHING:
+- Prioritise items whose style_tags overlap with the user's description keywords
+- Mix categories naturally — a bedroom needs a bed, lamp, plant, rug at minimum
+- A living room needs a sofa, coffee table, lamp, plant, rug at minimum
+
+Return ONLY a raw JSON array. No explanation, no markdown, no code fences. Exactly this format:
 [
-  { "id": "sofa_001", "x": -3, "y": 0, "z": 0, "rotation": 90, "scale": 1 },
-  { "id": "table_001", "x": 0, "y": 0, "z": 0, "rotation": 0, "scale": 1 }
+  { "id": "bed_001", "x": 0, "y": 0, "z": -3.5, "rotation": 0, "scale": 1 },
+  { "id": "lamp_001", "x": 1.5, "y": 0, "z": -3, "rotation": 0, "scale": 1 }
 ]`;
 
     // Call Claude (with 1 retry)
