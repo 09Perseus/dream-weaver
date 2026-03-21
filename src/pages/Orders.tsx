@@ -22,6 +22,7 @@ interface Order {
 
 export default function Orders() {
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
