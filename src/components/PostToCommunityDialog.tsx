@@ -31,6 +31,10 @@ export default function PostToCommunityDialog({ open, onOpenChange, roomId, onPo
       toast({ title: "Title required", description: "Please enter a title for your post.", variant: "destructive" });
       return;
     }
+    if (selectedTags.length === 0) {
+      toast({ title: "Please select at least one style tag", variant: "destructive" });
+      return;
+    }
 
     setPosting(true);
     try {
