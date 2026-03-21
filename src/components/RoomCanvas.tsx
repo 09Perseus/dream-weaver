@@ -3,6 +3,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useGenerateRoom, getDisplaySize } from '@/hooks/useGenerateRoom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { PlacedItem, FurnitureDetail } from '@/lib/edgeFunctions';
