@@ -683,7 +683,7 @@ export default function RoomCanvas({
           
             <Canvas
               shadows
-              camera={{ position: [10, 7, 10], fov: 50 }}
+              camera={{ position: [0, 8, 12], fov: 50 }}
               style={{ width: '100%', height: '100%' }}
               onPointerMissed={() => {
                 if (isControlled) {
