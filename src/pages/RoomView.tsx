@@ -174,11 +174,31 @@ export default function RoomView() {
         )}
 
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={() => {}}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => {
+              if (!user) {
+                toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" });
+                return;
+              }
+              navigate(`/room/${id}/edit`);
+            }}
+          >
             <Pencil className="h-4 w-4" />
             Edit Room
           </Button>
-          <Button variant="outline" className="flex-1" onClick={() => {}}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => {
+              if (!user) {
+                toast({ title: "Sign in required", description: "Please sign in to post to the community.", variant: "destructive" });
+                return;
+              }
+              // Post to community logic
+            }}
+          >
             <Share2 className="h-4 w-4" />
             Post
           </Button>
