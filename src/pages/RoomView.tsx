@@ -113,6 +113,30 @@ export default function RoomView() {
 
   const handleAddAll = () => { furniture.forEach(handleAddItem); };
 
+  const handleLike = async () => {
+    if (!communityPost) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({ title: "Sign in to like rooms", variant: "destructive" });
+      return;
+    }
+    if (likeLoading) return;
+    setLikeLoading(true);
+    try {
+      if (isLiked) {
+        await supabase.from("post_likes").delete().eq("post_id", communityPost.id).eq("user_id", session.user.id);
+        setCommunityPost((prev: any) => ({ ...prev, like_count: Math.max(0, prev.like_count - 1) }));
+        setIsLiked(false);
+      } else {
+        await supabase.from("post_likes").insert({ post_id: communityPost.id, user_id: session.user.id });
+        setCommunityPost((prev: any) => ({ ...prev, like_count: prev.like_count + 1 }));
+        setIsLiked(true);
+      }
+    } finally {
+      setLikeLoading(false);
+    }
+  };
+
   const performCopy = async () => {
     const { data, error } = await (supabase as any)
       .from("room_designs")
