@@ -298,7 +298,7 @@ export default function RoomView() {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
-                        <p className="font-body text-[0.75rem] text-accent">${item.price.toLocaleString()}</p>
+                        <p className="font-body text-[0.75rem] text-accent">{formatPrice(item.price)}</p>
                       </div>
                       <button
                         onClick={() => setSelectedItem(item)}
