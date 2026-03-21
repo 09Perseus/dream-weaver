@@ -30,24 +30,44 @@ export default function Community() {
   const [activeFilter, setActiveFilter] = useState("Most Recent");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const { data, error } = await supabase
-        .from("community_posts")
-        .select(`*, room_designs (id, description)`)
-        .eq("is_visible", true)
-        .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
-        .limit(12);
+    setLoading(true);
+    setError(null);
 
-      if (error) {
-        console.error("Community fetch error:", error);
-      } else {
-        setPosts((data as unknown as CommunityPost[]) ?? []);
-      }
+    const timeout = setTimeout(() => {
       setLoading(false);
+      setError("Loading timed out. Please refresh the page.");
+    }, 8000);
+
+    const fetchPosts = async () => {
+      try {
+        const { data, error: fetchErr } = await supabase
+          .from("community_posts")
+          .select("*")
+          .eq("is_visible", true)
+          .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
+          .limit(12);
+
+        if (fetchErr) {
+          console.error("Community fetch error:", fetchErr);
+          setError("Failed to load: " + fetchErr.message);
+          return;
+        }
+
+        setPosts((data as unknown as CommunityPost[]) ?? []);
+      } catch (err: any) {
+        console.error("Unexpected community error:", err);
+        setError("Unexpected error: " + err.message);
+      } finally {
+        clearTimeout(timeout);
+        setLoading(false);
+      }
     };
     fetchPosts();
+
+    return () => clearTimeout(timeout);
   }, [activeFilter]);
 
   useEffect(() => {
@@ -152,6 +172,16 @@ export default function Community() {
             <div className="h-full w-1/3 bg-accent animate-line-progress" />
           </div>
         </div>
+      ) : error ? (
+        <div className="text-center py-16">
+          <p className="font-body text-[0.85rem] text-destructive mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-accent border border-border px-6 py-2 bg-transparent cursor-pointer hover:border-accent transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       ) : filteredPosts.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
           <p className="font-body text-[0.8rem] text-muted-foreground">No community posts yet. Be the first to share a room!</p>
@@ -164,7 +194,7 @@ export default function Community() {
               id={post.id}
               roomDesignId={post.room_design_id}
               title={post.title}
-              description={post.room_designs?.description ?? post.description}
+              description={post.description}
               author={post.user_id === user?.id ? "You" : "Community Member"}
               thumbnailUrl={post.thumbnail_url ?? undefined}
               likeCount={post.like_count}
