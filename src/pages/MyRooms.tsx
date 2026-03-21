@@ -14,6 +14,7 @@ interface Room {
   is_shared: boolean;
   is_copy?: boolean;
   source_room_id?: string | null;
+  thumbnail_url?: string | null;
 }
 
 export default function MyRooms() {
