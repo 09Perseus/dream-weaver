@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Plus, Pencil, Check, Share2, Copy } from "lucide-react";
+import FurnitureDetailPanel from "@/components/FurnitureDetailPanel";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
@@ -37,6 +38,7 @@ export default function RoomView() {
   const [communityPost, setCommunityPost] = useState<any>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<FurnitureDetail | null>(null);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -227,125 +229,131 @@ export default function RoomView() {
 
       {/* Sidebar */}
       <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-border bg-surface">
-        {communityPost && (
-          <div className="p-6 border-b border-border flex items-center justify-between">
-            <div className="min-w-0 flex-1">
-              <p className="font-heading text-[1.1rem] font-normal text-foreground mb-1 truncate">
-                {communityPost.title}
-              </p>
-              {communityPost.description && (
-                <p className="font-body text-[0.75rem] text-muted-foreground">{communityPost.description}</p>
-              )}
-              {communityPost.style_tags?.length > 0 && (
-                <div className="flex gap-1.5 flex-wrap mt-2">
-                  {communityPost.style_tags.map((tag: string) => (
-                    <span key={tag} className="font-body text-[0.6rem] tracking-[0.08em] uppercase border border-border text-muted-foreground px-1.5 py-0.5">
-                      {tag}
-                    </span>
+        {selectedItem ? (
+          <FurnitureDetailPanel item={selectedItem} onBack={() => setSelectedItem(null)} />
+        ) : (
+          <>
+            {communityPost && (
+              <div className="p-6 border-b border-border flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="font-heading text-[1.1rem] font-normal text-foreground mb-1 truncate">
+                    {communityPost.title}
+                  </p>
+                  {communityPost.description && (
+                    <p className="font-body text-[0.75rem] text-muted-foreground">{communityPost.description}</p>
+                  )}
+                  {communityPost.style_tags?.length > 0 && (
+                    <div className="flex gap-1.5 flex-wrap mt-2">
+                      {communityPost.style_tags.map((tag: string) => (
+                        <span key={tag} className="font-body text-[0.6rem] tracking-[0.08em] uppercase border border-border text-muted-foreground px-1.5 py-0.5">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={handleLike}
+                  disabled={likeLoading}
+                  className="flex flex-col items-center gap-1 bg-transparent border border-border px-3 py-2 cursor-pointer transition-all duration-150 shrink-0 ml-4 hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ borderColor: isLiked ? "hsl(var(--accent))" : undefined }}
+                >
+                  <span className={`text-[1.2rem] ${isLiked ? "text-accent" : "text-muted-foreground"}`}>
+                    {isLiked ? "♥" : "♡"}
+                  </span>
+                  <span className={`font-body text-[0.65rem] tracking-[0.08em] ${isLiked ? "text-accent" : "text-muted-foreground"}`}>
+                    {communityPost.like_count}
+                  </span>
+                </button>
+              </div>
+            )}
+
+            <div className="p-6 border-b border-border">
+              <h2 className="font-heading text-[1.5rem] font-normal mb-1">Generated Room</h2>
+              <p className="font-body text-[0.75rem] text-muted-foreground">{description || "Your custom design"}</p>
+            </div>
+
+            <div className="p-6 border-b border-border">
+              <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground mb-4">
+                Furniture in this room
+              </h3>
+              {furniture.length === 0 ? (
+                <p className="font-body text-[0.75rem] text-muted-foreground">No furniture items yet</p>
+              ) : (
+                <div>
+                  {furniture.map((item) => (
+                    <div key={item.id} className="flex items-center gap-3 py-4 border-b border-border last:border-b-0">
+                      {item.thumbnail_url && item.thumbnail_url !== "PENDING_UPLOAD" ? (
+                        <img src={item.thumbnail_url} alt={item.name} className="h-12 w-12 object-cover bg-surface flex-shrink-0" />
+                      ) : (
+                        <div className="h-12 w-12 bg-surface border border-border flex items-center justify-center flex-shrink-0">
+                          <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
+                        <p className="font-body text-[0.75rem] text-accent">${item.price.toLocaleString()}</p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedItem(item)}
+                        className="font-body text-[0.65rem] tracking-[0.1em] uppercase border border-border text-muted-foreground px-2.5 py-1.5 bg-transparent cursor-pointer shrink-0 transition-all duration-150 hover:border-accent hover:text-accent min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      >
+                        VIEW →
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
-            <button
-              onClick={handleLike}
-              disabled={likeLoading}
-              className="flex flex-col items-center gap-1 bg-transparent border border-border px-3 py-2 cursor-pointer transition-all duration-150 shrink-0 ml-4 hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ borderColor: isLiked ? "hsl(var(--accent))" : undefined }}
-            >
-              <span className={`text-[1.2rem] ${isLiked ? "text-accent" : "text-muted-foreground"}`}>
-                {isLiked ? "♥" : "♡"}
-              </span>
-              <span className={`font-body text-[0.65rem] tracking-[0.08em] ${isLiked ? "text-accent" : "text-muted-foreground"}`}>
-                {communityPost.like_count}
-              </span>
-            </button>
-          </div>
-        )}
 
-        <div className="p-6 border-b border-border">
-          <h2 className="font-heading text-[1.5rem] font-normal mb-1">Generated Room</h2>
-          <p className="font-body text-[0.75rem] text-muted-foreground">{description || "Your custom design"}</p>
-        </div>
+            <div className="p-6 space-y-3">
+              {furniture.length > 0 && (
+                <Button variant="amber" className="w-full min-h-[52px]" onClick={handleAddAll}>
+                  Add All to Cart
+                </Button>
+              )}
 
-        <div className="p-6 border-b border-border">
-          <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground mb-4">
-            Furniture in this room
-          </h3>
-          {furniture.length === 0 ? (
-            <p className="font-body text-[0.75rem] text-muted-foreground">No furniture items yet</p>
-          ) : (
-            <div>
-              {furniture.map((item) => (
-                <div key={item.id} className="flex items-center gap-3 py-4 border-b border-border last:border-b-0">
-                  {item.thumbnail_url && item.thumbnail_url !== "PENDING_UPLOAD" ? (
-                    <img src={item.thumbnail_url} alt={item.name} className="h-12 w-12 object-cover bg-surface flex-shrink-0" />
-                  ) : (
-                    <div className="h-12 w-12 bg-surface border border-border flex items-center justify-center flex-shrink-0">
-                      <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
-                    <p className="font-body text-[0.75rem] text-accent">${item.price.toLocaleString()}</p>
-                  </div>
-                  <button
-                    onClick={() => handleAddItem(item)}
-                    className="font-body text-[0.65rem] tracking-[0.1em] uppercase text-accent hover:underline shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center md:block md:min-h-0 md:min-w-0"
+              {!isOwnRoom && (
+                <Button
+                  variant="outline"
+                  className={`w-full ${copying ? "button-loading" : ""}`}
+                  disabled={copying}
+                  onClick={handleCopyRoom}
+                >
+                  <Copy className="h-4 w-4" />
+                  {copying ? "Copying…" : "Copy This Room"}
+                </Button>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    if (!user) { toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" }); return; }
+                    navigate(`/room/${id}/edit`);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </Button>
+                {!roomIsCopy && (
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    disabled={posted}
+                    onClick={() => {
+                      if (!user) { toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" }); return; }
+                      setPostDialogOpen(true);
+                    }}
                   >
-                    ADD →
-                  </button>
-                </div>
-              ))}
+                    {posted ? <><Check className="h-4 w-4" />Posted ✓</> : <><Share2 className="h-4 w-4" />Post</>}
+                  </Button>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-
-        <div className="p-6 space-y-3">
-          {furniture.length > 0 && (
-            <Button variant="amber" className="w-full min-h-[52px]" onClick={handleAddAll}>
-              Add All to Cart
-            </Button>
-          )}
-
-          {!isOwnRoom && (
-            <Button
-              variant="outline"
-              className={`w-full ${copying ? "button-loading" : ""}`}
-              disabled={copying}
-              onClick={handleCopyRoom}
-            >
-              <Copy className="h-4 w-4" />
-              {copying ? "Copying…" : "Copy This Room"}
-            </Button>
-          )}
-
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => {
-                if (!user) { toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" }); return; }
-                navigate(`/room/${id}/edit`);
-              }}
-            >
-              <Pencil className="h-4 w-4" />
-              Edit
-            </Button>
-            {!roomIsCopy && (
-              <Button
-                variant="outline"
-                className="flex-1"
-                disabled={posted}
-                onClick={() => {
-                  if (!user) { toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" }); return; }
-                  setPostDialogOpen(true);
-                }}
-              >
-                {posted ? <><Check className="h-4 w-4" />Posted ✓</> : <><Share2 className="h-4 w-4" />Post</>}
-              </Button>
-            )}
-          </div>
-        </div>
+          </>
+        )}
       </aside>
 
       {id && (
