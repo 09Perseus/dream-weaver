@@ -87,15 +87,8 @@ function PromptInput({
   onFocusChange?: (focused: boolean) => void;
 }) {
   return (
-    <div className="space-y-6 max-w-[600px] w-full mx-auto">
+    <div className="space-y-4 max-w-[600px] w-full mx-auto" style={{ marginTop: "1.5rem" }}>
       <div className="relative">
-        {/* Subtle glow behind the input */}
-        <div
-          className="absolute -inset-px pointer-events-none"
-          style={{
-            background: "linear-gradient(135deg, hsl(var(--accent) / 0.08), transparent 60%)",
-          }}
-        />
         <textarea
           value={prompt}
           onChange={(e) => {
@@ -104,9 +97,11 @@ function PromptInput({
           }}
           placeholder="A cozy Japanese bedroom with warm lighting…"
           rows={2}
-          className="w-full bg-background font-heading text-[1.15rem] py-3 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none transition-all duration-200 resize-none relative"
+          className="w-full bg-background font-heading text-[1.15rem] text-foreground placeholder:text-muted-foreground focus:outline-none transition-all duration-200 resize-none relative"
           style={{
-            border: "1px solid hsl(var(--accent))",
+            border: "1.5px solid hsl(var(--accent))",
+            borderRadius: "8px",
+            padding: "0.875rem 1.25rem",
             lineHeight: 1.5,
           }}
           onKeyDown={(e) => {
@@ -119,7 +114,7 @@ function PromptInput({
             onFocusChange?.(true);
             e.currentTarget.style.borderColor = "hsl(var(--accent-hover))";
             e.currentTarget.style.boxShadow =
-              "0 0 0 1px hsl(var(--accent)), 0 4px 24px hsl(var(--accent) / 0.15)";
+              "0 0 0 3px rgba(var(--accent-rgb), 0.15)";
           }}
           onBlur={(e) => {
             onFocusChange?.(false);
@@ -148,6 +143,7 @@ function PromptInput({
         variant="amber"
         size="lg"
         className={`w-full ${loading ? "button-loading" : ""}`}
+        style={{ borderRadius: "8px", marginTop: "0.5rem" }}
         onClick={onGenerate}
         disabled={loading}
       >
