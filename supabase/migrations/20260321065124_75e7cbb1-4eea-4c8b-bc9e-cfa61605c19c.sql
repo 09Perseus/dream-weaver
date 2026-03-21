@@ -1,0 +1,1 @@
+ALTER TABLE room_designs ADD COLUMN IF NOT EXISTS thumbnail_url text;

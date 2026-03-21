@@ -10,6 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
 interface LocationState {
@@ -143,6 +144,8 @@ export default function EditRoom() {
       if (error) { toast({ title: "Failed to save", description: error.message, variant: "destructive" }); return; }
       toast({ title: "Room saved!" });
       setUndoStack([]);
+      // Capture thumbnail after save
+      setTimeout(() => { if (roomId) captureRoomThumbnail(roomId); }, 1500);
     } catch (err) {
       toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
     } finally { setSaving(false); }
