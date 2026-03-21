@@ -86,8 +86,9 @@ function MovableFurniture({
 }
 
 export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
-  const roomSize = 50;
-  const roomHeight = 20;
+  const roomScale= 0.7; 
+  const roomSize = 10*roomScale;
+  const roomHeight = 5*roomScale;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [furnitures, setFurnitures] = useState<FurnitureItem[]>([]);
@@ -99,8 +100,16 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
       .then(data => {
         const floorY = -roomHeight / 2;
 
+        // Show only bed models in the canvas
+        const bedItems = data.furnitures.filter((item: any) => {
+          if (!item.path && !item.name) return false;
+          const fromPath = String(item.path || '').toLowerCase();
+          const fromName = String(item.name || '').toLowerCase();
+          return fromPath.startsWith('bed/') || fromName.includes('bed');
+        });
+
         // Arrange items in a 6-column grid to view them all side by side
-        const items = data.furnitures.map((item: any, i: number) => {
+        const items = bedItems.map((item: any, i: number) => {
           const cols = 6;
           const spacing = 4; // 4 meters apart
 
@@ -130,7 +139,7 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
     >
       <Canvas
         shadows
-        camera={{ position: [40, 30, 45], fov: 60 }}
+        camera={{ position: [25, 18, 30], fov: 60 }}
         onPointerMissed={() => setSelectedId(null)}
       >
         <ambientLight intensity={0.5} />
@@ -167,8 +176,8 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
           makeDefault
           enableZoom={true}
           target={[0, 0, 0]}
-          maxDistance={120}
-          minDistance={10}
+          maxDistance={220}
+          minDistance={5}
         />
       </Canvas>
     </div>
