@@ -218,30 +218,44 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_copy: boolean | null
           is_shared: boolean
           items: Json | null
           share_token: string | null
+          source_room_id: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_copy?: boolean | null
           is_shared?: boolean
           items?: Json | null
           share_token?: string | null
+          source_room_id?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_copy?: boolean | null
           is_shared?: boolean
           items?: Json | null
           share_token?: string | null
+          source_room_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "room_designs_source_room_id_fkey"
+            columns: ["source_room_id"]
+            isOneToOne: false
+            referencedRelation: "room_designs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
