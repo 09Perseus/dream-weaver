@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingCart, Plus, Share2, Pencil, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
 interface LocationState {
@@ -16,7 +18,9 @@ interface LocationState {
 export default function RoomView() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const { addItem } = useCart();
+  const { user } = useAuth();
 
   const navState = location.state as LocationState | null;
 
@@ -170,11 +174,31 @@ export default function RoomView() {
         )}
 
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={() => {}}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => {
+              if (!user) {
+                toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" });
+                return;
+              }
+              navigate(`/room/${id}/edit`);
+            }}
+          >
             <Pencil className="h-4 w-4" />
             Edit Room
           </Button>
-          <Button variant="outline" className="flex-1" onClick={() => {}}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => {
+              if (!user) {
+                toast({ title: "Sign in required", description: "Please sign in to post to the community.", variant: "destructive" });
+                return;
+              }
+              // Post to community logic
+            }}
+          >
             <Share2 className="h-4 w-4" />
             Post
           </Button>
