@@ -32,6 +32,7 @@ export default function RoomView() {
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
   const [roomOwnerId, setRoomOwnerId] = useState<string | null>(null);
+  const [roomIsCopy, setRoomIsCopy] = useState(false);
   const [copying, setCopying] = useState(false);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function RoomView() {
 
         setDescription(room.description ?? "");
         setRoomOwnerId(room.user_id);
+        setRoomIsCopy(!!room.is_copy);
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
         setItems(roomItems);
 
@@ -236,17 +238,19 @@ export default function RoomView() {
               <Pencil className="h-4 w-4" />
               Edit
             </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              disabled={posted}
-              onClick={() => {
-                if (!user) { toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" }); return; }
-                setPostDialogOpen(true);
-              }}
-            >
-              {posted ? <><Check className="h-4 w-4" />Posted ✓</> : <><Share2 className="h-4 w-4" />Post</>}
-            </Button>
+            {!roomIsCopy && (
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={posted}
+                onClick={() => {
+                  if (!user) { toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" }); return; }
+                  setPostDialogOpen(true);
+                }}
+              >
+                {posted ? <><Check className="h-4 w-4" />Posted ✓</> : <><Share2 className="h-4 w-4" />Post</>}
+              </Button>
+            )}
           </div>
         </div>
       </aside>
