@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
 import { mockCommunityPosts } from "@/data/mockData";
@@ -9,10 +8,10 @@ import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
 const loadingMessages = [
-  "Designing your room...",
-  "Placing furniture...",
-  "Adding finishing touches...",
-  "Welcome home...",
+  "Designing your room…",
+  "Placing furniture…",
+  "Adding finishing touches…",
+  "Welcome home…",
 ];
 
 export default function Index() {
@@ -81,12 +80,10 @@ export default function Index() {
       const items: PlacedItem[] = data.items;
       const furniture: FurnitureDetail[] = data.furniture;
 
-      // Get current session
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      // Save to room_designs
       const { data: room, error: insertError } = await supabase
         .from("room_designs")
         .insert({
@@ -125,43 +122,35 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
+    <div className="min-h-[calc(100vh-3.5rem)]">
       {/* Hero */}
-      <section className="relative flex flex-col items-center justify-center px-4 pt-24 pb-20 md:pt-32 md:pb-28">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-amber/5 blur-[120px]" />
-        </div>
-
-        <div className="relative z-10 max-w-2xl w-full text-center space-y-8">
-          <div className="space-y-4 animate-reveal-up">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance leading-[1.05]">
-              Describe your room.
-              <br />
-              <span className="text-amber">See it built.</span>
+      <section className="flex flex-col items-center justify-center px-4 min-h-[calc(100vh-3.5rem)]">
+        <div className="max-w-2xl w-full text-center space-y-10">
+          <div className="space-y-5 animate-reveal-up">
+            <h1 className="font-heading font-light uppercase tracking-[0.08em] text-foreground leading-[1.05]" style={{ fontSize: 'clamp(3rem, 8vw, 7rem)' }}>
+              Describe your<br />dream room
             </h1>
-            <p className="text-muted-foreground text-lg md:text-xl max-w-md mx-auto text-pretty">
-              AI-powered interior design that turns words into furnished 3D
-              rooms you can shop.
+            <p className="font-body text-[0.85rem] tracking-[0.1em] text-muted-foreground">
+              AI-powered interior design in seconds
             </p>
           </div>
 
-          <div className="animate-reveal-up delay-200 space-y-4">
-            <div className="relative">
-              <textarea
+          <div className="animate-reveal-up delay-200 space-y-6 max-w-[640px] mx-auto">
+            <div>
+              <input
                 value={prompt}
                 onChange={(e) => {
                   setPrompt(e.target.value);
                   if (error) setError("");
                 }}
-                placeholder="Describe your dream room... e.g. cozy Japanese bedroom with warm lighting"
-                rows={3}
-                className={`w-full bg-surface border rounded-xl px-5 py-4 text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none focus:ring-2 transition-all ${
+                placeholder="A cozy Japanese bedroom with warm lighting…"
+                className={`w-full bg-transparent border-0 border-b font-heading text-[1.25rem] py-3 text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200 ${
                   error
-                    ? "border-destructive focus:ring-destructive/40 focus:border-destructive/40"
-                    : "border-border/70 focus:ring-amber/40 focus:border-amber/40"
+                    ? "border-b-destructive"
+                    : "border-b-border focus:border-b-accent"
                 }`}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                     handleGenerate();
                   }
@@ -169,32 +158,32 @@ export default function Index() {
                 disabled={loading}
               />
               {error && (
-                <p className="text-destructive text-sm mt-1.5 text-left">
+                <p className="font-body text-destructive text-[0.75rem] mt-2 text-left">
                   {error}
                 </p>
               )}
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Button
                 variant="amber"
                 size="lg"
-                className="w-full md:w-auto min-w-[200px] text-base"
+                className="w-full"
                 onClick={handleGenerate}
                 disabled={loading}
               >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Sparkles className="h-5 w-5" />
-                )}
                 {loading ? "Generating…" : "Generate Room"}
               </Button>
 
               {loading && (
-                <p className="text-amber text-sm font-medium animate-pulse">
-                  {loadingMessages[loadingStep]}
-                </p>
+                <div className="space-y-3">
+                  <div className="h-px w-full bg-border overflow-hidden">
+                    <div className="h-full w-1/3 bg-accent animate-line-progress" />
+                  </div>
+                  <p className="font-heading italic text-[1rem] text-muted-foreground">
+                    {loadingMessages[loadingStep]}
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -203,11 +192,11 @@ export default function Index() {
 
       {/* Community Feed */}
       <section className="container pb-20">
-        <div className="animate-reveal-up delay-300">
-          <h2 className="text-2xl md:text-3xl font-semibold mb-2">
+        <div className="animate-reveal-up delay-300 mb-10">
+          <h2 className="font-heading text-[2rem] font-normal tracking-[0.02em]">
             Community Rooms
           </h2>
-          <p className="text-muted-foreground mb-8">
+          <p className="font-body text-[0.8rem] tracking-[0.08em] uppercase text-muted-foreground mt-2">
             Explore designs created by the community
           </p>
         </div>

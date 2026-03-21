@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Pencil, Trash2, Eye, Loader2, Share2, X } from "lucide-react";
+import { Trash2, Eye, Pencil, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,23 +26,11 @@ export default function MyRooms() {
   useEffect(() => {
     const fetchRooms = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        navigate("/sign-in?redirect=/my-rooms");
-        return;
-      }
+      if (!session) { navigate("/sign-in?redirect=/my-rooms"); return; }
 
       const [roomsRes, postsRes] = await Promise.all([
-        supabase
-          .from("room_designs")
-          .select("*")
-          .eq("user_id", session.user.id)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("community_posts")
-          .select("room_design_id")
-          .eq("user_id", session.user.id)
-          .eq("is_visible", true),
+        supabase.from("room_designs").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }),
+        supabase.from("community_posts").select("room_design_id").eq("user_id", session.user.id).eq("is_visible", true),
       ]);
 
       if (roomsRes.error) {
@@ -56,23 +44,17 @@ export default function MyRooms() {
       setPostedRoomIds(new Set(postsRes.data?.map((p) => p.room_design_id) ?? []));
       setLoading(false);
     };
-
     fetchRooms();
   }, [navigate]);
 
   const handleDelete = async (roomId: string) => {
     setDeleting(roomId);
-    const { error } = await supabase
-      .from("room_designs")
-      .delete()
-      .eq("id", roomId);
-
+    const { error } = await supabase.from("room_designs").delete().eq("id", roomId);
     if (error) {
-      console.error("Delete error:", error);
       toast({ title: "Error", description: "Failed to delete room.", variant: "destructive" });
     } else {
       setRooms((prev) => prev.filter((r) => r.id !== roomId));
-      toast({ title: "Deleted", description: "Room deleted successfully." });
+      toast({ title: "Room deleted" });
     }
     setDeleting(null);
   };
@@ -81,23 +63,12 @@ export default function MyRooms() {
     setUnposting(roomId);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-
-    const { error } = await supabase
-      .from("community_posts")
-      .update({ is_visible: false })
-      .eq("room_design_id", roomId)
-      .eq("user_id", session.user.id);
-
+    const { error } = await supabase.from("community_posts").update({ is_visible: false }).eq("room_design_id", roomId).eq("user_id", session.user.id);
     if (error) {
-      console.error("Unpost error:", error);
       toast({ title: "Error", description: "Failed to remove from community.", variant: "destructive" });
     } else {
-      setPostedRoomIds((prev) => {
-        const next = new Set(prev);
-        next.delete(roomId);
-        return next;
-      });
-      toast({ title: "Removed", description: "Room removed from community feed." });
+      setPostedRoomIds((prev) => { const next = new Set(prev); next.delete(roomId); return next; });
+      toast({ title: "Removed from community feed" });
     }
     setUnposting(null);
   };
@@ -105,17 +76,19 @@ export default function MyRooms() {
   if (loading) {
     return (
       <div className="container py-20 flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-amber" />
+        <div className="h-px w-32 bg-border overflow-hidden">
+          <div className="h-full w-1/3 bg-accent animate-line-progress" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container py-8 md:py-12">
-      <div className="flex items-center justify-between mb-8 animate-reveal-up">
+    <div className="container py-12 md:py-16">
+      <div className="flex items-center justify-between mb-10 animate-reveal-up">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold">My Rooms</h1>
-          <p className="text-muted-foreground mt-1">Your saved room designs</p>
+          <h1 className="font-heading text-[2.5rem] font-light uppercase tracking-[0.05em]">My Rooms</h1>
+          <p className="font-body text-[0.8rem] tracking-[0.08em] uppercase text-muted-foreground mt-2">Your saved designs</p>
         </div>
         <Link to="/">
           <Button variant="amber">Create New Room</Button>
@@ -124,13 +97,8 @@ export default function MyRooms() {
 
       {rooms.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
-          <div className="h-16 w-16 mx-auto rounded-2xl bg-amber/10 border border-amber/20 flex items-center justify-center mb-4">
-            <svg className="h-8 w-8 text-amber/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium mb-1">No rooms yet</h3>
-          <p className="text-muted-foreground mb-4">Go generate your first room!</p>
+          <h3 className="font-heading text-[1.5rem] font-normal mb-2">No rooms yet</h3>
+          <p className="font-body text-[0.8rem] text-muted-foreground mb-6">Go generate your first room!</p>
           <Link to="/">
             <Button variant="amber">Get Started</Button>
           </Link>
@@ -142,30 +110,26 @@ export default function MyRooms() {
             return (
               <div
                 key={room.id}
-                className="rounded-xl overflow-hidden bg-card border border-border/50 animate-reveal-up"
+                className="border border-border bg-surface animate-reveal-up"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
-                <div className="aspect-[16/10] bg-surface flex items-center justify-center">
-                  <div className="h-12 w-12 rounded-xl bg-amber/10 border border-amber/20 flex items-center justify-center">
-                    <svg className="h-6 w-6 text-amber/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                    </svg>
-                  </div>
+                <div className="aspect-[4/3] bg-surface flex items-center justify-center border-b border-border">
+                  <p className="font-heading italic text-[0.85rem] text-muted-foreground px-6 text-center">
+                    {room.description
+                      ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
+                      : "Untitled Room"}
+                  </p>
                 </div>
                 <div className="p-4 space-y-3">
-                  <h3 className="font-medium">
+                  <h3 className="font-heading text-[1.1rem] font-normal text-foreground">
                     {room.description
-                      ? room.description.length > 60
-                        ? room.description.slice(0, 60) + "…"
-                        : room.description
+                      ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
                       : "Untitled Room"}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {room.created_at
-                      ? format(new Date(room.created_at), "MMMM d, yyyy")
-                      : "Unknown date"}
+                  <p className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">
+                    {room.created_at ? format(new Date(room.created_at), "MMMM d, yyyy") : "Unknown date"}
                   </p>
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
                     <Link to={`/room/${room.id}`}>
                       <Button variant="outline" size="sm">
                         <Eye className="h-3.5 w-3.5" />
@@ -179,41 +143,24 @@ export default function MyRooms() {
                       </Button>
                     </Link>
                     {isPosted ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUnpost(room.id)}
-                        disabled={unposting === room.id}
-                      >
-                        {unposting === room.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <X className="h-3.5 w-3.5" />
-                        )}
-                        Unpost
+                      <Button variant="outline" size="sm" onClick={() => handleUnpost(room.id)} disabled={unposting === room.id}>
+                        <X className="h-3.5 w-3.5" />
+                        {unposting === room.id ? "…" : "Unpost"}
                       </Button>
                     ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPostDialogRoomId(room.id)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => setPostDialogRoomId(room.id)}>
                         <Share2 className="h-3.5 w-3.5" />
                         Post
                       </Button>
                     )}
                     <Button
-                      variant="ghost"
+                      variant="destructive"
                       size="sm"
-                      className="text-destructive hover:text-destructive ml-auto"
+                      className="ml-auto"
                       onClick={() => handleDelete(room.id)}
                       disabled={deleting === room.id}
                     >
-                      {deleting === room.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
