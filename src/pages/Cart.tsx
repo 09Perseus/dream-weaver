@@ -16,6 +16,8 @@ const USD_TO_JPY = 150;
 
 // Cache PAY.JP instance globally to avoid "Already instantiated" error
 let globalPayjp: any = null;
+let globalCardElement: any = null;
+let isMounted = false;
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
@@ -35,6 +37,14 @@ export default function Cart() {
         return;
       }
 
+      // Already mounted from a previous render — just restore state
+      if (isMounted && globalPayjp && globalCardElement) {
+        setPayjp(globalPayjp);
+        setCardElement(globalCardElement);
+        setPayjpReady(true);
+        return;
+      }
+
       try {
         const key = import.meta.env.VITE_PAYJP_PUBLIC_KEY;
         console.log("Mounting PAY.JP with key:", key?.substring(0, 12));
@@ -44,34 +54,37 @@ export default function Cart() {
           return;
         }
 
-        // Reuse existing instance if already created (React strict mode / HMR)
         if (!globalPayjp) {
           globalPayjp = (window as any).Payjp(key);
         }
-        const payjpInstance = globalPayjp;
 
-        const elements = payjpInstance.elements();
-        const card = elements.create("card", {
-          style: {
-            base: {
-              color: "#F5F0E8",
-              fontFamily: "Inter, sans-serif",
-              fontSize: "16px",
-              "::placeholder": { color: "#8C8880" },
+        if (!globalCardElement) {
+          const elements = globalPayjp.elements();
+          globalCardElement = elements.create("card", {
+            style: {
+              base: {
+                color: "#F5F0E8",
+                fontFamily: "Inter, sans-serif",
+                fontSize: "16px",
+                "::placeholder": { color: "#8C8880" },
+              },
             },
-          },
-        });
-
-        const mountPoint = document.getElementById("payjp-card-element");
-        if (!mountPoint) {
-          console.error("Mount point #payjp-card-element not found");
-          setPayjpError("Card form could not load");
-          return;
+          });
         }
 
-        card.mount("#payjp-card-element");
-        setPayjp(payjpInstance);
-        setCardElement(card);
+        if (!isMounted) {
+          const mountPoint = document.getElementById("payjp-card-element");
+          if (!mountPoint) {
+            console.error("Mount point #payjp-card-element not found");
+            setPayjpError("Card form could not load");
+            return;
+          }
+          globalCardElement.mount("#payjp-card-element");
+          isMounted = true;
+        }
+
+        setPayjp(globalPayjp);
+        setCardElement(globalCardElement);
         setPayjpReady(true);
         console.log("PAY.JP card element mounted successfully");
       } catch (err: any) {
@@ -81,12 +94,6 @@ export default function Cart() {
     };
 
     tryMount();
-
-    return () => {
-      if (cardElement) {
-        try { cardElement.unmount(); } catch {}
-      }
-    };
   }, []);
 
   const totalJPY = Math.round(
@@ -182,10 +189,16 @@ export default function Cart() {
         Cart
       </h1>
 
-      {/* Hidden mount point when cart is empty so useEffect can find it */}
-      {items.length === 0 && (
-        <div id="payjp-card-element" style={{ position: "absolute", visibility: "hidden", pointerEvents: "none" }} />
-      )}
+      {/* Single PAY.JP mount point — always in DOM, hidden when cart empty */}
+      <div
+        id="payjp-card-element"
+        className="border-b border-border py-3"
+        style={{
+          display: items.length === 0 ? "none" : "block",
+          background: "transparent",
+          minHeight: 44,
+        }}
+      />
 
       {items.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
@@ -244,11 +257,7 @@ export default function Cart() {
               <p className="font-body text-[0.8rem] text-destructive mb-2">{payjpError}</p>
             )}
 
-            <div
-              id="payjp-card-element"
-              className="border-b border-border py-3 mb-2"
-              style={{ background: "transparent", minHeight: 44 }}
-            />
+            {/* Card element is rendered above, outside conditionals */}
 
             {!payjpReady && !payjpError && (
               <p className="font-body text-[0.7rem] text-muted-foreground">Loading card form...</p>
