@@ -254,6 +254,13 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                 <span className="font-body text-[0.7rem] text-accent">({totalItems})</span>
               )}
             </Link>
+            <button
+              onClick={toggleTheme}
+              className="font-body text-[0.8rem] tracking-[0.15em] uppercase text-muted-foreground text-left px-6 py-4 border-b border-border min-h-[52px] flex items-center gap-2"
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
             {user ? (
               <>
                 <div className="flex items-center gap-3 px-6 py-4 border-b border-border">
