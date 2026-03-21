@@ -9,6 +9,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
 interface LocationState {
