@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { useCart } from "@/contexts/CartContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -23,6 +24,7 @@ export default function RoomView() {
   const location = useLocation();
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
 
   const navState = location.state as LocationState | null;
@@ -296,7 +298,7 @@ export default function RoomView() {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
-                        <p className="font-body text-[0.75rem] text-accent">${item.price.toLocaleString()}</p>
+                        <p className="font-body text-[0.75rem] text-accent">{formatPrice(item.price)}</p>
                       </div>
                       <button
                         onClick={() => setSelectedItem(item)}

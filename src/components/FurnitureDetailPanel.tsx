@@ -1,5 +1,6 @@
 import type { FurnitureDetail } from "@/lib/edgeFunctions";
 import { useCart } from "@/contexts/CartContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 export default function FurnitureDetailPanel({ item, onBack }: Props) {
   const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
 
   const handleAdd = () => {
     addItem({
@@ -65,7 +67,7 @@ export default function FurnitureDetailPanel({ item, onBack }: Props) {
 
         {/* Price */}
         <p className="font-heading text-[1.4rem] text-accent mb-4">
-          ${item.price.toLocaleString()}
+          {formatPrice(item.price)}
         </p>
 
         {/* Dimensions */}

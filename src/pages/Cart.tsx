@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -22,6 +23,7 @@ let isMounted = false;
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
+  const { formatPrice, currency } = useCurrency();
   const navigate = useNavigate();
 
   const [session, setSession] = useState<any>(null);
@@ -124,9 +126,7 @@ export default function Cart() {
     };
   }, []);
 
-  const totalJPY = Math.round(
-    items.reduce((sum, i) => sum + i.price * i.quantity * USD_TO_JPY, 0),
-  );
+  const totalJPY = Math.round(subtotal * USD_TO_JPY);
 
   const handleCheckout = async () => {
     console.log("Checkout clicked");
@@ -299,7 +299,7 @@ export default function Cart() {
                     {item.name}
                   </p>
                   <p className="font-body text-[0.75rem] text-accent">
-                    ${item.price.toLocaleString()}
+                    {formatPrice(item.price)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -366,22 +366,22 @@ export default function Cart() {
           <div className="border-t border-border pt-6 space-y-4">
             <div className="flex justify-between font-body text-[0.8rem]">
               <span className="text-muted-foreground uppercase tracking-[0.08em]">
-                Subtotal
+                Total ({currency})
               </span>
-              <span className="tabular-nums">${subtotal.toLocaleString()}</span>
+              <span className="tabular-nums">{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between font-body text-[0.75rem]">
               <span className="text-muted-foreground uppercase tracking-[0.08em]">
-                Total (JPY)
+                Charged as
               </span>
               <span className="tabular-nums text-accent">
-                ¥{totalJPY.toLocaleString()}
+                ¥{totalJPY.toLocaleString()} JPY
               </span>
             </div>
             <div className="flex justify-between items-baseline">
               <span className="font-heading text-[1.2rem]">Total</span>
               <span className="font-heading text-[1.5rem] text-accent tabular-nums">
-                ¥{totalJPY.toLocaleString()}
+                {formatPrice(subtotal)}
               </span>
             </div>
             <Button
