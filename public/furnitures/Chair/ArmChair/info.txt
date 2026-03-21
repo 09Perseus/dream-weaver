@@ -1,0 +1,14 @@
+Name: Nelvi Armchair By Divan
+
+
+
+Polys: 11128
+Verts: 11164
+
+X 845
+Y 890
+Z 740
+
+
+
+Link:https://www.divan.ru/product/kreslo-nelvi-bucle-shadow
