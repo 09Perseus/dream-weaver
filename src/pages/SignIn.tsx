@@ -1,14 +1,40 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+// To skip email confirmation during development, go to
+// Supabase Dashboard → Authentication → Settings →
+// disable "Enable email confirmations"
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Will integrate with Supabase later
+    setError("");
+    setLoading(true);
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+
+    const redirectTo = searchParams.get("redirect") || "/";
+    navigate(redirectTo);
   };
 
   return (
@@ -21,9 +47,7 @@ export default function SignIn() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email
-            </label>
+            <label htmlFor="email" className="text-sm font-medium">Email</label>
             <input
               id="email"
               type="email"
@@ -32,12 +56,11 @@ export default function SignIn() {
               placeholder="you@example.com"
               className="w-full bg-surface border border-border/70 rounded-lg px-4 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-amber/40 focus:border-amber/40 transition-all"
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              Password
-            </label>
+            <label htmlFor="password" className="text-sm font-medium">Password</label>
             <input
               id="password"
               type="password"
@@ -46,10 +69,19 @@ export default function SignIn() {
               placeholder="••••••••"
               className="w-full bg-surface border border-border/70 rounded-lg px-4 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-amber/40 focus:border-amber/40 transition-all"
               required
+              disabled={loading}
             />
           </div>
-          <Button type="submit" variant="amber" className="w-full" size="lg">
-            Sign In
+
+          {error && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
+          <Button type="submit" variant="amber" className="w-full" size="lg" disabled={loading}>
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+            {loading ? "Signing in…" : "Sign In"}
           </Button>
         </form>
 
