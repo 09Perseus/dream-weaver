@@ -10,6 +10,7 @@ interface CommunityCardProps {
   thumbnailUrl?: string;
   likeCount: number;
   liked?: boolean;
+  isOwnPost?: boolean;
   onLike?: () => void;
   delay?: number;
 }
@@ -22,6 +23,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
   thumbnailUrl,
   likeCount,
   liked = false,
+  isOwnPost = false,
   onLike,
   delay = 0,
 }, ref) => {
@@ -59,16 +61,20 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
                 </div>
                 <span className="text-sm text-muted-foreground">{author}</span>
               </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  onLike?.();
-                }}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-amber transition-colors active:scale-95"
-              >
-                <Heart className={`h-4 w-4 ${liked ? "fill-amber text-amber" : ""}`} />
-                <span>{likeCount}</span>
-              </button>
+              {isOwnPost ? (
+                <span className="text-xs text-muted-foreground font-medium">Your post</span>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onLike?.();
+                  }}
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-amber transition-colors active:scale-95"
+                >
+                  <Heart className={`h-4 w-4 ${liked ? "fill-amber text-amber" : ""}`} />
+                  <span>{likeCount}</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
