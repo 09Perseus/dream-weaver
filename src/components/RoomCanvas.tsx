@@ -273,7 +273,7 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
           raycast={() => null}
         />
 
-        {furnitures.map((furniture) => (
+        {activeFurnitures.map((furniture) => (
           <MovableFurniture
             key={furniture.id}
             furniture={furniture}
