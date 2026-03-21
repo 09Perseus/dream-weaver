@@ -182,8 +182,10 @@ export default function Cart() {
         Cart
       </h1>
 
-      {/* Card element div always rendered so useEffect can find it */}
-      <div id="payjp-card-element" style={{ position: items.length === 0 ? "absolute" : "relative", visibility: items.length === 0 ? "hidden" : "visible", borderBottom: "1px solid var(--border)", padding: "0.75rem 0", minHeight: 40, background: "transparent" }} />
+      {/* Hidden mount point when cart is empty so useEffect can find it */}
+      {items.length === 0 && (
+        <div id="payjp-card-element" style={{ position: "absolute", visibility: "hidden", pointerEvents: "none" }} />
+      )}
 
       {items.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
