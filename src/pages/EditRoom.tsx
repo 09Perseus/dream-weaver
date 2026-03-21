@@ -8,6 +8,7 @@ import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
@@ -46,6 +47,7 @@ export default function EditRoom() {
   const { user } = useAuth();
   const navState = location.state as LocationState | null;
   const isMobile = useIsMobile();
+  const { formatPrice } = useCurrency();
 
   const [roomItems, setRoomItems] = useState<PlacedItem[]>(navState?.items ?? []);
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
@@ -224,7 +226,7 @@ export default function EditRoom() {
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
-                  <p className="font-body text-[0.7rem] text-accent">${item.price}</p>
+                  <p className="font-body text-[0.7rem] text-accent">{formatPrice(item.price)}</p>
                 </div>
                 <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
               </div>
@@ -350,7 +352,7 @@ export default function EditRoom() {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="font-body text-[0.8rem] text-foreground truncate">{detail?.name ?? item.id}</p>
-                        <p className="font-body text-[0.7rem] text-accent">{detail ? `$${detail.price.toLocaleString()}` : "—"}</p>
+                        <p className="font-body text-[0.7rem] text-accent">{detail ? formatPrice(detail.price) : "—"}</p>
                       </div>
                       {isSelected && (
                         <span className="font-body text-[0.6rem] tracking-[0.1em] uppercase text-accent shrink-0">Selected</span>

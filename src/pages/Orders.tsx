@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
@@ -21,6 +22,7 @@ interface Order {
 
 export default function Orders() {
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -153,7 +155,7 @@ export default function Orders() {
                       {order.status.toUpperCase()}
                     </span>
                     <span className="font-heading text-[1.3rem] text-accent">
-                      {formatJPY(order.total_usd)}
+                      {formatPrice(order.total_usd)}
                     </span>
                   </div>
                 </div>

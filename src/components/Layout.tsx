@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, LayoutGrid, ShoppingBag, Pencil, LogOut, Trash2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency, CURRENCIES, type CurrencyCode } from "@/contexts/CurrencyContext";
 import UserAvatar from "@/components/UserAvatar";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import DeleteAccountDialog from "@/components/DeleteAccountDialog";
@@ -24,13 +25,19 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { currency, setCurrency } = useCurrency();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
+      }
+      if (currencyRef.current && !currencyRef.current.contains(e.target as Node)) {
+        setCurrencyOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -92,6 +99,32 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
 
           {/* Right: cart + avatar */}
           <div className="flex items-center gap-4 md:gap-6">
+            {/* Currency selector */}
+            <div className="relative hidden md:block" ref={currencyRef}>
+              <button
+                onClick={() => setCurrencyOpen((prev) => !prev)}
+                className="font-body text-[0.65rem] tracking-[0.1em] uppercase border border-border text-muted-foreground px-2.5 py-1.5 bg-transparent cursor-pointer flex items-center gap-1 hover:border-accent hover:text-accent transition-colors"
+              >
+                {currency} ▾
+              </button>
+              {currencyOpen && (
+                <div className="absolute right-0 top-full mt-1 z-50 bg-surface border border-border min-w-[140px]">
+                  {Object.entries(CURRENCIES).map(([code, { symbol }]) => (
+                    <button
+                      key={code}
+                      onClick={() => { setCurrency(code as CurrencyCode); setCurrencyOpen(false); }}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 font-body text-[0.75rem] tracking-[0.05em] border-b border-border last:border-b-0 bg-transparent cursor-pointer transition-colors ${
+                        currency === code ? "text-accent" : "text-foreground hover:text-accent"
+                      }`}
+                    >
+                      <span>{symbol} {code}</span>
+                      {currency === code && <span className="text-accent">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Link to="/cart" className="relative min-h-[44px] min-w-[44px] flex items-center justify-center">
               <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
               {totalItems > 0 && (
