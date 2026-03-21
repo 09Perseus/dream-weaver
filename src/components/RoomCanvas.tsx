@@ -4,8 +4,14 @@ import { OrbitControls, TransformControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGenerateRoom, getDisplaySize } from '@/hooks/useGenerateRoom';
 
+import type { PlacedItem, FurnitureDetail } from '@/lib/edgeFunctions';
+
 interface RoomCanvasProps {
   className?: string;
+  /** When provided, renders in "viewer" mode — no prompt input */
+  items?: PlacedItem[];
+  /** Furniture details for viewer mode */
+  furniture?: FurnitureDetail[];
 }
 
 export interface FurnitureItem {
