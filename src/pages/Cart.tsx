@@ -126,9 +126,7 @@ export default function Cart() {
     };
   }, []);
 
-  const totalJPY = Math.round(
-    items.reduce((sum, i) => sum + i.price * i.quantity * USD_TO_JPY, 0),
-  );
+  const totalJPY = Math.round(subtotal * USD_TO_JPY);
 
   const handleCheckout = async () => {
     console.log("Checkout clicked");
