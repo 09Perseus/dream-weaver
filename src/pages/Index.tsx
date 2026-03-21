@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
@@ -147,6 +147,31 @@ export default function Index() {
   const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
   const navigate = useNavigate();
 
+  // Typing animation
+  const roomTypes = ["BEDROOM.", "LIVING ROOM.", "HOME OFFICE.", "DINING ROOM.", "STUDIO.", "SANCTUARY."];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const current = roomTypes[currentIndex];
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        setTypedText(current.substring(0, typedText.length + 1));
+        if (typedText.length + 1 === current.length) {
+          setTimeout(() => setIsDeleting(true), 1800);
+        }
+      } else {
+        setTypedText(current.substring(0, typedText.length - 1));
+        if (typedText.length - 1 === 0) {
+          setIsDeleting(false);
+          setCurrentIndex(prev => (prev + 1) % roomTypes.length);
+        }
+      }
+    }, isDeleting ? 60 : 100);
+    return () => clearTimeout(timeout);
+  }, [typedText, isDeleting, currentIndex]);
+
   useEffect(() => {
     supabase
       .from("community_posts")
@@ -253,18 +278,29 @@ export default function Index() {
               className="font-heading font-light uppercase tracking-[0.04em] text-foreground leading-[1.05]"
               style={{ fontSize: "clamp(3.5rem, 9vw, 8rem)" }}
             >
-              DESCRIBE YOUR
+              DESCRIBE YOUR DREAM
               <br />
               <span
                 style={{
-                  textDecoration: "underline",
-                  textDecorationColor: "hsl(var(--accent))",
-                  textUnderlineOffset: "8px",
-                  textDecorationThickness: "1px",
+                  background: "linear-gradient(135deg, #E8C06A 0%, #C8B89A 40%, #E05533 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
                 }}
               >
-                DREAM ROOM.
+                {typedText}
               </span>
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "3px",
+                  height: "0.85em",
+                  background: "hsl(var(--accent))",
+                  marginLeft: "4px",
+                  verticalAlign: "middle",
+                  animation: "blink 1s step-end infinite",
+                }}
+              />
             </h1>
           </div>
 
