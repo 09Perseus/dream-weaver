@@ -53,6 +53,7 @@ export default function RoomView() {
         if (error || !room) { setLoading(false); return; }
 
         setDescription(room.description ?? "");
+        setRoomOwnerId(room.user_id);
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
         setItems(roomItems);
 
