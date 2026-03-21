@@ -15,6 +15,7 @@ interface CommunityCardProps {
   likeCount: number;
   liked?: boolean;
   isOwnPost?: boolean;
+  likeDisabled?: boolean;
   onLike?: () => void;
   delay?: number;
 }
