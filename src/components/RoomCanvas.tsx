@@ -76,8 +76,14 @@ export interface FurnitureItem {
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
-  console.log("Loading GLB model:", path);
-  const { scene } = useGLTF(path);
+  // Cache-bust to avoid stale LFS pointer responses
+  const cacheBustedPath = useMemo(() => {
+    const sep = path.includes('?') ? '&' : '?';
+    return `${path}${sep}_v=${Date.now()}`;
+  }, [path]);
+
+  console.log("Loading GLB model:", cacheBustedPath);
+  const { scene } = useGLTF(cacheBustedPath);
   const cloned = scene.clone();
 
   const box = new THREE.Box3().setFromObject(cloned);
@@ -489,6 +495,17 @@ export default function RoomCanvas({
       console.log("First furniture item:", JSON.stringify(furniture[0], null, 2));
     }
   }, [items, furniture]);
+
+  // Clear useGLTF cache for all furniture URLs to avoid stale LFS pointer responses
+  useEffect(() => {
+    if (furniture && furniture.length > 0) {
+      furniture.forEach((item) => {
+        if (item.file_url && item.file_url !== 'PENDING_UPLOAD') {
+          try { useGLTF.clear(item.file_url); } catch { /* ignore */ }
+        }
+      });
+    }
+  }, [furniture]);
 
   // Viewer mode: convert PlacedItem[] + FurnitureDetail[] → FurnitureItem[]
   const viewerFurnitures: FurnitureItem[] = isViewerMode
