@@ -1,10 +1,35 @@
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Minus, Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
+import { createCheckout } from "@/lib/edgeFunctions";
+import { toast } from "@/hooks/use-toast";
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    setCheckoutLoading(true);
+    try {
+      const checkoutItems = items.map((i) => ({
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+      }));
+      const { url } = await createCheckout(
+        checkoutItems,
+        `${window.location.origin}/cart?success=true`,
+        `${window.location.origin}/cart`
+      );
+      window.location.href = url;
+    } catch (err: any) {
+      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   return (
     <div className="container py-8 md:py-12 max-w-3xl">
@@ -77,8 +102,9 @@ export default function Cart() {
               <span className="font-semibold">Total</span>
               <span className="text-xl font-bold text-amber tabular-nums">${subtotal.toLocaleString()}</span>
             </div>
-            <Button variant="amber" className="w-full" size="lg">
-              Proceed to Checkout
+            <Button variant="amber" className="w-full" size="lg" onClick={handleCheckout} disabled={checkoutLoading}>
+              {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+              {checkoutLoading ? "Processing…" : "Proceed to Checkout"}
             </Button>
             <Button variant="ghost" className="w-full text-muted-foreground" onClick={clearCart}>
               Clear Cart
