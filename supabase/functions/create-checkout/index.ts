@@ -1,9 +1,14 @@
+// PAY.JP Checkout Edge Function
+// Required secrets (set in Supabase Dashboard → Settings → Edge Functions → Secrets):
+//   PAYJP_SECRET_KEY = sk_test_...
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -20,43 +25,123 @@ serve(async (req) => {
   }
 
   try {
-    // Read secret (will be used when Stripe integration is implemented)
-    const _payjpKey = Deno.env.get("PAYJP_SECRET_KEY");
-
     const body = await req.json();
-    const { items, success_url, cancel_url } = body;
+    const { token, amount, items, currency = "jpy" } = body;
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    // 1. Validate required fields
+    if (!token || !amount || !items || !Array.isArray(items) || items.length === 0) {
       return new Response(
-        JSON.stringify({ error: "items are required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Missing required fields: token, amount, items" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("Received items count:", items.length);
-    console.log("success_url:", success_url);
-    console.log("cancel_url:", cancel_url);
+    // 2. Validate amount
+    if (!Number.isInteger(amount) || amount < 50) {
+      return new Response(
+        JSON.stringify({ error: "Invalid amount" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Hardcoded mock response — replace with Stripe API call later
-    const mockResponse = {
-      url: "https://checkout.stripe.com/mock-session-placeholder",
-    };
+    // 3. Get current user (optional — guest checkout allowed)
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    return new Response(JSON.stringify(mockResponse), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const authHeader = req.headers.get("Authorization");
+    let user = null;
+    if (authHeader) {
+      const { data } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+      user = data?.user ?? null;
+    }
+
+    // 4. PAY.JP charge
+    console.log("Processing PAY.JP charge...");
+    console.log(`Charge amount: ${amount} ${currency}`);
+
+    const payjpKey = Deno.env.get("PAYJP_SECRET_KEY");
+    if (!payjpKey) {
+      return new Response(
+        JSON.stringify({ error: "Payment service not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const credentials = btoa(payjpKey + ":");
+
+    const response = await fetch("https://api.pay.jp/v1/charges", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        card: token,
+        amount: amount.toString(),
+        currency,
+        capture: "true",
+        description: `RoomAI Order — ${items.length} items`,
+      }),
     });
-  } catch (error) {
-    console.error("create-checkout error:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+
+    const charge = await response.json();
+    console.log("PAY.JP response received");
+
+    // 5. Check for PAY.JP error
+    if (charge.error) {
+      return new Response(
+        JSON.stringify({ error: charge.error.message, code: charge.error.code }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // 6. Insert order if charge succeeded
+    if (charge.paid === true) {
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user?.id ?? null,
+          items,
+          total_usd: amount,
+          stripe_payment_intent_id: charge.id,
+          status: "completed",
+        })
+        .select("id")
+        .single();
+
+      if (orderError) {
+        console.error("Order save error:", orderError);
+        return new Response(
+          JSON.stringify({ error: "Payment succeeded but order save failed", charge_id: charge.id }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
+
+      console.log(`Order saved: ${order.id}`);
+
+      // 7. Return success
+      return new Response(
+        JSON.stringify({
+          success: true,
+          charge_id: charge.id,
+          order_id: order.id,
+          amount: charge.amount,
+          currency: charge.currency,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ error: "Payment was not completed" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("create-checkout error:", err);
+    return new Response(
+      JSON.stringify({ error: "Payment processing failed", details: err.message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
