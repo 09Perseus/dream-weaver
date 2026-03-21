@@ -5,23 +5,23 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-body text-[0.75rem] uppercase tracking-[0.12em] font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.97]",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:scale-[0.97]",
-        outline: "border border-input bg-background hover:bg-surface-hover hover:text-foreground active:scale-[0.97]",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.97]",
-        ghost: "hover:bg-surface-hover hover:text-foreground active:scale-[0.97]",
-        link: "text-primary underline-offset-4 hover:underline",
-        amber: "bg-amber text-amber-foreground hover:bg-amber/85 active:scale-[0.97] font-semibold shadow-lg shadow-amber/20",
-        "amber-outline": "border border-amber/40 text-amber hover:bg-amber/10 active:scale-[0.97]",
+        default: "bg-accent text-primary-foreground hover:bg-accent-hover",
+        destructive: "bg-transparent border border-destructive text-destructive hover:bg-destructive hover:text-primary-foreground",
+        outline: "bg-transparent border border-border text-foreground hover:border-accent hover:text-accent",
+        secondary: "bg-transparent border border-border text-foreground hover:border-accent hover:text-accent",
+        ghost: "bg-transparent text-muted-foreground hover:text-foreground",
+        link: "text-accent underline-offset-4 hover:underline",
+        amber: "bg-accent text-primary-foreground hover:bg-accent-hover",
+        "amber-outline": "bg-transparent text-accent hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        default: "h-10 px-8 py-2",
+        sm: "h-9 px-4",
+        lg: "h-12 px-8",
         icon: "h-10 w-10",
       },
     },
