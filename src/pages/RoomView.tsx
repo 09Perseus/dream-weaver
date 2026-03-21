@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Check, Share2 } from "lucide-react";
+import { Plus, Pencil, Check, Share2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
@@ -31,6 +31,8 @@ export default function RoomView() {
   const [loading, setLoading] = useState(!navState?.items);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
+  const [roomOwnerId, setRoomOwnerId] = useState<string | null>(null);
+  const [copying, setCopying] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -51,6 +53,7 @@ export default function RoomView() {
         if (error || !room) { setLoading(false); return; }
 
         setDescription(room.description ?? "");
+        setRoomOwnerId(room.user_id);
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
         setItems(roomItems);
 
@@ -73,6 +76,36 @@ export default function RoomView() {
   };
 
   const handleAddAll = () => { furniture.forEach(handleAddItem); };
+
+  const handleCopyRoom = async () => {
+    if (!user) {
+      toast({ title: "Sign in to copy this room", variant: "destructive" });
+      return;
+    }
+    setCopying(true);
+    try {
+      const { data, error } = await supabase
+        .from("room_designs")
+        .insert({
+          user_id: user.id,
+          description,
+          items: items as any,
+          share_token: crypto.randomUUID(),
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      toast({ title: "Room copied to your account!" });
+      navigate(`/room/${data.id}/edit`);
+    } catch (err) {
+      console.error("Copy room error:", err);
+      toast({ title: "Failed to copy room", variant: "destructive" });
+    } finally {
+      setCopying(false);
+    }
+  };
+
+  const isOwnRoom = user?.id === roomOwnerId;
 
   if (loading) {
     return (
@@ -135,6 +168,18 @@ export default function RoomView() {
           {furniture.length > 0 && (
             <Button variant="amber" className="w-full" onClick={handleAddAll}>
               Add All to Cart
+            </Button>
+          )}
+
+          {!isOwnRoom && (
+            <Button
+              variant="outline"
+              className="w-full"
+              disabled={copying}
+              onClick={handleCopyRoom}
+            >
+              <Copy className="h-4 w-4" />
+              {copying ? "Copying…" : "Copy This Room"}
             </Button>
           )}
 
