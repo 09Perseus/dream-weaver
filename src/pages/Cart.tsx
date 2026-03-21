@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { Link, useNavigate } from "react-router-dom";
-import { createCheckout } from "@/lib/edgeFunctions";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 declare global {
@@ -16,92 +16,114 @@ const USD_TO_JPY = 150;
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [cardElement, setCardElement] = useState<any>(null);
-  const [payjpInstance, setPayjpInstance] = useState<any>(null);
-  const [payjpReady, setPayjpReady] = useState(false);
-  const mountedRef = useRef(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (items.length === 0 || mountedRef.current) return;
+  const [payjp, setPayjp] = useState<any>(null);
+  const [cardElement, setCardElement] = useState<any>(null);
+  const [payjpReady, setPayjpReady] = useState(false);
+  const [payjpError, setPayjpError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-    const initPayjp = () => {
-      if (typeof window.Payjp === "undefined") {
-        console.log("PAY.JP script not ready, retrying...");
-        setTimeout(initPayjp, 500);
+  useEffect(() => {
+    const tryMount = () => {
+      if (typeof (window as any).Payjp === "undefined") {
+        console.log("Waiting for PAY.JP script...");
+        setTimeout(tryMount, 300);
         return;
       }
 
-      console.log("PAY.JP public key present:", !!import.meta.env.VITE_PAYJP_PUBLIC_KEY);
-      console.log("PAY.JP public key value:", import.meta.env.VITE_PAYJP_PUBLIC_KEY);
-      console.log("PAY.JP script loaded, mounting card element");
+      try {
+        const key = import.meta.env.VITE_PAYJP_PUBLIC_KEY;
+        console.log("Mounting PAY.JP with key:", key?.substring(0, 12));
 
-      const payjp = window.Payjp(import.meta.env.VITE_PAYJP_PUBLIC_KEY);
-      const elements = payjp.elements();
-      const card = elements.create("card", {
-        style: {
-          base: {
-            color: "#F5F0E8",
-            fontFamily: "Inter, sans-serif",
-            fontSize: "14px",
-            "::placeholder": { color: "#8C8880" },
+        if (!key) {
+          setPayjpError("PAY.JP public key is missing");
+          return;
+        }
+
+        const payjpInstance = (window as any).Payjp(key);
+        const elements = payjpInstance.elements();
+        const card = elements.create("card", {
+          style: {
+            base: {
+              color: "#F5F0E8",
+              fontFamily: "Inter, sans-serif",
+              fontSize: "16px",
+              "::placeholder": { color: "#8C8880" },
+            },
           },
-        },
-      });
-      card.mount("#payjp-card-element");
-      setCardElement(card);
-      setPayjpInstance(payjp);
-      setPayjpReady(true);
-      mountedRef.current = true;
+        });
+
+        const mountPoint = document.getElementById("payjp-card-element");
+        if (!mountPoint) {
+          console.error("Mount point #payjp-card-element not found");
+          setPayjpError("Card form could not load");
+          return;
+        }
+
+        card.mount("#payjp-card-element");
+        setPayjp(payjpInstance);
+        setCardElement(card);
+        setPayjpReady(true);
+        console.log("PAY.JP card element mounted successfully");
+      } catch (err: any) {
+        console.error("PAY.JP mount error:", err);
+        setPayjpError("Card form failed to load: " + err.message);
+      }
     };
 
-    initPayjp();
+    tryMount();
 
-    return () => {};
-  }, [items.length]);
-
-  useEffect(() => {
     return () => {
       if (cardElement) {
         try { cardElement.unmount(); } catch {}
       }
-      mountedRef.current = false;
     };
-  }, [cardElement]);
+  }, []);
 
   const totalJPY = Math.round(
     items.reduce((sum, i) => sum + i.price * i.quantity * USD_TO_JPY, 0)
   );
 
   const handleCheckout = async () => {
-    if (!payjpInstance || !cardElement) {
-      toast({ title: "Card form is not ready", description: "Please refresh the page.", variant: "destructive" });
+    console.log("Checkout clicked");
+    console.log("payjp:", !!payjp);
+    console.log("cardElement:", !!cardElement);
+    console.log("payjpReady:", payjpReady);
+
+    if (!payjp || !cardElement) {
+      toast({ title: "Card form is not ready", description: "Please wait and try again.", variant: "destructive" });
       return;
     }
 
-    setCheckoutLoading(true);
+    if (items.length === 0) {
+      toast({ title: "Your cart is empty", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const result = await payjpInstance.createToken(cardElement);
-      console.log("PAY.JP createToken result:", result);
+      console.log("Calling createToken...");
+      const result = await payjp.createToken(cardElement);
+      console.log("PAY.JP result:", JSON.stringify(result));
 
-      if (!result) {
-        toast({ title: "Payment failed", description: "No response from PAY.JP", variant: "destructive" });
-        return;
-      }
-
-      if (result.error) {
+      if (result?.error) {
         toast({ title: "Card error", description: result.error.message, variant: "destructive" });
+        setLoading(false);
         return;
       }
 
-      if (!result.token || !result.token.id) {
-        toast({ title: "Payment failed", description: "Could not create card token", variant: "destructive" });
+      const tokenId = result?.token?.id || result?.id || null;
+      console.log("Token ID:", tokenId);
+
+      if (!tokenId) {
+        toast({ title: "Could not create card token", description: "Check console for details.", variant: "destructive" });
+        setLoading(false);
         return;
       }
 
-      const tokenId = result.token.id;
-      console.log("PAY.JP token created:", tokenId);
+      console.log("Total JPY:", totalJPY);
 
       const checkoutItems = items.map((i) => ({
         id: i.id,
@@ -110,22 +132,39 @@ export default function Cart() {
         quantity: i.quantity,
       }));
 
-      const data = await createCheckout(tokenId, totalJPY, checkoutItems, "jpy");
-
-      clearCart();
-      navigate("/order-confirmation", {
-        state: {
-          orderId: data.order_id,
-          chargeId: data.charge_id,
-          amount: data.amount,
-          currency: data.currency,
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
+          token: tokenId,
+          amount: totalJPY,
           items: checkoutItems,
+          currency: "jpy",
         },
       });
+
+      console.log("Edge function response:", data, error);
+
+      if (error || data?.error) {
+        toast({ title: "Payment failed", description: data?.error || error?.message || "Please try again.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      if (data?.success) {
+        clearCart();
+        navigate("/order-confirmation", {
+          state: {
+            orderId: data.order_id,
+            chargeId: data.charge_id,
+            amount: data.amount,
+            currency: data.currency,
+            items: checkoutItems,
+          },
+        });
+      }
     } catch (err: any) {
-      toast({ title: "Payment failed", description: err.message, variant: "destructive" });
-    } finally {
-      setCheckoutLoading(false);
+      console.error("Checkout error:", err);
+      toast({ title: "Unexpected error", description: err.message, variant: "destructive" });
+      setLoading(false);
     }
   };
 
@@ -134,6 +173,9 @@ export default function Cart() {
       <h1 className="font-heading text-[2.5rem] font-light uppercase tracking-[0.05em] mb-10 animate-reveal-up">
         Cart
       </h1>
+
+      {/* Card element div always rendered so useEffect can find it */}
+      <div id="payjp-card-element" style={{ position: items.length === 0 ? "absolute" : "relative", visibility: items.length === 0 ? "hidden" : "visible", borderBottom: "1px solid var(--border)", padding: "0.75rem 0", minHeight: 40, background: "transparent" }} />
 
       {items.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
@@ -182,18 +224,25 @@ export default function Cart() {
             ))}
           </div>
 
+          {/* Card details section */}
           <div className="pt-2">
             <label className="font-body text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground block mb-3">
               Card Details
             </label>
-            <div
-              id="payjp-card-element"
-              className="border-b border-border py-3 mb-3"
-              style={{ background: "transparent", minHeight: 40 }}
-            />
-            <p className="font-body text-[0.7rem] text-muted-foreground">
-              Test card: 4242 4242 4242 4242 · Any future expiry · Any 3-digit CVC
-            </p>
+
+            {payjpError && (
+              <p className="font-body text-[0.8rem] text-destructive mb-2">{payjpError}</p>
+            )}
+
+            {!payjpReady && !payjpError && (
+              <p className="font-body text-[0.7rem] text-muted-foreground mb-2">Loading card form...</p>
+            )}
+
+            {payjpReady && (
+              <p className="font-body text-[0.7rem] text-muted-foreground mt-2">
+                Test card: 4242 4242 4242 4242 · Any future expiry · Any 3-digit CVC
+              </p>
+            )}
           </div>
 
           <div className="border-t border-border pt-6 space-y-4">
@@ -216,9 +265,9 @@ export default function Cart() {
               className="w-full"
               size="lg"
               onClick={handleCheckout}
-              disabled={checkoutLoading || !payjpReady}
+              disabled={loading || !payjpReady || items.length === 0}
             >
-              {checkoutLoading ? "Processing payment…" : "Proceed to Checkout"}
+              {loading ? "Processing payment…" : !payjpReady ? "Loading payment form…" : "Proceed to Checkout"}
             </Button>
             <button
               onClick={clearCart}
