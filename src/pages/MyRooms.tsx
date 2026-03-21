@@ -12,6 +12,8 @@ interface Room {
   description: string | null;
   created_at: string | null;
   is_shared: boolean;
+  is_copy?: boolean;
+  source_room_id?: string | null;
 }
 
 export default function MyRooms() {
@@ -136,18 +138,27 @@ export default function MyRooms() {
                 className="border border-border bg-surface animate-reveal-up"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
-                <div className="aspect-[4/3] bg-surface flex items-center justify-center border-b border-border">
+                <div className="relative aspect-[4/3] bg-surface flex items-center justify-center border-b border-border">
+                  {room.is_copy && (
+                    <span className="absolute top-0 left-0 z-10 font-body text-[0.6rem] tracking-[0.1em] uppercase bg-surface border border-border text-muted-foreground px-2 py-0.5">
+                      COPIED
+                    </span>
+                  )}
                   <p className="font-heading italic text-[0.85rem] text-muted-foreground px-6 text-center">
-                    {room.description
-                      ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
-                      : "Untitled Room"}
+                    {room.is_copy
+                      ? `Copy of ${(room.description ?? "Untitled Room").slice(0, 50)}`
+                      : room.description
+                        ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
+                        : "Untitled Room"}
                   </p>
                 </div>
                 <div className="p-4 space-y-3">
                   <h3 className="font-heading text-[1.1rem] font-normal text-foreground">
-                    {room.description
-                      ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
-                      : "Untitled Room"}
+                    {room.is_copy
+                      ? `Copy of ${(room.description ?? "Untitled Room").slice(0, 50)}`
+                      : room.description
+                        ? room.description.length > 60 ? room.description.slice(0, 60) + "…" : room.description
+                        : "Untitled Room"}
                   </h3>
                   <p className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">
                     {room.created_at ? format(new Date(room.created_at), "MMMM d, yyyy") : "Unknown date"}
