@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { useCart } from "@/contexts/CartContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
