@@ -92,9 +92,9 @@ export default function Index() {
         .insert({
           description: prompt.trim(),
           items: items as any,
-          user_id: session?.user?.id ?? undefined,
+          user_id: session?.user?.id,
           share_token: crypto.randomUUID(),
-        } as any)
+        })
         .select("id")
         .single();
 
