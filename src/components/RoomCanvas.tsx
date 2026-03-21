@@ -1,3 +1,4 @@
+import React, { forwardRef } from "react";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
 interface RoomCanvasProps {
@@ -6,9 +7,10 @@ interface RoomCanvasProps {
   furniture?: FurnitureDetail[];
 }
 
-export default function RoomCanvas({ className = "", items = [], furniture = [] }: RoomCanvasProps) {
+const RoomCanvas = forwardRef<HTMLDivElement, RoomCanvasProps>(({ className = "", items = [], furniture = [] }, ref) => {
   return (
     <div
+      ref={ref}
       id="room-canvas"
       className={`room-canvas bg-surface rounded-lg border border-border/50 flex items-center justify-center ${className}`}
     >
@@ -22,4 +24,8 @@ export default function RoomCanvas({ className = "", items = [], furniture = [] 
       </div>
     </div>
   );
-}
+});
+
+RoomCanvas.displayName = "RoomCanvas";
+
+export default RoomCanvas;
