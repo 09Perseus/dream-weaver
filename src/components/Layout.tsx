@@ -123,7 +123,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                       My Rooms
                     </button>
                     <button
-                      onClick={() => { setDropdownOpen(false); navigate("/cart"); }}
+                      onClick={() => { setDropdownOpen(false); navigate("/orders"); }}
                       className="w-full flex items-center gap-3 px-4 py-3 font-body text-[0.8rem] text-foreground hover:bg-background hover:text-accent transition-colors border-b border-border text-left cursor-pointer"
                     >
                       <ShoppingBag className="h-4 w-4 text-muted-foreground" />

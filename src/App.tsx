@@ -17,6 +17,7 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
+import Orders from "./pages/Orders";
 import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
