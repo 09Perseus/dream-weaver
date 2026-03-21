@@ -375,7 +375,7 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
             minDistance={5}
           />
         </Canvas>
-      </WebGLErrorBoundary>
+      </WebGLErrorBoundary>}
     </div>
   );
 }
