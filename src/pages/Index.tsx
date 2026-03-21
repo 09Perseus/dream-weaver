@@ -317,8 +317,9 @@ export default function Index() {
               DESCRIBE YOUR DREAM
               <br />
               <span
+                className="hero-gradient-text"
                 style={{
-                  background: "linear-gradient(135deg, #E8C06A 0%, #C8B89A 40%, #E05533 100%)",
+                  background: "linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--accent-hover)) 50%, hsl(var(--accent-blue)) 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",

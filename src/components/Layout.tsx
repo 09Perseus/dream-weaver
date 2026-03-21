@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, forwardRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Menu, X, LayoutGrid, ShoppingBag, Pencil, LogOut, Trash2 } from "lucide-react";
+import { ShoppingCart, Menu, X, LayoutGrid, ShoppingBag, Pencil, LogOut, Trash2, Sun, Moon } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency, CURRENCIES, type CurrencyCode } from "@/contexts/CurrencyContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import UserAvatar from "@/components/UserAvatar";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import DeleteAccountDialog from "@/components/DeleteAccountDialog";
@@ -30,6 +31,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
   const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const { currency, setCurrency } = useCurrency();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -124,6 +126,15 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                 </div>
               )}
             </div>
+
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to Light" : "Switch to Dark"}
+              className="hidden md:flex w-8 h-8 items-center justify-center border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer rounded"
+            >
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
 
             <Link to="/cart" className="relative min-h-[44px] min-w-[44px] flex items-center justify-center">
               <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
@@ -243,6 +254,13 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                 <span className="font-body text-[0.7rem] text-accent">({totalItems})</span>
               )}
             </Link>
+            <button
+              onClick={toggleTheme}
+              className="font-body text-[0.8rem] tracking-[0.15em] uppercase text-muted-foreground text-left px-6 py-4 border-b border-border min-h-[52px] flex items-center gap-2"
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
             {user ? (
               <>
                 <div className="flex items-center gap-3 px-6 py-4 border-b border-border">
@@ -290,7 +308,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
             onOpenChange={setEditProfileOpen}
             userId={user.id}
             currentDisplayName={profile?.display_name ?? null}
-            currentAvatarColor={profile?.avatar_color ?? "#C8B89A"}
+            currentAvatarColor={profile?.avatar_color ?? "hsl(var(--accent))"}
             currentAvatarUrl={profile?.avatar_url ?? null}
             avatarInitial={avatarInitial}
             onSaved={() => refreshProfile()}

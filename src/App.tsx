@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import RoomView from "./pages/RoomView";
@@ -27,6 +28,7 @@ const App = React.forwardRef<HTMLDivElement>((_, ref) => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
+        <ThemeProvider>
         <CurrencyProvider>
         <CartProvider>
           <Toaster />
@@ -69,6 +71,7 @@ const App = React.forwardRef<HTMLDivElement>((_, ref) => (
           </BrowserRouter>
         </CartProvider>
         </CurrencyProvider>
+        </ThemeProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
