@@ -60,6 +60,8 @@ export default function EditRoom() {
   const [posted, setPosted] = useState(false);
   const [isCopy, setIsCopy] = useState(false);
   const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
+  const [roomName, setRoomName] = useState(navState?.description || "My Room");
+  const [isEditingName, setIsEditingName] = useState(false);
 
   useEffect(() => {
     if (navState?.items) return;
@@ -70,6 +72,7 @@ export default function EditRoom() {
         if (error || !room) { setLoading(false); return; }
         setIsCopy(!!room.is_copy);
         setDescription(room.description ?? "");
+        setRoomName(room.description || "My Room");
         const items = (room.items as any as PlacedItem[]) ?? [];
         setRoomItems(items);
         const itemIds = items.map((i) => i.id);
@@ -136,7 +139,7 @@ export default function EditRoom() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast({ title: "Sign in required", variant: "destructive" }); return; }
-      const { error } = await supabase.from("room_designs").update({ items: roomItems as any }).eq("id", roomId).eq("user_id", session.user.id);
+      const { error } = await supabase.from("room_designs").update({ items: roomItems as any, description: roomName }).eq("id", roomId).eq("user_id", session.user.id);
       if (error) { toast({ title: "Failed to save", description: error.message, variant: "destructive" }); return; }
       toast({ title: "Room saved!" });
       setUndoStack([]);
@@ -233,6 +236,34 @@ export default function EditRoom() {
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
       {/* Toolbar */}
       <div className="border-b border-border px-4 py-2 flex items-center gap-2 bg-surface overflow-x-auto">
+        {/* Editable room name */}
+        <div className="shrink-0 mr-2">
+          {isEditingName ? (
+            <input
+              autoFocus
+              value={roomName}
+              onChange={e => setRoomName(e.target.value)}
+              onBlur={() => setIsEditingName(false)}
+              onKeyDown={e => { if (e.key === "Enter") setIsEditingName(false); }}
+              maxLength={60}
+              className="bg-transparent border-0 border-b border-accent text-foreground font-heading text-[1.3rem] font-normal outline-none py-1 w-full max-w-[400px]"
+            />
+          ) : (
+            <button
+              onClick={() => setIsEditingName(true)}
+              className="bg-transparent border-none cursor-pointer flex items-center gap-2 p-0"
+            >
+              <span className="font-heading text-[1.3rem] font-normal text-foreground truncate max-w-[300px]">
+                {roomName}
+              </span>
+              <span className="font-body text-[0.65rem] tracking-[0.1em] uppercase text-muted-foreground shrink-0">
+                ✎ RENAME
+              </span>
+            </button>
+          )}
+        </div>
+
+        <div className="w-px h-6 bg-border shrink-0" />
         <Button variant="amber" size="sm" onClick={handleSave} disabled={saving} className="min-h-[44px]">
           <Save className="h-4 w-4" />
           <span className="hidden md:inline">{saving ? "Saving…" : "Save"}</span>
