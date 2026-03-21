@@ -21,6 +21,7 @@ export interface FurnitureItem {
   path?: string;
   rotation?: [number, number, number];
   displaySize?: number;
+  size?: [number, number, number];
 }
 
 // ── Model: normalize to displaySize, snap to floor ───────────────────────────
@@ -67,10 +68,10 @@ function MovableFurniture({
           onSelect();
         }}
       >
-        {furniture.path ? (
+        {furniture.path && furniture.path !== 'PENDING_UPLOAD' ? (
           <Suspense fallback={
             <mesh>
-              <boxGeometry args={[1, 1, 1]} />
+              <boxGeometry args={furniture.size ?? [1, 1, 1]} />
               <meshStandardMaterial color="gray" wireframe />
             </mesh>
           }>
@@ -78,7 +79,7 @@ function MovableFurniture({
           </Suspense>
         ) : (
           <mesh castShadow receiveShadow>
-            <boxGeometry args={[1, 1, 1]} />
+            <boxGeometry args={furniture.size ?? [1, 1, 1]} />
             <meshStandardMaterial
               color={furniture.color || 'white'}
               emissive={isSelected ? '#333333' : '#000000'}
@@ -129,12 +130,18 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
   const viewerFurnitures: FurnitureItem[] = isViewerMode
     ? items.map((item) => {
         const detail = furniture.find((f) => f.id === item.id);
+        const width = Math.max(detail?.real_width ?? 0.8, 0.4);
+        const height = Math.max(detail?.real_height ?? 0.8, 0.2);
+        const depth = Math.max(detail?.real_depth ?? 0.8, 0.4);
+
         return {
           id: `${item.id}_${item.x}_${item.z}`,
           position: [item.x, 0, item.z] as [number, number, number],
           rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
-          path: detail?.file_url ?? undefined,
-          displaySize: detail?.file_url ? getDisplaySize(detail.file_url) : 1,
+          path: detail?.file_url && detail.file_url !== 'PENDING_UPLOAD' ? detail.file_url : undefined,
+          displaySize: detail?.file_url && detail.file_url !== 'PENDING_UPLOAD' ? getDisplaySize(detail.file_url) : Math.max(width, height, depth),
+          size: [width, height, depth] as [number, number, number],
+          color: '#d4d4d8',
         };
       })
     : [];
