@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SkeletonCard from "@/components/SkeletonCard";
 import { Link, useNavigate } from "react-router-dom";
 import { Trash2, Eye, Pencil, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
