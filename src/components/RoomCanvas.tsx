@@ -21,6 +21,7 @@ export interface FurnitureItem {
   path?: string;
   rotation?: [number, number, number];
   displaySize?: number;
+  size?: [number, number, number];
 }
 
 // ── Model: normalize to displaySize, snap to floor ───────────────────────────
