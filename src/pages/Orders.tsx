@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 
@@ -20,33 +20,43 @@ interface Order {
 }
 
 export default function Orders() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const fetchOrders = async () => {
-    if (!user) return;
-    setLoading(true);
-    setError(false);
-    const { data, error: fetchError } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (fetchError) {
-      console.error("Orders fetch error:", fetchError);
-      setError(true);
-    } else {
-      setOrders((data as unknown as Order[]) ?? []);
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    fetchOrders();
-  }, [user]);
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      setError(true);
+    }, 8000);
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout);
+
+      if (!session) {
+        navigate("/sign-in?redirect=/orders");
+        return;
+      }
+
+      supabase
+        .from("orders")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .then(({ data, error: fetchError }) => {
+          console.log("Orders:", data?.length, fetchError);
+          if (fetchError) {
+            setError(true);
+          } else {
+            setOrders((data as unknown as Order[]) ?? []);
+          }
+          setLoading(false);
+        });
+    });
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const formatJPY = (amount: number) =>
     "¥" + Math.round(amount).toLocaleString();
@@ -83,7 +93,7 @@ export default function Orders() {
             Could not load orders. Please try again.
           </p>
           <button
-            onClick={fetchOrders}
+            onClick={() => window.location.reload()}
             className="font-body text-[0.75rem] tracking-[0.12em] uppercase text-accent border border-accent px-6 py-2 hover:bg-accent hover:text-background transition-colors"
           >
             Retry
