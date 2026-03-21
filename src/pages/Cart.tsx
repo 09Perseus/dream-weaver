@@ -299,7 +299,7 @@ export default function Cart() {
                     {item.name}
                   </p>
                   <p className="font-body text-[0.75rem] text-accent">
-                    ${item.price.toLocaleString()}
+                    {formatPrice(item.price)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
