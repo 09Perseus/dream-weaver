@@ -176,7 +176,7 @@ function MovableFurniture({
       onPointerUp={handlePointerUp}
       onClick={handleClick}
     >
-      {furniture.path && furniture.path !== 'PENDING_UPLOAD' ? (
+      {furniture.path && furniture.path !== 'PENDING_UPLOAD' && furniture.path.startsWith('http') ? (
         <Suspense
           fallback={
             <mesh>
