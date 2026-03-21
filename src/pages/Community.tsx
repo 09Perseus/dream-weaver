@@ -151,12 +151,12 @@ export default function Community() {
             {f}
           </button>
         ))}
-        <div className="w-px h-5 bg-border mx-1" />
+        <div className="w-px h-5 bg-border mx-1 shrink-0" />
         {styleTags.map((tag) => (
           <button
             key={tag}
             onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-            className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 ${
+            className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 whitespace-nowrap min-h-[44px] ${
               activeTag === tag
                 ? "border-accent text-accent"
                 : "border-border text-muted-foreground hover:border-accent/50"
