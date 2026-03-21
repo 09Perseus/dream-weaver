@@ -8,9 +8,7 @@
         "psx",
         "wooden"
       ],
-      "description": "Rustic wooden dining table",
-      "dimension": "2.0864 x 1.1119 x 0.9641",
-      "scale_factor": 0.7883
+      "description": "Rustic wooden dining table"
     },
     {
       "name": "office_table_desk",
@@ -20,20 +18,7 @@
         "office",
         "desk"
       ],
-      "description": "Modern office desk",
-      "dimension": "1.8137 x 0.7956 x 0.9124",
-      "scale_factor": 0.822
-    },
-    {
-      "name": "coffee_table",
-      "path": "Tables/coffee_table.glb",
-      "keywords": [
-        "coffee_table",
-        "coffee"
-      ],
-      "description": "Low coffee table",
-      "dimension": "135.8997 x 58.5083 x 43.4797",
-      "scale_factor": 0.0099
+      "description": "Modern office desk"
     },
     {
       "name": "serving_table_01",
@@ -42,9 +27,7 @@
         "serving_table_01",
         "serving"
       ],
-      "description": "Small serving side table",
-      "dimension": "1.0622 x 0.5542 x 0.8127",
-      "scale_factor": 1.0
+      "description": "Small serving side table"
     },
     {
       "name": "victorian_style_tabledesk",
@@ -54,9 +37,7 @@
         "victorian",
         "style"
       ],
-      "description": "Ornate Victorian writing desk",
-      "dimension": "3.0000 x 7.4997 x 6.0997",
-      "scale_factor": 0.1279
+      "description": "Ornate Victorian writing desk"
     },
     {
       "name": "hexagonal_table_01",
@@ -65,9 +46,7 @@
         "hexagonal_table_01",
         "hexagonal"
       ],
-      "description": "Small hexagonal side table",
-      "dimension": "0.5880 x 0.5092 x 0.5400",
-      "scale_factor": 1.0
+      "description": "Small hexagonal side table"
     },
     {
       "name": "realistic_bed_3d_model",
@@ -76,9 +55,7 @@
         "realistic_bed_3d_model",
         "realistic"
       ],
-      "description": "Standard double bed with mattress",
-      "dimension": "2.6608 x 2.0000 x 0.9097",
-      "scale_factor": 0.6596
+      "description": "Standard double bed with mattress"
     },
     {
       "name": "paper_mario_sticker_star_luxurious_bed",
@@ -87,9 +64,7 @@
         "paper_mario_sticker_star_luxurious_bed",
         "luxurious"
       ],
-      "description": "Luxurious ornate king bed",
-      "dimension": "34.7248 x 41.2778 x 48.5208",
-      "scale_factor": 0.0289
+      "description": "Luxurious ornate king bed"
     },
     {
       "name": "ornate_carved_bed",
@@ -99,9 +74,7 @@
         "ornate",
         "carved"
       ],
-      "description": "Ornate carved wooden bed frame",
-      "dimension": "1.7255 x 1.4886 x 1.8990",
-      "scale_factor": 1.0
+      "description": "Ornate carved wooden bed frame"
     },
     {
       "name": "bed",
@@ -109,9 +82,7 @@
       "keywords": [
         "bed"
       ],
-      "description": "Standard single bed",
-      "dimension": "1998.7700 x 2208.9194 x 1168.2238",
-      "scale_factor": 0.001
+      "description": "Standard single bed"
     },
     {
       "name": "majesty_palm_plant",
@@ -121,9 +92,7 @@
         "majesty",
         "palm"
       ],
-      "description": "Large majesty palm plant",
-      "dimension": "3.6161 x 3.1515 x 6.6979",
-      "scale_factor": 0.5
+      "description": "Large majesty palm plant"
     },
     {
       "name": "house_palm_plant",
@@ -133,9 +102,7 @@
         "house",
         "palm"
       ],
-      "description": "Medium indoor palm plant",
-      "dimension": "1.9415 x 2.0834 x 2.3076",
-      "scale_factor": 0.7
+      "description": "Medium indoor palm plant"
     },
     {
       "name": "aglaonema_plant",
@@ -144,9 +111,7 @@
         "aglaonema_plant",
         "aglaonema"
       ],
-      "description": "Aglaonema leafy indoor plant",
-      "dimension": "7.3080 x 7.3785 x 7.2346",
-      "scale_factor": 2
+      "description": "Aglaonema leafy indoor plant"
     },
     {
       "name": "low-poly_snake_plant",
@@ -155,9 +120,7 @@
         "low-poly_snake_plant",
         "snake"
       ],
-      "description": "Low poly snake plant",
-      "dimension": "5.2044 x 16.2732 x 10.3294",
-      "scale_factor": 0.2
+      "description": "Low poly snake plant"
     },
     {
       "name": "airport_plant",
@@ -166,9 +129,7 @@
         "airport_plant",
         "airport"
       ],
-      "description": "Large decorative airport-style plant",
-      "dimension": "1.0081 x 1.6336 x 1.6260",
-      "scale_factor": 1.0
+      "description": "Large decorative airport-style plant"
     },
     {
       "name": "ikea_lamp",
@@ -177,9 +138,7 @@
         "ikea_lamp",
         "ikea"
       ],
-      "description": "IKEA style floor lamp",
-      "dimension": "35.5269 x 35.7226 x 150.8659",
-      "scale_factor": 0.01
+      "description": "IKEA style floor lamp"
     },
     {
       "name": "desk_lamp",
@@ -188,9 +147,7 @@
         "desk_lamp",
         "desk"
       ],
-      "description": "Adjustable desk lamp",
-      "dimension": "3.0606 x 1.2827 x 3.8205",
-      "scale_factor": 0.1178
+      "description": "Adjustable desk lamp"
     },
     {
       "name": "retro_lowpoly_lamp",
@@ -200,9 +157,7 @@
         "retro",
         "lowpoly"
       ],
-      "description": "Retro low poly floor lamp",
-      "dimension": "0.4523 x 0.7429 x 0.4523",
-      "scale_factor": 1.6153
+      "description": "Retro low poly floor lamp"
     },
     {
       "name": "titanic_lamp",
@@ -211,9 +166,7 @@
         "titanic_lamp",
         "titanic"
       ],
-      "description": "Vintage Titanic style table lamp",
-      "dimension": "0.2064 x 0.2040 x 0.6417",
-      "scale_factor": 1.0
+      "description": "Vintage Titanic style table lamp"
     },
     {
       "name": "barcelona_chair",
@@ -222,9 +175,7 @@
         "barcelona_chair",
         "barcelona"
       ],
-      "description": "Barcelona style leather lounge chair",
-      "dimension": "57.6090 x 71.1785 x 28.1058",
-      "scale_factor": 0.0285
+      "description": "Barcelona style leather lounge chair"
     },
     {
       "name": "chair",
@@ -232,9 +183,7 @@
       "keywords": [
         "chair"
       ],
-      "description": "Simple wooden dining chair",
-      "dimension": "0.4236 x 0.4890 x 0.9960",
-      "scale_factor": 1.0
+      "description": "Simple wooden dining chair"
     },
     {
       "name": "gaming_chair",
@@ -243,9 +192,7 @@
         "gaming_chair",
         "gaming"
       ],
-      "description": "Racing style gaming chair",
-      "dimension": "17.4484 x 31.2585 x 17.0495",
-      "scale_factor": 0.0762
+      "description": "Racing style gaming chair"
     },
     {
       "name": "woven_lounge_chair",
@@ -255,9 +202,7 @@
         "woven",
         "lounge"
       ],
-      "description": "Woven rattan lounge chair",
-      "dimension": "1.4762 x 2.0003 x 1.7335",
-      "scale_factor": 0.5192
+      "description": "Woven rattan lounge chair"
     },
     {
       "name": "old_western_saloon_chair",
@@ -268,9 +213,7 @@
         "western",
         "saloon"
       ],
-      "description": "Old Western saloon wooden chair",
-      "dimension": "2.5940 x 2.2261 x 3.1670",
-      "scale_factor": 0.3
+      "description": "Old Western saloon wooden chair"
     },
     {
       "name": "leather_chair",
@@ -279,9 +222,7 @@
         "leather_chair",
         "leather"
       ],
-      "description": "Classic leather armchair",
-      "dimension": "1.3459 x 1.2678 x 1.9071",
-      "scale_factor": 0.4981
+      "description": "Classic leather armchair"
     },
     {
       "name": "vintage_zen_dining_chair",
@@ -292,9 +233,7 @@
         "zen",
         "dining"
       ],
-      "description": "Vintage zen wooden dining chair",
-      "dimension": "0.5096 x 0.8305 x 0.5535",
-      "scale_factor": 1.0
+      "description": "Vintage zen wooden dining chair"
     },
     {
       "name": "chair (1)",
@@ -302,9 +241,7 @@
       "keywords": [
         "chair"
       ],
-      "description": "Modern accent chair",
-      "dimension": "7.2678 x 4.9948 x 9.5676",
-      "scale_factor": 0.0941
+      "description": "Modern accent chair"
     },
     {
       "name": "alko_chair",
@@ -313,9 +250,7 @@
         "alko_chair",
         "alko"
       ],
-      "description": "Alko modern designer chair",
-      "dimension": "71.9228 x 83.0734 x 72.1123",
-      "scale_factor": 0.0115
+      "description": "Alko modern designer chair"
     },
     {
       "name": "antique_heriz_8708_golden_horn_beige_rugs",
@@ -327,9 +262,7 @@
         "beige",
         "rugs"
       ],
-      "description": "Antique Heriz style area rug",
-      "dimension": "1.4996 x 0.0080 x 0.8000",
-      "scale_factor": 1.0
+      "description": "Antique Heriz style area rug"
     },
     {
       "name": "mat",
@@ -337,9 +270,7 @@
       "keywords": [
         "mat"
       ],
-      "description": "Simple floor mat",
-      "dimension": "1.6778 x 0.1098 x 2.3711",
-      "scale_factor": 1.0
+      "description": "Simple floor mat"
     }
   ]
 }
