@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, TransformControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface RoomCanvasProps {
@@ -10,41 +10,129 @@ interface RoomCanvasProps {
 export interface FurnitureItem {
   id: string;
   position: [number, number, number];
-  size: [number, number, number];
-  color: string;
+  color?: string;
+  path?: string;
+  scale?: number | [number, number, number];
+  rotation?: [number, number, number];
+}
+
+// Sub-component to dynamically load GLTF models
+function Model({ path }: { path: string }) {
+  const { scene } = useGLTF(`/furnitures/${path}`);
+  return <primitive object={scene.clone()} />;
+}
+
+function MovableFurniture({
+  furniture,
+  isSelected,
+  onSelect,
+  onPositionChange
+}: {
+  furniture: FurnitureItem,
+  isSelected: boolean,
+  onSelect: () => void,
+  onPositionChange: (pos: [number, number, number]) => void
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+
+  return (
+    <>
+      <group
+        ref={groupRef}
+        position={furniture.position}
+        rotation={furniture.rotation}
+        scale={furniture.scale}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          onSelect();
+        }}
+      >
+        {furniture.path ? (
+          <Suspense fallback={
+            <mesh>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="gray" wireframe />
+            </mesh>
+          }>
+            <Model path={furniture.path} />
+          </Suspense>
+        ) : (
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[1, 1, 1]} /> {/* Default size if no path */}
+            <meshStandardMaterial
+              color={furniture.color || "white"}
+              emissive={isSelected ? "#333333" : "#000000"}
+            />
+          </mesh>
+        )}
+      </group>
+
+      {isSelected && (
+        <TransformControls
+          object={groupRef}
+          mode="translate"
+          onMouseUp={() => {
+            if (groupRef.current) {
+              onPositionChange(groupRef.current.position.toArray() as [number, number, number]);
+            }
+          }}
+        />
+      )}
+    </>
+  );
 }
 
 export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
   const roomSize = 50;
   const roomHeight = 20;
 
-  const [furnitures, setFurnitures] = useState<FurnitureItem[]>([
-    {
-      id: "main-box",
-      position: [0, -roomHeight / 2 + 3, 0],
-      size: [6, 6, 6],
-      color: "#3b82f6"
-    },
-    {
-      id: "side-box",
-      position: [12, -roomHeight / 2 + 2, -8],
-      size: [4, 4, 4],
-      color: "#f59e0b"
-    },
-    {
-      id: "small-box",
-      position: [-10, -roomHeight / 2 + 1.5, 5],
-      size: [3, 3, 3],
-      color: "#ef4444"
-    }
-  ]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [furnitures, setFurnitures] = useState<FurnitureItem[]>([]);
+
+  // Dynamically fetch and layout the 31 JSON furniture items on component mount
+  useEffect(() => {
+    fetch('/furnitures/furniture-list.json')
+      .then(res => res.json())
+      .then(data => {
+        const floorY = -roomHeight / 2;
+
+        // Arrange items in a 6-column grid to view them all side by side
+        const items = data.furnitures.map((item: any, i: number) => {
+          const cols = 6;
+          const spacing = 4; // 4 meters apart
+
+          const x = (i % cols) * spacing - (cols * spacing) / 2 + (spacing / 2);
+          const z = Math.floor(i / cols) * spacing - 10;
+
+          return {
+            id: item.name,
+            path: item.path,
+            position: [x, floorY, z] as [number, number, number],
+            scale: item.scale_factor,
+          };
+        });
+
+        setFurnitures(items);
+      });
+  }, [roomHeight]);
+
+  const updateFurniturePosition = (id: string, newPos: [number, number, number]) => {
+    setFurnitures(prev => prev.map(f => f.id === id ? { ...f, position: newPos } : f));
+  };
 
   return (
     <div
       id="room-canvas"
       className={`room-canvas relative bg-zinc-900 rounded-lg border border-border/50 overflow-hidden ${className}`}
     >
-      <Canvas shadows camera={{ position: [40, 30, 45], fov: 60 }}>
+      <Canvas
+        shadows
+        camera={{ position: [40, 30, 45], fov: 60 }}
+        onPointerMissed={() => setSelectedId(null)}
+      >
         <ambientLight intensity={0.5} />
 
         <directionalLight
@@ -66,23 +154,13 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
         />
 
         {furnitures.map((furniture) => (
-          <mesh
+          <MovableFurniture
             key={furniture.id}
-            position={furniture.position}
-            castShadow
-            receiveShadow
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log(`Clicked on furniture: ${furniture.id}`);
-            }}
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              console.log(`Double-clicked on furniture: ${furniture.id}`);
-            }}
-          >
-            <boxGeometry args={furniture.size} />
-            <meshStandardMaterial color={furniture.color} />
-          </mesh>
+            furniture={furniture}
+            isSelected={selectedId === furniture.id}
+            onSelect={() => setSelectedId(furniture.id)}
+            onPositionChange={(newPos) => updateFurniturePosition(furniture.id, newPos)}
+          />
         ))}
 
         <OrbitControls
