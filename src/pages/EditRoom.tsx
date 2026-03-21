@@ -8,6 +8,7 @@ import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
