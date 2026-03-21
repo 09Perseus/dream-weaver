@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlySupabaseError } from "@/utils/translateError";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
