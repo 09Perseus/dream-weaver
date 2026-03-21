@@ -67,7 +67,7 @@ export default function FurnitureDetailPanel({ item, onBack }: Props) {
 
         {/* Price */}
         <p className="font-heading text-[1.4rem] text-accent mb-4">
-          ${item.price.toLocaleString()}
+          {formatPrice(item.price)}
         </p>
 
         {/* Dimensions */}
