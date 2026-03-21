@@ -16,6 +16,8 @@ const USD_TO_JPY = 150;
 
 // Cache PAY.JP instance globally to avoid "Already instantiated" error
 let globalPayjp: any = null;
+let globalCardElement: any = null;
+let isMounted = false;
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
