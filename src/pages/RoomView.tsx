@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Plus, Share2, Pencil, Loader2 } from "lucide-react";
+import { ShoppingCart, Plus, Share2, Pencil, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
+import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,9 +29,27 @@ export default function RoomView() {
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
   const [description, setDescription] = useState(navState?.description ?? "");
   const [loading, setLoading] = useState(!navState?.items);
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [posted, setPosted] = useState(false);
+
+  // Check if already posted
+  useEffect(() => {
+    if (!id || !user) return;
+    const checkPosted = async () => {
+      const { data } = await supabase
+        .from("community_posts")
+        .select("id")
+        .eq("room_design_id", id)
+        .eq("user_id", user.id)
+        .eq("is_visible", true)
+        .maybeSingle();
+      if (data) setPosted(true);
+    };
+    checkPosted();
+  }, [id, user]);
 
   useEffect(() => {
-    if (navState?.items) return; // already have data from navigation
+    if (navState?.items) return;
     if (!id || id === "new") {
       setLoading(false);
       return;
@@ -54,7 +73,6 @@ export default function RoomView() {
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
         setItems(roomItems);
 
-        // Fetch furniture details for all item IDs
         const itemIds = roomItems.map((i) => i.id);
         if (itemIds.length > 0) {
           const { data: furnitureData, error: fErr } = await supabase
@@ -191,19 +209,38 @@ export default function RoomView() {
           <Button
             variant="outline"
             className="flex-1"
+            disabled={posted}
             onClick={() => {
               if (!user) {
-                toast({ title: "Sign in required", description: "Please sign in to post to the community.", variant: "destructive" });
+                toast({ title: "Sign in required", description: "Sign in to post to the community.", variant: "destructive" });
                 return;
               }
-              // Post to community logic
+              setPostDialogOpen(true);
             }}
           >
-            <Share2 className="h-4 w-4" />
-            Post
+            {posted ? (
+              <>
+                <Check className="h-4 w-4" />
+                Posted ✓
+              </>
+            ) : (
+              <>
+                <Share2 className="h-4 w-4" />
+                Post
+              </>
+            )}
           </Button>
         </div>
       </aside>
+
+      {id && (
+        <PostToCommunityDialog
+          open={postDialogOpen}
+          onOpenChange={setPostDialogOpen}
+          roomId={id}
+          onPosted={() => setPosted(true)}
+        />
+      )}
     </div>
   );
 }

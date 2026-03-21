@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 
 interface CommunityCardProps {
   id: string;
+  roomDesignId?: string;
   title: string;
   author: string;
   authorInitial: string;
   thumbnailUrl?: string;
+  description?: string | null;
   likeCount: number;
   liked?: boolean;
   isOwnPost?: boolean;
@@ -17,23 +19,27 @@ interface CommunityCardProps {
 
 const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
   id,
+  roomDesignId,
   title,
   author,
   authorInitial,
   thumbnailUrl,
+  description,
   likeCount,
   liked = false,
   isOwnPost = false,
   onLike,
   delay = 0,
 }, ref) => {
+  const linkTo = roomDesignId ? `/room/${roomDesignId}` : `/room/${id}`;
+
   return (
     <div
       ref={ref}
       className="group animate-reveal-up"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <Link to={`/room/${id}`} className="block">
+      <Link to={linkTo} className="block">
         <div className="rounded-xl overflow-hidden bg-card border border-border/50 transition-all duration-300 hover:border-amber/30 hover:shadow-lg hover:shadow-amber/5">
           <div className="aspect-[16/10] bg-surface overflow-hidden">
             {thumbnailUrl ? (
@@ -43,12 +49,18 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="h-12 w-12 rounded-xl bg-amber/10 border border-amber/20 flex items-center justify-center">
-                  <svg className="h-6 w-6 text-amber/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                  </svg>
-                </div>
+              <div className="w-full h-full flex items-center justify-center p-4">
+                {description ? (
+                  <p className="text-sm text-muted-foreground text-center line-clamp-3">
+                    {description}
+                  </p>
+                ) : (
+                  <div className="h-12 w-12 rounded-xl bg-amber/10 border border-amber/20 flex items-center justify-center">
+                    <svg className="h-6 w-6 text-amber/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                  </div>
+                )}
               </div>
             )}
           </div>
