@@ -73,10 +73,32 @@ export default function MyRooms() {
   const handleUnpost = async (roomId: string) => {
     setUnposting(roomId);
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const { error } = await supabase.from("community_posts").update({ is_visible: false }).eq("room_design_id", roomId).eq("user_id", session.user.id);
-    if (error) {
-      toast({ title: "Error", description: "Failed to remove from community.", variant: "destructive" });
+    if (!session) { setUnposting(null); return; }
+
+    // Step 1: find the post
+    const { data: post, error: findError } = await supabase
+      .from("community_posts")
+      .select("id")
+      .eq("room_design_id", roomId)
+      .eq("user_id", session.user.id)
+      .eq("is_visible", true)
+      .maybeSingle();
+
+    if (findError || !post) {
+      toast({ title: "Not found", description: "Could not find your post. It may already be removed.", variant: "destructive" });
+      setUnposting(null);
+      return;
+    }
+
+    // Step 2: update by exact id
+    const { error: updateError } = await supabase
+      .from("community_posts")
+      .update({ is_visible: false })
+      .eq("id", post.id)
+      .eq("user_id", session.user.id);
+
+    if (updateError) {
+      toast({ title: "Error", description: "Failed to unpost: " + updateError.message, variant: "destructive" });
     } else {
       setPostedRoomIds((prev) => { const next = new Set(prev); next.delete(roomId); return next; });
       toast({ title: "Removed from community feed" });
