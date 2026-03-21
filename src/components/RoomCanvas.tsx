@@ -162,29 +162,31 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
 
   return (
     <div className={`relative w-full h-full ${className}`}>
-      {/* ── Prompt input ─────────────────────────────────────────────── */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xl">
-        <div className="flex gap-2">
-          <input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && generate(description)}
-            placeholder="Describe your dream room..."
-            disabled={isGenerating}
-            className="flex-1 px-4 py-2 rounded-lg bg-black/60 text-white border border-white/20 backdrop-blur-sm text-sm placeholder:text-white/40 focus:outline-none focus:border-white/50 disabled:opacity-50"
-          />
-          <button
-            onClick={() => generate(description)}
-            disabled={isGenerating || !description.trim()}
-            className="px-4 py-2 rounded-lg bg-amber-500 text-black font-medium text-sm disabled:opacity-50 hover:bg-amber-400 transition-colors"
-          >
-            {isGenerating ? '...' : 'Generate'}
-          </button>
+      {/* ── Prompt input (generate mode only) ────────────────────────── */}
+      {!isViewerMode && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xl">
+          <div className="flex gap-2">
+            <input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && generate(description)}
+              placeholder="Describe your dream room..."
+              disabled={isGenerating}
+              className="flex-1 px-4 py-2 rounded-lg bg-black/60 text-white border border-white/20 backdrop-blur-sm text-sm placeholder:text-white/40 focus:outline-none focus:border-white/50 disabled:opacity-50"
+            />
+            <button
+              onClick={() => generate(description)}
+              disabled={isGenerating || !description.trim()}
+              className="px-4 py-2 rounded-lg bg-amber-500 text-black font-medium text-sm disabled:opacity-50 hover:bg-amber-400 transition-colors"
+            >
+              {isGenerating ? '...' : 'Generate'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Loading overlay ──────────────────────────────────────────── */}
-      {isGenerating && (
+      {!isViewerMode && isGenerating && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
           <div className="text-center">
             <p className="text-2xl mb-3">✦</p>
@@ -194,14 +196,14 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
       )}
 
       {/* ── Error message ────────────────────────────────────────────── */}
-      {error && (
+      {!isViewerMode && error && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/90 text-white px-4 py-2 rounded-lg text-sm max-w-md text-center">
           {error}
         </div>
       )}
 
       {/* ── Empty state ──────────────────────────────────────────────── */}
-      {furnitures.length === 0 && !isGenerating && (
+      {!isViewerMode && activeFurnitures.length === 0 && !isGenerating && (
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
           <p className="text-sm text-muted-foreground/60">
             Describe a room above to get started
