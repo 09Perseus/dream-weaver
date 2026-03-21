@@ -458,6 +458,15 @@ export default function RoomCanvas({
     generate,
   } = useGenerateRoom({ roomSize, roomHeight });
 
+  // Debug: log what RoomCanvas receives
+  useEffect(() => {
+    console.log("RoomCanvas received items:", items?.length);
+    console.log("RoomCanvas received furniture:", furniture?.length);
+    if (furniture && furniture.length > 0) {
+      console.log("First furniture item:", JSON.stringify(furniture[0], null, 2));
+    }
+  }, [items, furniture]);
+
   // Viewer mode: convert PlacedItem[] + FurnitureDetail[] → FurnitureItem[]
   const viewerFurnitures: FurnitureItem[] = isViewerMode
     ? items.map((item) => {
@@ -465,15 +474,17 @@ export default function RoomCanvas({
         const width  = Math.max(detail?.real_width  ?? 0.8, 0.4);
         const height = Math.max(detail?.real_height ?? 0.8, 0.2);
         const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
+        const fileUrl = detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
+                          ? detail.file_url : undefined;
+        console.log("Model path for", item.id, ":", fileUrl);
         return {
           id:          item.id,
           name:        detail?.name,
           position:    [item.x, 0, item.z] as [number, number, number],
           rotation:    [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
-          path:        detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
-                         ? detail.file_url : undefined,
-          displaySize: detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
-                         ? getDisplaySize(detail.file_url)
+          path:        fileUrl,
+          displaySize: fileUrl
+                         ? getDisplaySize(fileUrl)
                          : Math.max(width, height, depth),
           size:        [width, height, depth] as [number, number, number],
           color:       '#d4d4d8',
