@@ -1,6 +1,6 @@
 
-import { useState, useRef, useEffect, useMemo, Suspense, Component, type ReactNode } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { useState, useRef, useEffect, useMemo, useCallback, Suspense, Component, type ReactNode } from "react";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -130,17 +130,17 @@ function MovableFurniture({
   const groupRef = useRef<THREE.Group>(null);
   const isDragging = useRef(false);
   const dragOffset = useRef(new THREE.Vector3());
-  const intersection = useMemo(() => new THREE.Vector3(), []);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
+  const intersection = useMemo(() => new THREE.Vector3(), []);
   const { camera, gl, raycaster, pointer } = useThree();
 
-  // ✅ FIX 1 — only check isEditMode so drag works immediately after double click
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (!isEditMode) return;
     e.stopPropagation();
     isDragging.current = true;
-    gl.domElement.setPointerCapture(e.pointerId);
+
+    // Compute drag offset on the floor plane
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
     dragOffset.current.set(
@@ -150,23 +150,32 @@ function MovableFurniture({
     );
   };
 
-  const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
+  // Use useFrame to continuously update position while dragging
+  // This avoids the R3F onPointerMove problem where events stop
+  // firing when the pointer leaves the mesh bounding box
+  useFrame(() => {
     if (!isDragging.current || !isEditMode) return;
-    e.stopPropagation();
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
-    onPositionChange([
-      intersection.x - dragOffset.current.x,
-      0,
-      intersection.z - dragOffset.current.z,
-    ]);
-  };
+    const newX = intersection.x - dragOffset.current.x;
+    const newZ = intersection.z - dragOffset.current.z;
+    onPositionChange([newX, 0, newZ]);
+  });
 
-  const handlePointerUp = (e: ThreeEvent<PointerEvent>) => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    gl.domElement.releasePointerCapture(e.pointerId);
-  };
+  // Listen for pointerup on the canvas element so drag ends even if
+  // the pointer leaves the mesh
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const handleUp = () => {
+      isDragging.current = false;
+    };
+    canvas.addEventListener("pointerup", handleUp);
+    canvas.addEventListener("pointerleave", handleUp);
+    return () => {
+      canvas.removeEventListener("pointerup", handleUp);
+      canvas.removeEventListener("pointerleave", handleUp);
+    };
+  }, [gl]);
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
@@ -188,8 +197,6 @@ function MovableFurniture({
       position={furniture.position}
       rotation={furniture.rotation}
       onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
       onClick={handleClick}
     >
       {furniture.path && furniture.path !== "PENDING_UPLOAD" ? (
@@ -342,15 +349,12 @@ function InfoCard({
           <button className="w-full py-2 px-4 bg-accent text-white text-sm font-body rounded-lg hover:opacity-90 transition-opacity">
             Add to Cart
           </button>
-          {/* ✅ FIX 2 — delete button always visible in edit mode */}
-          {isEditMode && (
-            <button
-              onClick={onDelete}
-              className="w-full py-2 px-4 bg-destructive text-white text-sm font-body rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Delete from Room
-            </button>
-          )}
+          <button
+            onClick={onDelete}
+            className="w-full py-2 px-4 bg-destructive text-destructive-foreground text-sm font-body rounded-lg hover:opacity-90 transition-opacity"
+          >
+            Delete from Room
+          </button>
         </div>
       </div>
     </div>
@@ -530,6 +534,20 @@ export default function RoomCanvas({
     setInternalSelectedId(null);
     setInternalEditId(null);
   };
+
+  // Keyboard delete support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "Delete" || e.key === "Backspace") && internalSelectedId && !isControlled) {
+        // Don't delete if user is typing in an input
+        if ((e.target as HTMLElement)?.tagName === "INPUT" || (e.target as HTMLElement)?.tagName === "TEXTAREA") return;
+        e.preventDefault();
+        handleInternalDelete(internalSelectedId);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [internalSelectedId, isControlled]);
 
   const webglSupported = useMemo(() => detectWebGL(), []);
 
