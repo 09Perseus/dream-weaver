@@ -44,7 +44,12 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
     >
       <Link to={linkTo} className="block">
         <div className="overflow-hidden bg-card border border-border transition-all duration-200 hover:border-accent">
-          <div className="aspect-[16/10] bg-surface overflow-hidden">
+          <div className="relative aspect-[16/10] bg-surface overflow-hidden">
+            {isOwnPost && (
+              <span className="absolute top-0 left-0 z-10 font-body text-[0.6rem] tracking-[0.1em] uppercase bg-accent text-background px-2 py-0.5">
+                YOUR POST
+              </span>
+            )}
             {thumbnailUrl ? (
               <img
                 src={thumbnailUrl}
