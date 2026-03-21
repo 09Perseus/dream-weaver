@@ -127,6 +127,15 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
               )}
             </div>
 
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to Light" : "Switch to Dark"}
+              className="hidden md:flex w-8 h-8 items-center justify-center border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors cursor-pointer rounded"
+            >
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+
             <Link to="/cart" className="relative min-h-[44px] min-w-[44px] flex items-center justify-center">
               <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
               {totalItems > 0 && (
