@@ -137,7 +137,7 @@ export default function Community() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-10 animate-reveal-up delay-100">
+      <div className="flex items-center gap-3 mb-10 animate-reveal-up delay-100 overflow-x-auto pb-2 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
         {filters.map((f) => (
           <button
             key={f}
