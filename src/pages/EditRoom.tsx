@@ -164,97 +164,112 @@ export default function EditRoom() {
     );
   }
 
+  const pickerContent = (
+    <>
+      <div className="flex flex-wrap gap-1 p-3 border-b border-border">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 min-h-[44px] ${
+              activeCategory === cat ? "border-accent text-accent" : "border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {pickerLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="h-px w-16 bg-border overflow-hidden">
+              <div className="h-full w-1/3 bg-accent animate-line-progress" />
+            </div>
+          </div>
+        ) : filteredPicker.length === 0 ? (
+          <p className="font-body text-[0.75rem] text-muted-foreground text-center py-8">No items in this category</p>
+        ) : (
+          filteredPicker.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => { handleAddFromPicker(item); if (isMobile) setPickerDrawerOpen(false); }}
+              className="w-full text-left px-4 py-3 border-b border-border hover:bg-background transition-colors cursor-pointer min-h-[44px]"
+            >
+              <div className="flex items-center gap-3">
+                {item.thumbnail_url ? (
+                  <img src={item.thumbnail_url} alt={item.name} className="h-10 w-10 object-cover flex-shrink-0" />
+                ) : (
+                  <div className="h-10 w-10 border border-border flex items-center justify-center flex-shrink-0">
+                    <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
+                  <p className="font-body text-[0.7rem] text-accent">${item.price}</p>
+                </div>
+                <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
       {/* Toolbar */}
-      <div className="border-b border-border px-4 py-2 flex items-center gap-2 bg-surface">
-        <Button variant="amber" size="sm" onClick={handleSave} disabled={saving}>
+      <div className="border-b border-border px-4 py-2 flex items-center gap-2 bg-surface overflow-x-auto">
+        <Button variant="amber" size="sm" onClick={handleSave} disabled={saving} className="min-h-[44px]">
           <Save className="h-4 w-4" />
-          {saving ? "Saving…" : "Save"}
+          <span className="hidden md:inline">{saving ? "Saving…" : "Save"}</span>
         </Button>
-        <Button variant="outline" size="sm" onClick={handleUndo} disabled={undoStack.length === 0}>
+        <Button variant="outline" size="sm" onClick={handleUndo} disabled={undoStack.length === 0} className="min-h-[44px]">
           <Undo className="h-4 w-4" />
-          Undo
+          <span className="hidden md:inline">Undo</span>
         </Button>
-        <Button variant="destructive" size="sm" onClick={handleDeleteSelected} disabled={!selectedItemId}>
+        <Button variant="destructive" size="sm" onClick={handleDeleteSelected} disabled={!selectedItemId} className="min-h-[44px]">
           <Trash2 className="h-4 w-4" />
-          Delete
+          <span className="hidden md:inline">Delete</span>
         </Button>
+        {isMobile && (
+          <Button variant="outline" size="sm" onClick={() => setPickerDrawerOpen(true)} className="min-h-[44px]">
+            <Plus className="h-4 w-4" />
+            <span className="text-[0.7rem]">ADD</span>
+          </Button>
+        )}
         <div className="flex-1" />
         <Button
           variant="amber-outline"
           size="sm"
           disabled={posted}
+          className="min-h-[44px]"
           onClick={() => {
             if (!user) { toast({ title: "Sign in required", variant: "destructive" }); return; }
             setPostDialogOpen(true);
           }}
         >
           <Share2 className="h-4 w-4" />
-          {posted ? "Posted ✓" : "Post to Community"}
+          <span className="hidden md:inline">{posted ? "Posted ✓" : "Post to Community"}</span>
         </Button>
       </div>
 
-      <div className="flex-1 flex">
-        {/* Furniture Picker (left) */}
-        <aside className="w-72 border-r border-border flex flex-col bg-surface">
-          <div className="flex flex-wrap gap-1 p-3 border-b border-border">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`font-body text-[0.65rem] tracking-[0.08em] uppercase px-3 py-1.5 border transition-colors duration-200 ${
-                  activeCategory === cat ? "border-accent text-accent" : "border-border text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            {pickerLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="h-px w-16 bg-border overflow-hidden">
-                  <div className="h-full w-1/3 bg-accent animate-line-progress" />
-                </div>
-              </div>
-            ) : filteredPicker.length === 0 ? (
-              <p className="font-body text-[0.75rem] text-muted-foreground text-center py-8">No items in this category</p>
-            ) : (
-              filteredPicker.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleAddFromPicker(item)}
-                  className="w-full text-left px-4 py-3 border-b border-border hover:bg-background transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    {item.thumbnail_url ? (
-                      <img src={item.thumbnail_url} alt={item.name} className="h-10 w-10 object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="h-10 w-10 border border-border flex items-center justify-center flex-shrink-0">
-                        <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
-                      <p className="font-body text-[0.7rem] text-accent">${item.price}</p>
-                    </div>
-                    <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </aside>
+      <div className="flex-1 flex flex-col md:flex-row">
+        {/* Furniture Picker (desktop only) */}
+        {!isMobile && (
+          <aside className="w-72 border-r border-border flex flex-col bg-surface">
+            {pickerContent}
+          </aside>
+        )}
 
         {/* Canvas */}
         <div className="flex-1 p-4">
-          <RoomCanvas className="w-full h-full min-h-[400px]" items={roomItems} furniture={furniture} />
+          <RoomCanvas className="w-full h-full min-h-[300px] md:min-h-[400px]" items={roomItems} furniture={furniture} />
         </div>
 
-        {/* Room Items (right) */}
-        <aside className="w-80 border-l border-border flex flex-col bg-surface">
+        {/* Room Items (right — hidden on mobile, shown below canvas) */}
+        <aside className={`${isMobile ? 'w-full border-t' : 'w-80 border-l'} border-border flex flex-col bg-surface`}>
           <div className="p-4 border-b border-border">
             <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground">
               Room Items ({roomItems.length})
@@ -273,7 +288,7 @@ export default function EditRoom() {
                   <button
                     key={item.id}
                     onClick={() => setSelectedItemId(isSelected ? null : item.id)}
-                    className={`w-full text-left px-4 py-3 border-b border-border transition-colors cursor-pointer ${
+                    className={`w-full text-left px-4 py-3 border-b border-border transition-colors cursor-pointer min-h-[44px] ${
                       isSelected ? "bg-accent/10 border-l-2 border-l-accent" : "hover:bg-background"
                     }`}
                   >
@@ -300,6 +315,20 @@ export default function EditRoom() {
           </div>
         </aside>
       </div>
+
+      {/* Mobile furniture picker drawer */}
+      {isMobile && (
+        <Drawer open={pickerDrawerOpen} onOpenChange={setPickerDrawerOpen}>
+          <DrawerContent className="max-h-[70vh]">
+            <DrawerHeader>
+              <DrawerTitle className="font-body text-[0.8rem] tracking-[0.1em] uppercase text-muted-foreground">Add Furniture</DrawerTitle>
+            </DrawerHeader>
+            <div className="flex flex-col overflow-hidden flex-1">
+              {pickerContent}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
 
       {roomId && (
         <PostToCommunityDialog open={postDialogOpen} onOpenChange={setPostDialogOpen} roomId={roomId} onPosted={() => setPosted(true)} />

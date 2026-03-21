@@ -104,7 +104,7 @@ export default function Index() {
       <section className="flex flex-col items-center justify-center px-4 min-h-[calc(100vh-3.5rem)]">
         <div className="max-w-2xl w-full text-center space-y-10">
           <div className="space-y-5 animate-reveal-up">
-            <h1 className="font-heading font-light uppercase tracking-[0.08em] text-foreground leading-[1.05]" style={{ fontSize: 'clamp(3rem, 8vw, 7rem)' }}>
+            <h1 className="font-heading font-light uppercase tracking-[0.08em] text-foreground leading-[1.05]" style={{ fontSize: 'clamp(2rem, 8vw, 7rem)' }}>
               Describe your<br />dream room
             </h1>
             <p className="font-body text-[0.85rem] tracking-[0.1em] text-muted-foreground">
