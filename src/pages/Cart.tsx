@@ -182,8 +182,10 @@ export default function Cart() {
         Cart
       </h1>
 
-      {/* Card element div always rendered so useEffect can find it */}
-      <div id="payjp-card-element" style={{ position: items.length === 0 ? "absolute" : "relative", visibility: items.length === 0 ? "hidden" : "visible", borderBottom: "1px solid var(--border)", padding: "0.75rem 0", minHeight: 40, background: "transparent" }} />
+      {/* Hidden mount point when cart is empty so useEffect can find it */}
+      {items.length === 0 && (
+        <div id="payjp-card-element" style={{ position: "absolute", visibility: "hidden", pointerEvents: "none" }} />
+      )}
 
       {items.length === 0 ? (
         <div className="text-center py-20 animate-reveal-up">
@@ -242,14 +244,14 @@ export default function Cart() {
               <p className="font-body text-[0.8rem] text-destructive mb-2">{payjpError}</p>
             )}
 
-            {!payjpReady && !payjpError && (
-              <p className="font-body text-[0.7rem] text-muted-foreground mb-2">Loading card form...</p>
-            )}
+            <div
+              id="payjp-card-element"
+              className="border-b border-border py-3 mb-2"
+              style={{ background: "transparent", minHeight: 44 }}
+            />
 
-            {payjpReady && (
-              <p className="font-body text-[0.7rem] text-muted-foreground mt-2">
-                Test card: 4242 4242 4242 4242 · Any future expiry · Any 3-digit CVC
-              </p>
+            {!payjpReady && !payjpError && (
+              <p className="font-body text-[0.7rem] text-muted-foreground">Loading card form...</p>
             )}
           </div>
 
