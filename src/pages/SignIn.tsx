@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlySupabaseError } from "@/utils/translateError";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -24,7 +25,7 @@ export default function SignIn() {
     setLoading(false);
 
     if (authError) {
-      setError(authError.message);
+      setError(friendlySupabaseError(authError));
       return;
     }
 
