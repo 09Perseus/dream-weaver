@@ -142,7 +142,7 @@ export default function Community() {
           <button
             key={f}
             onClick={() => setActiveFilter(f)}
-            className={`font-body text-[0.7rem] tracking-[0.1em] uppercase px-4 py-2 border transition-colors duration-200 ${
+            className={`font-body text-[0.7rem] tracking-[0.1em] uppercase px-4 py-2 border transition-colors duration-200 whitespace-nowrap min-h-[44px] ${
               activeFilter === f
                 ? "border-accent text-accent"
                 : "border-border text-muted-foreground hover:border-accent hover:text-accent"
