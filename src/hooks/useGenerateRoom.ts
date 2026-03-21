@@ -1,101 +1,96 @@
-import { useState, useCallback } from "react";
-import { generateRoom } from "@/lib/edgeFunctions";
-import type { FurnitureDetail } from "@/lib/edgeFunctions";
-import type { FurnitureItem } from "@/components/RoomCanvas";
+import { useState, useCallback } from 'react'
+import type { FurnitureItem } from '@/components/RoomCanvas'
 
-const LOADING_MESSAGES = [
-  "Analyzing your description…",
-  "Selecting furniture pieces…",
-  "Arranging the room layout…",
-  "Placing items in the scene…",
-  "Almost there…",
-];
-
-// Map category to a reasonable display size (metres)
-export function getDisplaySize(category: string): number {
-  const cat = category.toLowerCase();
-  if (cat.includes("bed")) return 2.2;
-  if (cat.includes("sofa")) return 2.0;
-  if (cat.includes("table")) return 1.2;
-  if (cat.includes("chair")) return 0.9;
-  if (cat.includes("lamp")) return 1.0;
-  if (cat.includes("plant")) return 0.8;
-  if (cat.includes("rug") || cat.includes("carpet") || cat.includes("mat")) return 2.5;
-  if (cat.includes("shelf")) return 1.4;
-  return 1.0;
+export function getDisplaySize(path: string): number {
+  const p = path.toLowerCase()
+  if (p.includes('bed'))                                               return 2.0
+  if (p.includes('table'))                                             return 1.5
+  if (p.includes('chair'))                                             return 1.0
+  if (p.includes('lamp'))                                              return 1.5
+  if (p.includes('plant'))                                             return 1.2
+  if (p.includes('carpet') || p.includes('rug') || p.includes('mat')) return 2.0
+  return 1.0
 }
 
-interface UseGenerateRoomOptions {
-  roomSize: number;
-  roomHeight: number;
+function clampToRoom(
+  x: number,
+  z: number,
+  halfW: number,
+  padding = 0.15
+): { x: number; z: number } {
+  return {
+    x: Math.max(-halfW + padding, Math.min(halfW - padding, x)),
+    z: Math.max(-halfW + padding, Math.min(halfW - padding, z)),
+  }
 }
 
-export function useGenerateRoom({ roomSize, roomHeight }: UseGenerateRoomOptions) {
-  const [furnitures, setFurnitures] = useState<FurnitureItem[]>([]);
-  const [furnitureDetails, setFurnitureDetails] = useState<FurnitureDetail[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
-  const [error, setError] = useState<string | null>(null);
+export interface GenerateRoomOptions {
+  roomSize: number
+  roomHeight: number
+}
 
-  const generate = useCallback(async (description: string) => {
-    if (!description.trim() || isGenerating) return;
+export function useGenerateRoom({ roomSize, roomHeight }: GenerateRoomOptions) {
+  const [furnitures, setFurnitures]         = useState<FurnitureItem[]>([])
+  const [isGenerating, setIsGenerating]     = useState(false)
+  const [error, setError]                   = useState<string | null>(null)
+  const [loadingMessage, setLoadingMessage] = useState('')
 
-    setIsGenerating(true);
-    setError(null);
-    setFurnitures([]);
-    setFurnitureDetails([]);
+  const halfW  = roomSize / 2
+  const floorY = -(roomHeight / 2)
 
-    // Cycle through loading messages
-    let msgIndex = 0;
-    setLoadingMessage(LOADING_MESSAGES[0]);
-    const interval = setInterval(() => {
-      msgIndex = Math.min(msgIndex + 1, LOADING_MESSAGES.length - 1);
-      setLoadingMessage(LOADING_MESSAGES[msgIndex]);
-    }, 3000);
+  const generate = useCallback(async (_description: string) => {
+    setIsGenerating(true)
+    setError(null)
+    setLoadingMessage('Picking furniture...')
 
     try {
-      const response = await generateRoom(description);
-      const { items, furniture } = response;
+      const res  = await fetch('/furnitures/furniture-list.json')
+      const data = await res.json()
+      const allItems: any[] = data.furnitures.filter(
+        (i: any) => i.path && i.name
+      )
 
-      // Build a lookup from furniture details
-      const detailMap = new Map<string, FurnitureDetail>();
-      furniture.forEach((f) => detailMap.set(f.id, f));
+      const picked = [...allItems]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 5)
 
-      // Map placed items to FurnitureItem[] for the canvas
-      const mapped: FurnitureItem[] = items.map((item) => {
-        const detail = detailMap.get(item.id);
-        // Try to find the local GLB path from the furniture-list.json name match
-        const filePath = detail?.file_url ?? undefined;
-        const displaySize = detail ? getDisplaySize(detail.category) : 1;
+      const positions: [number, number, number][] = [
+        [0,               floorY, -halfW + 0.8],
+        [-halfW + 0.8,    floorY, 0],
+        [halfW - 0.8,     floorY, 0],
+        [0,               floorY, 0],
+        [halfW - 0.8,     floorY, -halfW + 0.8],
+      ]
+
+      const items: FurnitureItem[] = picked.map((item: any, i: number) => {
+        const [px, py, pz] = positions[i]
+        const safe = clampToRoom(px, pz, halfW)
 
         return {
-          id: `${item.id}_${Math.random().toString(36).slice(2, 6)}`,
-          position: [item.x, 0, item.z] as [number, number, number],
-          rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
-          path: filePath || undefined,
-          displaySize,
-        };
-      });
+          id:          item.name,
+          path:        item.path,
+          position:    [safe.x, py, safe.z] as [number, number, number],
+          rotation:    [0, 0, 0] as [number, number, number],
+          displaySize: getDisplaySize(item.path),
+        }
+      })
 
-      setFurnitures(mapped);
-      setFurnitureDetails(furniture);
-    } catch (err) {
-      console.error("Room generation error:", err);
-      setError(err instanceof Error ? err.message : "Failed to generate room");
+      setFurnitures(items)
+    } catch (err: any) {
+      setError('Failed to load furniture. Please try again.')
+      console.error(err)
     } finally {
-      clearInterval(interval);
-      setIsGenerating(false);
-      setLoadingMessage("");
+      setIsGenerating(false)
+      setLoadingMessage('')
     }
-  }, [isGenerating]);
+  }, [halfW, floorY])
 
   return {
     furnitures,
     setFurnitures,
-    furnitureDetails,
     isGenerating,
     loadingMessage,
     error,
     generate,
-  };
+  }
 }
