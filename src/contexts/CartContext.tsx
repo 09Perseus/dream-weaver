@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface CartItem {
   id: string;
@@ -18,10 +19,76 @@ interface CartContextType {
   subtotal: number;
 }
 
+const STORAGE_KEY = "roomai_cart";
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const skipSupabaseSync = useRef(false);
+
+  // Save to localStorage + Supabase on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch {}
+
+    if (skipSupabaseSync.current) {
+      skipSupabaseSync.current = false;
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      await supabase
+        .from("carts")
+        .upsert(
+          {
+            user_id: session.user.id,
+            items: items as unknown as Record<string, unknown>[],
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [items]);
+
+  // Merge Supabase cart on sign-in
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          const { data } = await supabase
+            .from("carts")
+            .select("items")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+
+          if (data?.items && Array.isArray(data.items)) {
+            const supabaseItems = data.items as unknown as CartItem[];
+            skipSupabaseSync.current = true;
+            setItems((prev) => {
+              const supabaseIds = new Set(supabaseItems.map((i) => i.id));
+              const localOnly = prev.filter((i) => !supabaseIds.has(i.id));
+              return [...localOnly, ...supabaseItems];
+            });
+          }
+        }
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, []);
 
   const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
     setItems((prev) => {
@@ -45,7 +112,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(async () => {
+    setItems([]);
+    localStorage.removeItem(STORAGE_KEY);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      await supabase
+        .from("carts")
+        .upsert(
+          {
+            user_id: session.user.id,
+            items: [] as unknown as Record<string, unknown>[],
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+    }
+  }, []);
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
