@@ -100,16 +100,16 @@ export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
       .then(data => {
         const floorY = -roomHeight / 2;
 
-        // Show only bed models in the canvas
-        const bedItems = data.furnitures.filter((item: any) => {
+        // Show only plant models in the canvas
+        const plantItems = data.furnitures.filter((item: any) => {
           if (!item.path && !item.name) return false;
           const fromPath = String(item.path || '').toLowerCase();
           const fromName = String(item.name || '').toLowerCase();
-          return fromPath.startsWith('bed/') || fromName.includes('bed');
+          return fromPath.startsWith('plants/') || fromName.includes('plant');
         });
 
         // Arrange items in a 6-column grid to view them all side by side
-        const items = bedItems.map((item: any, i: number) => {
+        const items = plantItems.map((item: any, i: number) => {
           const cols = 6;
           const spacing = 4; // 4 meters apart
 
