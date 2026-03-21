@@ -48,6 +48,7 @@ export default function EditRoom() {
   const [pickerLoading, setPickerLoading] = useState(true);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
+  const [isCopy, setIsCopy] = useState(false);
   const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
 
   useEffect(() => {
