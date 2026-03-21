@@ -180,6 +180,7 @@ export default function Index() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
+  const [inputFocused, setInputFocused] = useState(false);
   const navigate = useNavigate();
 
   // Typing animation
