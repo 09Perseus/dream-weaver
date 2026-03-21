@@ -76,6 +76,7 @@ function PromptInput({
   setError,
   loading,
   onGenerate,
+  onFocusChange,
 }: {
   prompt: string;
   setPrompt: (v: string) => void;
@@ -83,32 +84,66 @@ function PromptInput({
   setError: (v: string) => void;
   loading: boolean;
   onGenerate: () => void;
+  onFocusChange?: (focused: boolean) => void;
 }) {
   return (
     <div className="space-y-6 max-w-[600px] w-full mx-auto">
-      <div>
-        <input
+      <div className="relative">
+        {/* Subtle glow behind the input */}
+        <div
+          className="absolute -inset-px pointer-events-none"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--accent) / 0.08), transparent 60%)",
+          }}
+        />
+        <textarea
           value={prompt}
           onChange={(e) => {
             setPrompt(e.target.value);
             if (error) setError("");
           }}
           placeholder="A cozy Japanese bedroom with warm lighting…"
-          className={`w-full bg-transparent border-0 border-b font-heading text-[1.25rem] py-3 text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200 ${
-            error ? "border-b-destructive" : "border-b-border focus:border-b-accent"
-          }`}
+          rows={2}
+          className="w-full bg-background font-heading text-[1.15rem] py-3 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none transition-all duration-200 resize-none relative"
+          style={{
+            border: "1px solid hsl(var(--accent))",
+            lineHeight: 1.5,
+          }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               onGenerate();
             }
           }}
+          onFocus={(e) => {
+            onFocusChange?.(true);
+            e.currentTarget.style.borderColor = "hsl(var(--accent-hover))";
+            e.currentTarget.style.boxShadow =
+              "0 0 0 1px hsl(var(--accent)), 0 4px 24px hsl(var(--accent) / 0.15)";
+          }}
+          onBlur={(e) => {
+            onFocusChange?.(false);
+            e.currentTarget.style.borderColor = "hsl(var(--accent))";
+            e.currentTarget.style.boxShadow = "none";
+          }}
           disabled={loading}
         />
+        {/* Character count */}
+        <div className="absolute bottom-2 right-3 font-body text-[0.65rem] text-muted-foreground tracking-[0.05em]">
+          {prompt.length}/500
+        </div>
         {error && (
           <p className="font-body text-destructive text-[0.75rem] mt-2 text-left">{error}</p>
         )}
       </div>
+
+      {/* Hint for empty state */}
+      {prompt.length === 0 && (
+        <p className="font-body text-[0.7rem] text-muted-foreground tracking-[0.1em] uppercase animate-fade-pulse">
+          Start typing your dream room ↓
+        </p>
+      )}
+
       <Button
         variant="amber"
         size="lg"
@@ -145,6 +180,7 @@ export default function Index() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
+  const [inputFocused, setInputFocused] = useState(false);
   const navigate = useNavigate();
 
   // Typing animation
@@ -253,7 +289,7 @@ export default function Index() {
       {loading && <GeneratingOverlay />}
 
       {/* ═══ HERO ═══ */}
-      <section className="relative flex flex-col items-center justify-center px-4 min-h-[calc(100vh-3.5rem)]">
+      <section className="relative flex flex-col items-center justify-center px-4 min-h-[100vh] pb-24">
         <div className="max-w-3xl w-full text-center space-y-8">
           {/* Eyebrow */}
           <div className="animate-reveal-up flex items-center justify-center gap-0">
@@ -321,23 +357,26 @@ export default function Index() {
               setError={setError}
               loading={loading}
               onGenerate={handleGenerate}
+              onFocusChange={setInputFocused}
             />
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 flex flex-col items-center gap-2">
-          <span className="font-body text-[0.65rem] tracking-[0.2em] uppercase text-muted-foreground">
-            Scroll
-          </span>
-          <div
-            className="w-px bg-accent"
-            style={{
-              height: 32,
-              animation: "scroll-line 2s ease-in-out infinite",
-            }}
-          />
-        </div>
+        {/* Scroll indicator — hidden when input focused or has text */}
+        {!inputFocused && prompt.length === 0 && (
+          <div className="absolute bottom-6 flex flex-col items-center gap-2">
+            <span className="font-body text-[0.65rem] tracking-[0.2em] uppercase text-muted-foreground">
+              Scroll
+            </span>
+            <div
+              className="w-px bg-accent"
+              style={{
+                height: 32,
+                animation: "scroll-line 2s ease-in-out infinite",
+              }}
+            />
+          </div>
+        )}
       </section>
 
       <Divider />
