@@ -16,6 +16,7 @@ export default function OrderConfirmation() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as OrderState | null;
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     if (!state) navigate("/cart", { replace: true });
