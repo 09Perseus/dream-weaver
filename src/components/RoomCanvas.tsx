@@ -134,7 +134,7 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
           position: [item.x, 0, item.z] as [number, number, number],
           rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
           path: detail?.file_url ?? undefined,
-          displaySize: detail ? getDisplaySize(detail.category) : 1,
+          displaySize: detail?.file_url ? getDisplaySize(detail.file_url) : 1,
         };
       })
     : [];
