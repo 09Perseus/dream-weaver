@@ -100,6 +100,20 @@ export default function MyRooms() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="container py-20 text-center">
+        <p className="font-body text-[0.85rem] text-destructive mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="font-body text-[0.75rem] tracking-[0.1em] uppercase text-accent border border-border px-6 py-2 bg-transparent cursor-pointer hover:border-accent transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-12 md:py-16">
       <div className="flex items-center justify-between mb-10 animate-reveal-up">
