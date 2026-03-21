@@ -237,19 +237,21 @@ export default function EditRoom() {
           </Button>
         )}
         <div className="flex-1" />
-        <Button
-          variant="amber-outline"
-          size="sm"
-          disabled={posted}
-          className="min-h-[44px]"
-          onClick={() => {
-            if (!user) { toast({ title: "Sign in required", variant: "destructive" }); return; }
-            setPostDialogOpen(true);
-          }}
-        >
-          <Share2 className="h-4 w-4" />
-          <span className="hidden md:inline">{posted ? "Posted ✓" : "Post to Community"}</span>
-        </Button>
+        {!isCopy && (
+          <Button
+            variant="amber-outline"
+            size="sm"
+            disabled={posted}
+            className="min-h-[44px]"
+            onClick={() => {
+              if (!user) { toast({ title: "Sign in required", variant: "destructive" }); return; }
+              setPostDialogOpen(true);
+            }}
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="hidden md:inline">{posted ? "Posted ✓" : "Post to Community"}</span>
+          </Button>
+        )}
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row">
