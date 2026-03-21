@@ -47,6 +47,37 @@ export default function RoomView() {
     checkPosted();
   }, [id, user]);
 
+  // Fetch community post for this room
+  useEffect(() => {
+    if (!id) return;
+    supabase
+      .from("community_posts")
+      .select("*")
+      .eq("room_design_id", id)
+      .eq("is_visible", true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setCommunityPost(data);
+      });
+  }, [id]);
+
+  // Check if current user liked this post
+  useEffect(() => {
+    if (!communityPost) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      supabase
+        .from("post_likes")
+        .select("id")
+        .eq("post_id", communityPost.id)
+        .eq("user_id", session.user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          setIsLiked(!!data);
+        });
+    });
+  }, [communityPost?.id]);
+
   useEffect(() => {
     if (navState?.items) return;
     if (!id || id === "new") { setLoading(false); return; }
