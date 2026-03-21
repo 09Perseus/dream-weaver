@@ -84,20 +84,16 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
                 />
                 <span className="font-body text-[0.7rem] tracking-[0.08em] uppercase text-muted-foreground">{author}</span>
               </div>
-              {isOwnPost ? (
-                <span className="font-body text-[0.65rem] text-muted-foreground">Your post</span>
-              ) : (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onLike?.();
-                  }}
-                  className="flex items-center gap-1 font-body text-[0.75rem] text-muted-foreground hover:text-accent transition-colors active:scale-95"
-                >
-                  <Heart className={`h-4 w-4 ${liked ? "fill-accent text-accent" : ""}`} />
-                  <span>{likeCount}</span>
-                </button>
-              )}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLike?.();
+                }}
+                className="flex items-center gap-1 font-body text-[0.75rem] text-muted-foreground hover:text-accent transition-colors active:scale-95"
+              >
+                <Heart className={`h-4 w-4 ${liked ? "fill-accent text-accent" : ""}`} />
+                <span>{likeCount}</span>
+              </button>
             </div>
           </div>
         </div>
