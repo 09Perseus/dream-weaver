@@ -8,6 +8,7 @@
   :root[data-theme="dark"] {
     --bg: 215 21% 7%;
     --surface: 215 19% 11%;
+    --accent-rgb: 163, 113, 247;
     --surface-2: 215 16% 16%;
     --border: 215 14% 21%;
     --accent: 263 89% 71%;
@@ -55,6 +56,7 @@
   :root[data-theme="light"] {
     --bg: 0 0% 100%;
     --surface: 210 17% 97%;
+    --accent-rgb: 31, 136, 61;
     --surface-2: 210 14% 92%;
     --border: 210 13% 83%;
     --accent: 140 48% 33%;
@@ -103,6 +105,7 @@
   :root:not([data-theme]) {
     --bg: 215 21% 7%;
     --surface: 215 19% 11%;
+    --accent-rgb: 163, 113, 247;
     --surface-2: 215 16% 16%;
     --border: 215 14% 21%;
     --accent: 263 89% 71%;
@@ -345,5 +348,65 @@
 @supports (-webkit-touch-callout: none) {
   input, select, textarea {
     font-size: 16px !important;
+  }
+}
+
+/* Feature section patterns */
+.feature-section {
+  position: relative;
+  border-top: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.feature-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.feature-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+.feature-pattern-1 {
+  background-color: hsl(var(--surface));
+}
+.feature-pattern-1::before {
+  background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.feature-pattern-2 {
+  background-color: hsl(var(--surface-2));
+}
+.feature-pattern-2::before {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    hsl(var(--border)) 8px,
+    hsl(var(--border)) 9px
+  );
+}
+
+.feature-pattern-3 {
+  background-color: hsl(var(--surface));
+}
+.feature-pattern-3::before {
+  background-image:
+    linear-gradient(hsl(var(--border)) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Hero viewport fit */
+@media (min-height: 600px) and (min-width: 768px) {
+  .hero-section {
+    height: 100vh;
+    overflow: hidden;
   }
 }
