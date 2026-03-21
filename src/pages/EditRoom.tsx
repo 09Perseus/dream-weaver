@@ -159,7 +159,7 @@ export default function EditRoom() {
     toast({ title: "Item added", description: "Reposition it in the room." });
   };
 
-  const filteredPicker = activeCategory === "All" ? pickerItems : pickerItems.filter((i) => i.category === activeCategory);
+  const filteredPicker = activeCategory === "All" ? pickerItems : pickerItems.filter((i) => i.category?.toLowerCase() === CATEGORY_MAP[activeCategory]);
 
   if (loading) {
     return (
