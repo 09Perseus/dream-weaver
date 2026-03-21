@@ -87,6 +87,7 @@ export type Database = {
           buy_url: string | null
           category: string
           created_at: string | null
+          description: string | null
           file_url: string | null
           floor_offset: number | null
           id: string
@@ -102,6 +103,7 @@ export type Database = {
           buy_url?: string | null
           category: string
           created_at?: string | null
+          description?: string | null
           file_url?: string | null
           floor_offset?: number | null
           id: string
@@ -117,6 +119,7 @@ export type Database = {
           buy_url?: string | null
           category?: string
           created_at?: string | null
+          description?: string | null
           file_url?: string | null
           floor_offset?: number | null
           id?: string
