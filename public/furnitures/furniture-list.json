@@ -3,6 +3,8 @@
     {
       "name": "psx_wooden_table",
       "path": "Tables/psx_wooden_table.glb",
+      "price": 349.99,
+      "currency": "USD",
       "keywords": [
         "wooden table",
         "wood dining table",
@@ -28,6 +30,8 @@
     {
       "name": "office_table_desk",
       "path": "Tables/office_table_desk.glb",
+       "price": 429.99,
+      "currency": "USD",
       "keywords": [
         "office desk",
         "wooden office desk",
@@ -54,6 +58,8 @@
     {
       "name": "serving_table_01",
       "path": "Tables/serving_table_01.glb",
+      "price": 189.99,
+      "currency": "USD",
       "keywords": [
         "console table",
         "wooden console table",
@@ -80,6 +86,8 @@
     {
       "name": "victorian_style_tabledesk",
       "path": "Tables/victorian_style_tabledesk.glb",
+       "price": 899.99,
+      "currency": "USD",
       "keywords": [
         "wooden desk",
         "office desk",
@@ -106,6 +114,8 @@
     {
       "name": "hexagonal_table_01",
       "path": "Tables/hexagonal_table_01.glb",
+      "price": 89.99,
+      "currency": "USD",
       "keywords": [
         "wooden side table",
         "hexagon table",
@@ -132,6 +142,8 @@
     {
       "name": "realistic_bed_3d_model",
       "path": "Bed/realistic_bed_3d_model.glb",
+      "price": 749.99,
+      "currency": "USD",
       "keywords": [
         "modern platform bed",
         "minimalist bed",
@@ -157,6 +169,8 @@
     {
       "name": "paper_mario_sticker_star_luxurious_bed",
       "path": "Bed/paper_mario_sticker_star_luxurious_bed.glb",
+      "price": 1299.99,
+      "currency": "USD",
       "keywords": [
         "canopy bed",
         "four poster bed",
@@ -184,6 +198,8 @@
     {
       "name": "ornate_carved_bed",
       "path": "Bed/ornate_carved_bed.glb",
+      "price": 1099.99,
+      "currency": "USD",
       "keywords": [
         "antique wooden bed",
         "vintage bed frame",
@@ -211,6 +227,8 @@
     {
       "name": "bed",
       "path": "Bed/bed.glb",
+      "price": 549.99,
+      "currency": "USD",
       "keywords": [
         "wooden bed frame",
         "light wood bed",
@@ -235,6 +253,8 @@
     {
       "name": "majesty_palm_plant",
       "path": "Plants/majesty_palm_plant.glb",
+       "price": 79.99,
+      "currency": "USD",
       "keywords": [
         "areca palm",
         "dypsis lutescens",
@@ -261,6 +281,8 @@
     {
       "name": "house_palm_plant",
       "path": "Plants/house_palm_plant.glb",
+      "price": 49.99,
+      "currency": "USD",
       "keywords": [
         "large leaf indoor plant",
         "potted green plant",
@@ -286,6 +308,8 @@
     {
       "name": "aglaonema_plant",
       "path": "Plants/aglaonema_plant.glb",
+      "price": 34.99,
+      "currency": "USD",
       "keywords": [
         "pink indoor plant",
         "variegated houseplant",
@@ -311,6 +335,8 @@
     {
       "name": "low-poly_snake_plant",
       "path": "Plants/low-poly_snake_plant.glb",
+      "price": 29.99,
+      "currency": "USD",
       "keywords": [
         "snake plant",
         "sansevieria",
@@ -338,6 +364,8 @@
     {
       "name": "airport_plant",
       "path": "Plants/airport_plant.glb",
+          "price": 59.99,
+      "currency": "USD",
       "keywords": [
         "indoor plant in rectangular planter",
         "modern planter box with plants",
@@ -364,6 +392,8 @@
     {
       "name": "ikea_lamp",
       "path": "Lamps/ikea_lamp.glb",
+      "price": 129.99,
+      "currency": "USD",
       "keywords": [
         "floor lamp",
         "standing lamp",
@@ -393,6 +423,8 @@
     {
       "name": "desk_lamp",
       "path": "Lamps/desk_lamp.glb",
+      "price": 89.99,
+      "currency": "USD",
       "keywords": [
         "desk lamp",
         "adjustable desk lamp",
@@ -420,6 +452,8 @@
     {
       "name": "retro_lowpoly_lamp",
       "path": "Lamps/retro_lowpoly_lamp.glb",
+      "price": 74.99,
+      "currency": "USD",
       "keywords": [
         "table lamp",
         "bedside lamp",
@@ -446,6 +480,8 @@
     {
       "name": "titanic_lamp",
       "path": "Lamps/titanic_lamp.glb",
+      "price": 249.99,
+      "currency": "USD",
       "keywords": [
         "candelabra lamp",
         "candle lamp",
@@ -474,6 +510,8 @@
     {
       "name": "barcelona_chair",
       "path": "Chair/barcelona_chair.glb",
+      "price": 599.99,
+      "currency": "USD",
       "keywords": [
         "lounge chair",
         "accent chair",
@@ -502,6 +540,8 @@
     {
       "name": "chair",
       "path": "Chair/chair.glb",
+      "price": 149.99,
+      "currency": "USD",
       "keywords": [
         "wooden chair",
         "modern chair",
@@ -529,6 +569,8 @@
     {
       "name": "gaming_chair",
       "path": "Chair/gaming_chair.glb",
+       "price": 299.99,
+      "currency": "USD",
       "keywords": [
         "gaming chair",
         "gamer chair",
@@ -557,6 +599,8 @@
     {
       "name": "woven_lounge_chair",
       "path": "Chair/woven_lounge_chair.glb",
+      "price": 389.99,
+      "currency": "USD",
       "keywords": [
         "woven lounge chair",
         "rattan chair",
@@ -585,6 +629,8 @@
     {
       "name": "old_western_saloon_chair",
       "path": "Chair/old_western_saloon_chair.glb",
+       "price": 219.99,
+      "currency": "USD",
       "keywords": [
         "solid wood armchair",
         "wooden accent chair",
@@ -611,6 +657,8 @@
     {
       "name": "leather_chair",
       "path": "Chair/leather_chair.glb",
+       "price": 449.99,
+      "currency": "USD",
       "keywords": [
         "upholstered armchair",
         "modern armchair",
@@ -638,6 +686,8 @@
     {
       "name": "vintage_zen_dining_chair",
       "path": "Chair/vintage_zen_dining_chair.glb",
+      "price": 179.99,
+      "currency": "USD",
       "keywords": [
         "brown leather chair",
         "brown dining chair",
@@ -665,6 +715,8 @@
     {
       "name": "chair (1)",
       "path": "Chair/chair (1).glb",
+      "price": 259.99,
+      "currency": "USD",
       "keywords": [
         "accent chair",
         "lounge chair",
@@ -693,6 +745,8 @@
     {
       "name": "alko_chair",
       "path": "Chair/alko_chair.glb",
+       "price": 499.99,
+      "currency": "USD",
       "keywords": [
         "modern lounge chair",
         "minimalist chair",
@@ -720,6 +774,8 @@
     {
       "name": "antique_heriz_8708_golden_horn_beige_rugs",
       "path": "Carpet/antique_heriz_8708_golden_horn_beige_rugs.glb",
+      "price": 199.99,
+      "currency": "USD",
       "keywords": [
         "area rug",
         "modern area rug",
@@ -751,6 +807,8 @@
     {
       "name": "mat",
       "path": "Carpet/mat.glb",
+      "price": 24.99,
+      "currency": "USD",
       "keywords": [
         "mat",
         "floor mat",
