@@ -93,7 +93,7 @@ export default function Orders() {
             Could not load orders. Please try again.
           </p>
           <button
-            onClick={fetchOrders}
+            onClick={() => window.location.reload()}
             className="font-body text-[0.75rem] tracking-[0.12em] uppercase text-accent border border-accent px-6 py-2 hover:bg-accent hover:text-background transition-colors"
           >
             Retry
