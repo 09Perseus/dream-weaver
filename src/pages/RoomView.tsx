@@ -89,7 +89,7 @@ export default function RoomView() {
 
     const fetchRoom = async () => {
       try {
-        const { data: room, error } = await supabase.from("room_designs").select("*").eq("id", id).single();
+        const { data: room, error } = await supabase.from("room_designs").select("*").eq("id", id).maybeSingle();
         if (error || !room) { setLoading(false); return; }
 
         setDescription(room.description ?? "");
