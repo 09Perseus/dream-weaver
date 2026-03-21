@@ -225,10 +225,17 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
     );
   };
 
+  const webglSupported = useMemo(() => detectWebGL(), []);
+
   return (
     <div className={`relative w-full h-full ${className}`}>
+      {/* WebGL not available fallback */}
+      {!webglSupported && (
+        <WebGLUnavailable items={isViewerMode ? items : undefined} />
+      )}
+
       {/* ── Prompt input (generate mode only) ────────────────────────── */}
-      {!isViewerMode && (
+      {!isViewerMode && webglSupported && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xl">
           <div className="flex gap-2">
             <input
