@@ -2,12 +2,15 @@ import { useState, useRef, useEffect, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, TransformControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import React, { forwardRef } from "react";
-import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+import { useGenerateRoom, getDisplaySize } from '@/hooks/useGenerateRoom';
+
+import type { PlacedItem, FurnitureDetail } from '@/lib/edgeFunctions';
 
 interface RoomCanvasProps {
   className?: string;
+  /** When provided, renders in "viewer" mode — no prompt input */
   items?: PlacedItem[];
+  /** Furniture details for viewer mode */
   furniture?: FurnitureDetail[];
 }
 
@@ -16,26 +19,39 @@ export interface FurnitureItem {
   position: [number, number, number];
   color?: string;
   path?: string;
-  scale?: number | [number, number, number];
   rotation?: [number, number, number];
+  displaySize?: number;
 }
 
-// Sub-component to dynamically load GLTF models
-function Model({ path }: { path: string }) {
+// ── Model: normalize to displaySize, snap to floor ───────────────────────────
+function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
   const { scene } = useGLTF(`/furnitures/${path}`);
-  return <primitive object={scene.clone()} />;
+  const cloned = scene.clone();
+
+  const box = new THREE.Box3().setFromObject(cloned);
+  const size = box.getSize(new THREE.Vector3());
+  const longestSide = Math.max(size.x, size.y, size.z);
+  const scale = longestSide > 0 ? displaySize / longestSide : 1;
+
+  cloned.scale.setScalar(scale);
+
+  const scaledBox = new THREE.Box3().setFromObject(cloned);
+  cloned.position.y -= scaledBox.min.y;
+
+  return <primitive object={cloned} />;
 }
 
+// ── MovableFurniture ──────────────────────────────────────────────────────────
 function MovableFurniture({
   furniture,
   isSelected,
   onSelect,
-  onPositionChange
+  onPositionChange,
 }: {
-  furniture: FurnitureItem,
-  isSelected: boolean,
-  onSelect: () => void,
-  onPositionChange: (pos: [number, number, number]) => void
+  furniture: FurnitureItem;
+  isSelected: boolean;
+  onSelect: () => void;
+  onPositionChange: (pos: [number, number, number]) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
 
@@ -45,10 +61,7 @@ function MovableFurniture({
         ref={groupRef}
         position={furniture.position}
         rotation={furniture.rotation}
-        scale={furniture.scale}
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
+        onClick={(e) => { e.stopPropagation(); }}
         onDoubleClick={(e) => {
           e.stopPropagation();
           onSelect();
@@ -61,14 +74,14 @@ function MovableFurniture({
               <meshStandardMaterial color="gray" wireframe />
             </mesh>
           }>
-            <Model path={furniture.path} />
+            <Model path={furniture.path} displaySize={furniture.displaySize} />
           </Suspense>
         ) : (
           <mesh castShadow receiveShadow>
-            <boxGeometry args={[1, 1, 1]} /> {/* Default size if no path */}
+            <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial
-              color={furniture.color || "white"}
-              emissive={isSelected ? "#333333" : "#000000"}
+              color={furniture.color || 'white'}
+              emissive={isSelected ? '#333333' : '#000000'}
             />
           </mesh>
         )}
@@ -80,7 +93,9 @@ function MovableFurniture({
           mode="translate"
           onMouseUp={() => {
             if (groupRef.current) {
-              onPositionChange(groupRef.current.position.toArray() as [number, number, number]);
+              onPositionChange(
+                groupRef.current.position.toArray() as [number, number, number]
+              );
             }
           }}
         />
@@ -89,84 +104,125 @@ function MovableFurniture({
   );
 }
 
-export default function RoomCanvas({ className = "" }: RoomCanvasProps) {
-  const roomScale= 0.7; 
-  const roomSize = 10*roomScale;
-  const roomHeight = 5*roomScale;
+// ── RoomCanvas ────────────────────────────────────────────────────────────────
+export default function RoomCanvas({ className = '', items, furniture }: RoomCanvasProps) {
+  const isViewerMode = !!(items && furniture);
+  const roomSize = 7;
+  const roomHeight = 3.5;
+  const halfW = roomSize / 2;
+  const halfH = roomHeight / 2;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [furnitures, setFurnitures] = useState<FurnitureItem[]>([]);
   const [wallTexture, setWallTexture] = useState<THREE.Texture | null>(null);
+  const [description, setDescription] = useState('');
 
-  // Load wallpaper texture on mount
+  const {
+    furnitures: generatedFurnitures,
+    setFurnitures,
+    isGenerating,
+    loadingMessage,
+    error,
+    generate,
+  } = useGenerateRoom({ roomSize, roomHeight });
+
+  // In viewer mode, convert PlacedItem[] + FurnitureDetail[] → FurnitureItem[]
+  const viewerFurnitures: FurnitureItem[] = isViewerMode
+    ? items.map((item) => {
+        const detail = furniture.find((f) => f.id === item.id);
+        return {
+          id: `${item.id}_${item.x}_${item.z}`,
+          position: [item.x, 0, item.z] as [number, number, number],
+          rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
+          path: detail?.file_url ?? undefined,
+          displaySize: detail ? getDisplaySize(detail.category) : 1,
+        };
+      })
+    : [];
+
+  const activeFurnitures = isViewerMode ? viewerFurnitures : generatedFurnitures;
+
+  // Load wall texture
   useEffect(() => {
-    const loader = new THREE.TextureLoader();
-    loader.load('/furnitures/wallpapers/japanese_bamboo_pattern.png', (texture) => {
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(4, 4);
-      setWallTexture(texture);
-    });
+    new THREE.TextureLoader().load(
+      '/furnitures/wallpapers/japanese_bamboo_pattern.png',
+      (texture) => {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(4, 4);
+        setWallTexture(texture);
+      }
+    );
   }, []);
 
-  // Dynamically fetch and layout the 31 JSON furniture items on component mount
-  useEffect(() => {
-    fetch('/furnitures/furniture-list.json')
-      .then(res => res.json())
-      .then(data => {
-        const floorY = -roomHeight / 2;
-
-        // Show only plant models in the canvas
-        const plantItems = data.furnitures.filter((item: any) => {
-          if (!item.path && !item.name) return false;
-          const fromPath = String(item.path || '').toLowerCase();
-          const fromName = String(item.name || '').toLowerCase();
-          // Exclude tall_house_plant as it's missing from the public folder
-          if (fromName === 'tall_house_plant') return false;
-          return fromPath.startsWith('plants/') || fromName.includes('plant');
-        });
-
-        // Arrange items in a 6-column grid to view them all side by side
-        const items = plantItems.map((item: any, i: number) => {
-          const cols = 6;
-          const cellSize = roomSize / cols; // divide room width evenly
-          
-          const x = -roomSize / 2 + (i % cols) * cellSize + cellSize / 2;
-          const z = -roomSize / 2 + Math.floor(i / cols) * cellSize + cellSize / 2;
-
-          const rawScale = Number(item.scale_factor) || 1;
-          const plantScale = Math.max(0.05, Math.min(rawScale,1));
-
-          return {
-            id: item.name,
-            path: item.path,
-            position: [x, floorY + 0.01, z] as [number, number, number],
-            scale: plantScale as number,
-          };
-        });
-
-        setFurnitures(items);
-      });
-  }, [roomHeight]);
-
   const updateFurniturePosition = (id: string, newPos: [number, number, number]) => {
-    setFurnitures(prev => prev.map(f => f.id === id ? { ...f, position: newPos } : f));
+    setFurnitures((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, position: newPos } : f))
+    );
   };
 
-const RoomCanvas = forwardRef<HTMLDivElement, RoomCanvasProps>(({ className = "", items = [], furniture = [] }, ref) => {
   return (
-    <div
-      ref={ref}
-      id="room-canvas"
-      className={`room-canvas relative bg-zinc-900 rounded-lg border border-border/50 overflow-hidden ${className}`}
-    >
+    <div className={`relative w-full h-full ${className}`}>
+      {/* ── Prompt input (generate mode only) ────────────────────────── */}
+      {!isViewerMode && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xl">
+          <div className="flex gap-2">
+            <input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && generate(description)}
+              placeholder="Describe your dream room..."
+              disabled={isGenerating}
+              className="flex-1 px-4 py-2 rounded-lg bg-black/60 text-white border border-white/20 backdrop-blur-sm text-sm placeholder:text-white/40 focus:outline-none focus:border-white/50 disabled:opacity-50"
+            />
+            <button
+              onClick={() => generate(description)}
+              disabled={isGenerating || !description.trim()}
+              className="px-4 py-2 rounded-lg bg-amber-500 text-black font-medium text-sm disabled:opacity-50 hover:bg-amber-400 transition-colors"
+            >
+              {isGenerating ? '...' : 'Generate'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Loading overlay ──────────────────────────────────────────── */}
+      {!isViewerMode && isGenerating && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
+          <div className="text-center">
+            <p className="text-2xl mb-3">✦</p>
+            <p className="text-sm text-white/80 animate-pulse">{loadingMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Error message ────────────────────────────────────────────── */}
+      {!isViewerMode && error && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/90 text-white px-4 py-2 rounded-lg text-sm max-w-md text-center">
+          {error}
+        </div>
+      )}
+
+      {/* ── Empty state ──────────────────────────────────────────────── */}
+      {!isViewerMode && activeFurnitures.length === 0 && !isGenerating && (
+        <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
+          <p className="text-sm text-muted-foreground/60">
+            Describe a room above to get started
+          </p>
+        </div>
+      )}
+
+      {/* ── Three.js Canvas ──────────────────────────────────────────── */}
       <Canvas
         shadows
-        camera={{ position: [25, 18, 30], fov: 60 }}
+        camera={{ position: [12, 8, 12], fov: 50 }}
         onPointerMissed={() => setSelectedId(null)}
+        gl={{
+          powerPreference: 'high-performance',
+          antialias: true,
+          failIfMajorPerformanceCaveat: false,
+        }}
       >
         <ambientLight intensity={0.5} />
-
         <directionalLight
           position={[20, 30, 20]}
           intensity={1.5}
@@ -175,78 +231,49 @@ const RoomCanvas = forwardRef<HTMLDivElement, RoomCanvasProps>(({ className = ""
         />
 
         {/* Floor */}
-        <mesh 
-          position={[0, -roomHeight / 2, 0]} 
-          rotation={[-Math.PI / 2, 0, 0]}
-          receiveShadow 
-          raycast={() => null}
-        >
+        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
           <planeGeometry args={[roomSize, roomSize]} />
           <meshStandardMaterial color="#f0f0f0" />
         </mesh>
 
-        {/* Front Wall */}
-        <mesh 
-          position={[0, 0, roomSize / 2]}
-          raycast={() => null}
-        >
-          <planeGeometry args={[roomSize, roomHeight]} />
-          <meshStandardMaterial 
-            map={wallTexture}
-            side={THREE.BackSide} 
-            color="#ffffff"
-          />
+        {/* Ceiling */}
+        <mesh position={[0, roomHeight, 0]} rotation={[Math.PI / 2, 0, 0]} raycast={() => null}>
+          <planeGeometry args={[roomSize, roomSize]} />
+          <meshStandardMaterial color="#e8e8e8" />
         </mesh>
 
-        {/* Back Wall */}
-        <mesh 
-          position={[0, 0, -roomSize / 2]}
-          rotation={[0, Math.PI, 0]}
-          raycast={() => null}
-        >
+        {/* Back wall */}
+        <mesh position={[0, halfH, -halfW]} raycast={() => null}>
           <planeGeometry args={[roomSize, roomHeight]} />
-          <meshStandardMaterial 
-            map={wallTexture}
-            side={THREE.BackSide} 
-            color="#ffffff"
-          />
+          <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
         </mesh>
 
-        {/* Left Wall */}
-        <mesh 
-          position={[-roomSize / 2, 0, 0]}
-          rotation={[0, Math.PI / 2, 0]}
-          raycast={() => null}
-        >
+        {/* Front wall */}
+        <mesh position={[0, halfH, halfW]} rotation={[0, Math.PI, 0]} raycast={() => null}>
           <planeGeometry args={[roomSize, roomHeight]} />
-          <meshStandardMaterial 
-            map={wallTexture}
-            side={THREE.BackSide} 
-            color="#ffffff"
-          />
+          <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
         </mesh>
 
-        {/* Right Wall */}
-        <mesh 
-          position={[roomSize / 2, 0, 0]}
-          rotation={[0, -Math.PI / 2, 0]}
-          raycast={() => null}
-        >
+        {/* Left wall */}
+        <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
           <planeGeometry args={[roomSize, roomHeight]} />
-          <meshStandardMaterial 
-            map={wallTexture}
-            side={THREE.BackSide} 
-            color="#ffffff"
-          />
+          <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
         </mesh>
 
+        {/* Right wall */}
+        <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null}>
+          <planeGeometry args={[roomSize, roomHeight]} />
+          <meshStandardMaterial map={wallTexture ?? undefined} color="#ffffff" side={THREE.FrontSide} />
+        </mesh>
+
+        {/* Grid */}
         <gridHelper
           args={[roomSize, roomSize, '#94a3b8', '#cbd5e1']}
-          position={[0, -roomHeight / 2 + 0.01, 0]}
+          position={[0, 0.01, 0]}
           raycast={() => null}
         />
 
-        {furnitures.map((furniture) => (
+        {activeFurnitures.map((furniture) => (
           <MovableFurniture
             key={furniture.id}
             furniture={furniture}
@@ -258,7 +285,7 @@ const RoomCanvas = forwardRef<HTMLDivElement, RoomCanvasProps>(({ className = ""
 
         <OrbitControls
           makeDefault
-          enableZoom={true}
+          enableZoom
           target={[0, 0, 0]}
           maxDistance={220}
           minDistance={5}
@@ -266,8 +293,4 @@ const RoomCanvas = forwardRef<HTMLDivElement, RoomCanvasProps>(({ className = ""
       </Canvas>
     </div>
   );
-});
-
-RoomCanvas.displayName = "RoomCanvas";
-
-export default RoomCanvas;
+}
