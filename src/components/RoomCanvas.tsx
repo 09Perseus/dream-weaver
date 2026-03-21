@@ -3,6 +3,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useGenerateRoom, getDisplaySize } from '@/hooks/useGenerateRoom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { PlacedItem, FurnitureDetail } from '@/lib/edgeFunctions';
@@ -79,15 +80,30 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   const { scene } = useGLTF(path);
 
   const cloned = useMemo(() => {
-    const c = scene.clone(true);
-    const box = new THREE.Box3().setFromObject(c);
-    const size = box.getSize(new THREE.Vector3());
-    const longestSide = Math.max(size.x, size.y, size.z);
-    const scale = longestSide > 0 ? displaySize / longestSide : 1;
-    c.scale.setScalar(scale);
+    let c: THREE.Object3D;
+    try {
+      c = skeletonClone(scene);
+    } catch {
+      c = scene.clone(true);
+    }
 
-    const scaledBox = new THREE.Box3().setFromObject(c);
-    c.position.y -= scaledBox.min.y;
+    const box = new THREE.Box3().setFromObject(c);
+    const naturalSize = box.getSize(new THREE.Vector3());
+    const longestSide = Math.max(naturalSize.x, naturalSize.y, naturalSize.z);
+
+    if (longestSide > 0 && displaySize > 0) {
+      const ratio = displaySize / longestSide;
+      if (ratio > 0.1 && ratio < 10) {
+        c.scale.multiplyScalar(ratio);
+      }
+    }
+
+    // Snap to floor
+    const newBox = new THREE.Box3().setFromObject(c);
+    if (newBox.min.y < 0) {
+      c.position.y += Math.abs(newBox.min.y);
+    }
+
     return c;
   }, [scene, displaySize]);
 
@@ -502,11 +518,12 @@ export default function RoomCanvas({
         const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
         const fileUrl = detail?.file_url && detail.file_url !== 'PENDING_UPLOAD'
                           ? detail.file_url : undefined;
-        console.log("Model path for", item.id, ":", fileUrl);
+        const clampedX = Math.max(-4, Math.min(4, item.x));
+        const clampedZ = Math.max(-4, Math.min(4, item.z));
         return {
           id:          item.id,
           name:        detail?.name,
-          position:    [item.x, 0, item.z] as [number, number, number],
+          position:    [clampedX, 0, clampedZ] as [number, number, number],
           rotation:    [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
           path:        fileUrl,
           displaySize: fileUrl
