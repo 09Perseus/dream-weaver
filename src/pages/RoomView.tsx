@@ -233,25 +233,26 @@ export default function RoomView() {
           <FurnitureDetailPanel item={selectedItem} onBack={() => setSelectedItem(null)} />
         ) : (
           <>
-            {communityPost && (
-              <div className="p-6 border-b border-border flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="font-heading text-[1.1rem] font-normal text-foreground mb-1 truncate">
-                    {communityPost.title}
-                  </p>
-                  {communityPost.description && (
-                    <p className="font-body text-[0.75rem] text-muted-foreground">{communityPost.description}</p>
-                  )}
-                  {communityPost.style_tags?.length > 0 && (
-                    <div className="flex gap-1.5 flex-wrap mt-2">
-                      {communityPost.style_tags.map((tag: string) => (
-                        <span key={tag} className="font-body text-[0.6rem] tracking-[0.08em] uppercase border border-border text-muted-foreground px-1.5 py-0.5">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
+            {/* Unified title block */}
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <div className="min-w-0 flex-1">
+                <h2 className="font-heading text-[1.3rem] font-normal text-foreground mb-1 truncate">
+                  {communityPost ? communityPost.title : (description?.substring(0, 60) || "Your custom design")}
+                </h2>
+                {communityPost?.description && (
+                  <p className="font-body text-[0.75rem] text-muted-foreground">{communityPost.description}</p>
+                )}
+                {communityPost?.style_tags?.length > 0 && (
+                  <div className="flex gap-1.5 flex-wrap mt-2">
+                    {communityPost.style_tags.map((tag: string) => (
+                      <span key={tag} className="font-body text-[0.6rem] tracking-[0.08em] uppercase border border-border text-muted-foreground px-1.5 py-0.5">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {communityPost && (
                 <button
                   onClick={handleLike}
                   disabled={likeLoading}
@@ -265,12 +266,7 @@ export default function RoomView() {
                     {communityPost.like_count}
                   </span>
                 </button>
-              </div>
-            )}
-
-            <div className="p-6 border-b border-border">
-              <h2 className="font-heading text-[1.5rem] font-normal mb-1">Generated Room</h2>
-              <p className="font-body text-[0.75rem] text-muted-foreground">{description || "Your custom design"}</p>
+              )}
             </div>
 
             <div className="p-6 border-b border-border">
