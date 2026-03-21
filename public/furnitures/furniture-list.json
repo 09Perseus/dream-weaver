@@ -4,273 +4,764 @@
       "name": "psx_wooden_table",
       "path": "Tables/psx_wooden_table.glb",
       "keywords": [
-        "psx_wooden_table",
-        "psx",
-        "wooden"
+        "wooden table",
+        "wood dining table",
+        "rectangular table",
+        "solid wood table",
+        "rustic wooden table",
+        "farmhouse dining table",
+        "minimalist wood table",
+        "modern wooden table",
+        "natural finish table",
+        "dining table",
+        "kitchen table",
+        "4 seater dining table",
+        "6 seater dining table",
+        "hardwood table",
+        "natural wood grain table",
+        "timber dining table",
+        "brown dining table",
+        "sturdy wood table"
       ],
-      "description": "Rustic wooden dining table"
+      "description": "A sturdy wooden dining table with a warm, natural finish that highlights its rich grain patterns. Its clean rectangular design and solid legs make it a versatile piece, perfect for everyday meals or gatherings."
     },
     {
       "name": "office_table_desk",
       "path": "Tables/office_table_desk.glb",
       "keywords": [
-        "office_table_desk",
-        "office",
-        "desk"
+        "office desk",
+        "wooden office desk",
+        "computer desk",
+        "study desk",
+        "work desk",
+        "home office desk",
+        "writing desk",
+        "storage desk",
+        "desk with drawers",
+        "desk with storage",
+        "desk with drawers and cabinet",
+        "modern office desk",
+        "contemporary desk",
+        "minimalist desk",
+        "two tone desk",
+        "wood and black desk",
+        "home office workstation",
+        "work from home desk",
+        "executive desk"
       ],
-      "description": "Modern office desk"
+      "description": "A sleek wooden office desk featuring a spacious tabletop and built-in storage, including multiple drawers and a side cabinet. Designed with a modern two-tone finish, it offers both style and practicality—perfect for home offices, study spaces, or professional work environments."
     },
     {
       "name": "serving_table_01",
       "path": "Tables/serving_table_01.glb",
       "keywords": [
-        "serving_table_01",
-        "serving"
+        "console table",
+        "wooden console table",
+        "dark wood table",
+        "hallway table",
+        "entryway table",
+        "traditional console table",
+        "classic wood console table",
+        "vintage style table",
+        "antique look console table",
+        "turned leg table",
+        "2 tier console table",
+        "double shelf table",
+        "console table with shelf",
+        "narrow long table",
+        "slim console table",
+        "entryway console table",
+        "hallway storage table",
+        "sofa table",
+        "decorative display table"
       ],
-      "description": "Small serving side table"
+      "description": "An elegant dark wood console table featuring a classic design with turned legs and a raised back edge. The two-tier structure provides extra storage space, making it perfect for entryways, living rooms, or hallways while adding a touch of traditional charm."
     },
     {
       "name": "victorian_style_tabledesk",
       "path": "Tables/victorian_style_tabledesk.glb",
       "keywords": [
-        "victorian_style_tabledesk",
-        "victorian",
-        "style"
+        "wooden desk",
+        "office desk",
+        "executive desk",
+        "traditional desk",
+        "classic executive desk",
+        "vintage style desk",
+        "antique style desk",
+        "ornate wooden desk",
+        "carved wood desk",
+        "luxury office desk",
+        "desk with drawers",
+        "multi drawer desk",
+        "double pedestal desk",
+        "solid wood desk",
+        "dark wood desk",
+        "polished wood desk",
+        "home office desk",
+        "study desk",
+        "statement office desk"
       ],
-      "description": "Ornate Victorian writing desk"
+      "description": "A sophisticated dark wood executive desk featuring intricate carved details and a rich, polished finish. With multiple spacious drawers for organized storage and a sturdy build, it's perfect for creating a classic and professional workspace."
     },
     {
       "name": "hexagonal_table_01",
       "path": "Tables/hexagonal_table_01.glb",
       "keywords": [
-        "hexagonal_table_01",
-        "hexagonal"
+        "wooden side table",
+        "hexagon table",
+        "hexagonal end table",
+        "wood accent table",
+        "small wooden table",
+        "side table with shelf",
+        "end table with storage",
+        "wooden nightstand",
+        "compact side table",
+        "living room side table",
+        "rustic wooden table",
+        "modern wood side table",
+        "geometric table",
+        "hexagon accent table",
+        "slatted wood table",
+        "bedside table with shelf",
+        "small space furniture",
+        "sofa side table",
+        "lamp table"
       ],
-      "description": "Small hexagonal side table"
+      "description": "A compact wooden side table with a unique hexagonal top and sturdy vertical slat design. Finished in a warm, rich tone, it features a lower shelf for added storage—perfect for living rooms, bedrooms, or small spaces needing both style and function."
     },
     {
       "name": "realistic_bed_3d_model",
       "path": "Bed/realistic_bed_3d_model.glb",
       "keywords": [
-        "realistic_bed_3d_model",
-        "realistic"
+        "modern platform bed",
+        "minimalist bed",
+        "contemporary bed frame",
+        "low profile bed",
+        "modern wooden bed",
+        "curved bed frame",
+        "organic shape bed",
+        "sculptural bed",
+        "wood platform bed",
+        "upholstered headboard bed",
+        "fabric headboard bed",
+        "neutral tone bed",
+        "Scandinavian style bed",
+        "Japandi bed",
+        "minimalist bedroom furniture",
+        "low platform bed",
+        "padded headboard bed",
+        "modern luxury bed"
       ],
-      "description": "Standard double bed with mattress"
+      "description": "A sleek, modern platform bed featuring a sculpted wooden base with smooth, organic curves and a low-profile design. The softly upholstered headboard adds comfort and elegance, while the neutral tones create a calm, minimalist aesthetic—perfect for contemporary and Japandi-inspired bedrooms."
     },
     {
       "name": "paper_mario_sticker_star_luxurious_bed",
       "path": "Bed/paper_mario_sticker_star_luxurious_bed.glb",
       "keywords": [
-        "paper_mario_sticker_star_luxurious_bed",
-        "luxurious"
+        "canopy bed",
+        "four poster bed",
+        "luxury canopy bed",
+        "classic canopy bed",
+        "ornate canopy bed",
+        "baroque bed",
+        "rococo style bed",
+        "vintage canopy bed",
+        "royal bed",
+        "victorian canopy bed",
+        "french style bed",
+        "red canopy bed",
+        "red velvet bed",
+        "gold accent bed",
+        "upholstered canopy bed",
+        "carved wood bed",
+        "draped canopy bed",
+        "curtain canopy bed",
+        "romantic canopy bed",
+        "palace style bed"
       ],
-      "description": "Luxurious ornate king bed"
+      "description": "An elegant canopy bed featuring ornate carved detailing and luxurious red drapery. Designed with a classic, regal aesthetic, it combines a sturdy frame with rich fabrics and decorative accents to create a cozy yet sophisticated centerpiece for any bedroom."
     },
     {
       "name": "ornate_carved_bed",
       "path": "Bed/ornate_carved_bed.glb",
       "keywords": [
-        "ornate_carved_bed",
-        "ornate",
-        "carved"
+        "antique wooden bed",
+        "vintage bed frame",
+        "classic wood bed",
+        "traditional bed frame",
+        "carved wooden bed",
+        "Victorian style bed",
+        "French provincial bed",
+        "baroque bed frame",
+        "ornate bed frame",
+        "luxury classic bed",
+        "dark wood bed",
+        "mahogany bed frame",
+        "walnut wood bed",
+        "polished wood bed",
+        "carved headboard bed",
+        "decorative footboard bed",
+        "turned post bed",
+        "ornamental wood bed frame",
+        "elegant bedroom bed",
+        "royal style bed"
       ],
-      "description": "Ornate carved wooden bed frame"
+      "description": "An elegant, vintage-inspired wooden bed frame featuring rich dark wood tones and intricate hand-carved details. The ornate headboard and decorative footboard are complemented by turned posts, creating a timeless, luxurious look—blending traditional craftsmanship with refined style."
     },
     {
       "name": "bed",
       "path": "Bed/bed.glb",
       "keywords": [
-        "bed"
+        "wooden bed frame",
+        "light wood bed",
+        "modern wooden bed",
+        "minimalist bed frame",
+        "contemporary bed frame",
+        "platform bed",
+        "wooden platform bed",
+        "Scandinavian bed",
+        "Nordic style bed",
+        "minimalist Scandinavian bed frame",
+        "oak bed frame",
+        "light oak bed",
+        "natural wood bed",
+        "bed with headboard and footboard",
+        "solid wood bed frame",
+        "low profile bed frame",
+        "neutral bedding bed"
       ],
-      "description": "Standard single bed"
+      "description": "A sleek, modern platform bed featuring a sculpted wooden base with smooth, organic curves and a low-profile design. The softly upholstered headboard adds comfort and elegance, while the neutral tones create a calm, minimalist aesthetic—perfect for contemporary and Japandi-inspired bedrooms."
     },
     {
       "name": "majesty_palm_plant",
       "path": "Plants/majesty_palm_plant.glb",
       "keywords": [
-        "majesty_palm_plant",
-        "majesty",
-        "palm"
+        "areca palm",
+        "dypsis lutescens",
+        "butterfly palm",
+        "golden cane palm",
+        "indoor palm plant",
+        "houseplant",
+        "tropical plant",
+        "air purifying plant",
+        "low maintenance plant",
+        "feathery palm leaves",
+        "lush green plant",
+        "tall indoor plant",
+        "bushy palm plant",
+        "decorative indoor plant",
+        "potted palm plant",
+        "living room plant",
+        "corner plant",
+        "home decor plant",
+        "housewarming gift plant"
       ],
-      "description": "Large majesty palm plant"
+      "description": "Add a tropical touch to your space with this elegant Areca Palm (Dypsis lutescens). Featuring lush, feathery fronds and a vibrant green look, it instantly brightens any room. Known for its air-purifying qualities and easy care, perfect for homes, offices, or creating a relaxing, resort-like vibe indoors."
     },
     {
       "name": "house_palm_plant",
       "path": "Plants/house_palm_plant.glb",
       "keywords": [
-        "house_palm_plant",
-        "house",
-        "palm"
+        "large leaf indoor plant",
+        "potted green plant",
+        "decorative indoor plant",
+        "modern houseplant",
+        "monstera style plant",
+        "elephant ear plant",
+        "philodendron plant",
+        "tropical foliage plant",
+        "big leaf houseplant",
+        "heart-shaped leaf plant",
+        "broad leaf greenery",
+        "large green leaves",
+        "round white planter",
+        "minimalist plant pot",
+        "modern ceramic planter",
+        "desk plant decor",
+        "living room plant",
+        "aesthetic indoor greenery"
       ],
-      "description": "Medium indoor palm plant"
+      "description": "Enhance your space with this elegant potted plant featuring large, heart-shaped green leaves that create a bold yet calming presence. Set in a smooth, minimalist pot, it's perfect for adding a modern, natural touch to any room or workspace with effortless style."
     },
     {
       "name": "aglaonema_plant",
       "path": "Plants/aglaonema_plant.glb",
       "keywords": [
-        "aglaonema_plant",
-        "aglaonema"
+        "pink indoor plant",
+        "variegated houseplant",
+        "pink green plant",
+        "decorative indoor plant",
+        "ornamental houseplant",
+        "pink foliage plant",
+        "tropical variegated plant",
+        "colorful leaf plant",
+        "exotic indoor plant",
+        "aglaonema pink",
+        "chinese evergreen pink",
+        "pink spotted plant",
+        "modern home decor plant",
+        "aesthetic desk plant",
+        "minimalist plant pot",
+        "office desk plant",
+        "low maintenance indoor plant",
+        "gift plant idea"
       ],
-      "description": "Aglaonema leafy indoor plant"
+      "description": "Add a pop of color to your space with this vibrant ornamental houseplant. Featuring striking pink and green variegated leaves, it brings a fresh, modern look to any room. Housed in a sleek, minimalist pot, it's perfect for desks, shelves, or tabletops—and requires minimal upkeep for lasting beauty."
     },
     {
       "name": "low-poly_snake_plant",
       "path": "Plants/low-poly_snake_plant.glb",
       "keywords": [
-        "low-poly_snake_plant",
-        "snake"
+        "snake plant",
+        "sansevieria",
+        "sansevieria trifasciata",
+        "mother in law tongue plant",
+        "indoor plant",
+        "houseplant",
+        "low maintenance plant",
+        "easy care plant",
+        "air purifying plant",
+        "hardy indoor plant",
+        "beginner plant",
+        "drought tolerant plant",
+        "green variegated plant",
+        "tall leaf plant",
+        "upright indoor plant",
+        "modern indoor plant",
+        "potted snake plant",
+        "desk plant",
+        "office plant",
+        "low light indoor plant"
       ],
-      "description": "Low poly snake plant"
+      "description": "Bring effortless greenery into your space with this stylish Snake Plant (Sansevieria trifasciata). Featuring striking upright leaves with natural green variegation, it's both modern and timeless. Low-maintenance and air-purifying, it thrives in a variety of lighting conditions—perfect for homes, offices, or gifting."
     },
     {
       "name": "airport_plant",
       "path": "Plants/airport_plant.glb",
       "keywords": [
-        "airport_plant",
-        "airport"
+        "indoor plant in rectangular planter",
+        "modern planter box with plants",
+        "decorative indoor greenery",
+        "potted green plant",
+        "lush green foliage plant",
+        "leafy indoor plant",
+        "tropical houseplant",
+        "broad leaf plant",
+        "rectangular planter box",
+        "long plant pot",
+        "modern planter container",
+        "window box planter indoor",
+        "minimalist planter",
+        "contemporary plant pot",
+        "office desk plant decor",
+        "living room plant decoration",
+        "shelf plant decor",
+        "green leafy plant",
+        "dark gray planter"
       ],
-      "description": "Large decorative airport-style plant"
+      "description": "Bring a fresh, natural touch to your space with this stylish potted greenery. Featuring lush, vibrant leaves set in a sleek rectangular planter, it adds a modern decorative accent to homes, offices, or patios. Perfect for creating a calm, inviting atmosphere with minimal effort."
     },
     {
       "name": "ikea_lamp",
       "path": "Lamps/ikea_lamp.glb",
       "keywords": [
-        "ikea_lamp",
-        "ikea"
+        "floor lamp",
+        "standing lamp",
+        "tall lamp",
+        "modern floor lamp",
+        "classic floor lamp",
+        "minimalist lamp",
+        "contemporary floor lamp",
+        "traditional floor lamp",
+        "elegant lamp",
+        "slim floor lamp",
+        "metal floor lamp",
+        "brass floor lamp",
+        "vintage style lamp",
+        "white lampshade",
+        "fabric shade lamp",
+        "tapered shade lamp",
+        "ambient lighting lamp",
+        "soft light floor lamp",
+        "warm lighting lamp",
+        "living room floor lamp",
+        "bedroom floor lamp",
+        "reading lamp"
       ],
-      "description": "IKEA style floor lamp"
+      "description": "A sleek and elegant floor lamp featuring a slim metallic stand and a classic tapered fabric shade. Its minimalist design adds a warm, ambient glow to any living space, making it perfect for modern or traditional interiors."
     },
     {
       "name": "desk_lamp",
       "path": "Lamps/desk_lamp.glb",
       "keywords": [
-        "desk_lamp",
-        "desk"
+        "desk lamp",
+        "adjustable desk lamp",
+        "task lamp",
+        "table lamp",
+        "study lamp",
+        "office desk lamp",
+        "reading lamp",
+        "black desk lamp",
+        "matte black lamp",
+        "metal desk lamp",
+        "adjustable arm lamp",
+        "swing arm desk lamp",
+        "anglepoise lamp",
+        "articulated desk lamp",
+        "flexible arm lamp",
+        "industrial desk lamp",
+        "modern desk lamp",
+        "architect desk lamp",
+        "workspace lighting",
+        "work from home lamp"
       ],
-      "description": "Adjustable desk lamp"
+      "description": "A sleek and functional desk lamp featuring an adjustable arm and angled shade for precise lighting. Crafted with a sturdy metal frame in a matte black finish, it offers both durability and modern style. Ideal for workspaces, study desks, or reading areas."
     },
     {
       "name": "retro_lowpoly_lamp",
       "path": "Lamps/retro_lowpoly_lamp.glb",
       "keywords": [
-        "retro_lowpoly_lamp",
-        "retro",
-        "lowpoly"
+        "table lamp",
+        "bedside lamp",
+        "modern table lamp",
+        "decorative lamp",
+        "ceramic table lamp",
+        "blue ceramic lamp",
+        "contemporary lamp",
+        "minimalist table lamp",
+        "elegant lamp",
+        "sculpted base lamp",
+        "white fabric shade lamp",
+        "tapered lampshade",
+        "soft ambient lighting",
+        "warm light lamp",
+        "bedroom bedside lamp",
+        "living room table lamp",
+        "nightstand lamp",
+        "side table lamp",
+        "accent lamp for home"
       ],
-      "description": "Retro low poly floor lamp"
+      "description": "A stylish table lamp featuring a bold ceramic base with a smooth, sculpted form and a classic tapered fabric shade. Its modern yet timeless design adds a touch of sophistication and warm ambient lighting to any room."
     },
     {
       "name": "titanic_lamp",
       "path": "Lamps/titanic_lamp.glb",
       "keywords": [
-        "titanic_lamp",
-        "titanic"
+        "candelabra lamp",
+        "candle lamp",
+        "multi-light lamp",
+        "decorative lamp",
+        "statement lighting",
+        "antique style lamp",
+        "vintage candelabra",
+        "baroque lamp",
+        "ornate lamp",
+        "classic luxury lighting",
+        "traditional decor lamp",
+        "gothic style lamp",
+        "victorian style lamp",
+        "french antique lamp",
+        "gold finish lamp",
+        "bronze lamp",
+        "antique gold lighting",
+        "candle style bulbs",
+        "multi arm candelabra",
+        "dining room centerpiece lighting",
+        "luxury table lamp"
       ],
-      "description": "Vintage Titanic style table lamp"
+      "description": "An ornate candelabra-style lamp featuring multiple candle-like lights set on an intricately detailed base. With its antique-inspired design and rich metallic finish, it adds a luxurious, statement-making glow to classic and elegant interiors."
     },
     {
       "name": "barcelona_chair",
       "path": "Chair/barcelona_chair.glb",
       "keywords": [
-        "barcelona_chair",
-        "barcelona"
+        "lounge chair",
+        "accent chair",
+        "modern lounge chair",
+        "designer chair",
+        "statement chair",
+        "Barcelona chair style",
+        "mid-century modern chair",
+        "Bauhaus style chair",
+        "minimalist modern chair",
+        "iconic design chair",
+        "luxury modern chair",
+        "black leather chair",
+        "tufted leather chair",
+        "button tufted chair",
+        "faux leather accent chair",
+        "stainless steel frame chair",
+        "chrome frame chair",
+        "X-frame chair",
+        "black accent chair",
+        "living room chair",
+        "office lounge chair"
       ],
-      "description": "Barcelona style leather lounge chair"
+      "description": "A timeless modern lounge chair inspired by iconic mid-century design, featuring tufted black leather upholstery and a sleek stainless steel frame. Its clean lines and cushioned comfort make it a sophisticated statement piece for living rooms, offices, or stylish lounge areas."
     },
     {
       "name": "chair",
       "path": "Chair/chair.glb",
       "keywords": [
-        "chair"
+        "wooden chair",
+        "modern chair",
+        "armchair",
+        "dining chair",
+        "wooden armchair",
+        "minimalist chair",
+        "contemporary chair",
+        "solid wood chair",
+        "light wood chair",
+        "natural wood chair",
+        "curved back chair",
+        "bentwood chair",
+        "Scandinavian chair",
+        "Nordic style chair",
+        "chair with armrests",
+        "wooden armchair dining",
+        "dining room chair",
+        "kitchen chair",
+        "office chair",
+        "ergonomic wooden armchair"
       ],
-      "description": "Simple wooden dining chair"
+      "description": "A sleek wooden chair with a smooth curved backrest and integrated armrests, designed for both comfort and modern appeal. Crafted from light-toned wood with clean lines and a sturdy frame, it's ideal for dining spaces, offices, or minimalist interiors."
     },
     {
       "name": "gaming_chair",
       "path": "Chair/gaming_chair.glb",
       "keywords": [
-        "gaming_chair",
-        "gaming"
+        "gaming chair",
+        "gamer chair",
+        "ergonomic chair",
+        "office chair",
+        "computer chair",
+        "swivel chair",
+        "rolling chair",
+        "racing style chair",
+        "high back chair",
+        "modern gaming chair",
+        "black and orange chair",
+        "leather gaming chair",
+        "PU leather chair",
+        "padded chair",
+        "adjustable armrests chair",
+        "lumbar support chair",
+        "PC gaming chair",
+        "desk chair",
+        "home office chair",
+        "streaming chair",
+        "esports chair"
       ],
-      "description": "Racing style gaming chair"
+      "description": "A high-performance gaming chair featuring a bold black and orange design with ergonomic contours for maximum comfort. Built with a padded seat, supportive high back, and adjustable armrests, it's perfect for long gaming sessions or office use—combining style, durability, and functionality."
     },
     {
       "name": "woven_lounge_chair",
       "path": "Chair/woven_lounge_chair.glb",
       "keywords": [
-        "woven_lounge_chair",
-        "woven",
-        "lounge"
+        "woven lounge chair",
+        "rattan chair",
+        "wicker lounge chair",
+        "wooden armchair",
+        "lounge chair with arms",
+        "woven armchair",
+        "natural rattan chair",
+        "wicker seat chair",
+        "cane woven chair",
+        "wood frame chair",
+        "solid wood armchair",
+        "handwoven chair",
+        "woven seat and back chair",
+        "breathable lounge chair",
+        "mid century style chair",
+        "Scandinavian style armchair",
+        "boho lounge chair",
+        "bohemian chair",
+        "rustic modern chair",
+        "living room lounge chair",
+        "reading chair"
       ],
-      "description": "Woven rattan lounge chair"
+      "description": "A stylish lounge chair featuring a handwoven natural seat and backrest for a breathable, organic feel. The solid wood frame with sleek armrests adds warmth and durability, while the gently reclined design offers relaxed comfort. Perfect for living rooms, reading corners, or modern rustic interiors."
     },
     {
       "name": "old_western_saloon_chair",
       "path": "Chair/old_western_saloon_chair.glb",
       "keywords": [
-        "old_western_saloon_chair",
-        "old",
-        "western",
-        "saloon"
+        "solid wood armchair",
+        "wooden accent chair",
+        "rustic armchair",
+        "farmhouse chair",
+        "spindle back chair",
+        "curved back chair",
+        "natural wood chair",
+        "handcrafted wood chair",
+        "colonial style chair",
+        "heritage furniture",
+        "dining room chair",
+        "accent chair",
+        "side chair",
+        "classic furniture",
+        "vintage furniture",
+        "rustic decor",
+        "traditional home decor",
+        "timeless design chair",
+        "elegant wooden chair"
       ],
-      "description": "Old Western saloon wooden chair"
+      "description": "A beautifully crafted solid wood armchair featuring a sculpted seat and curved backrest with vertical spindle detailing. Its natural grain and organic form bring warmth and character, making it a perfect addition to rustic, farmhouse, or timeless interiors."
     },
     {
       "name": "leather_chair",
       "path": "Chair/leather_chair.glb",
       "keywords": [
-        "leather_chair",
-        "leather"
+        "upholstered armchair",
+        "modern armchair",
+        "dining armchair",
+        "accent chair with arms",
+        "contemporary chair",
+        "leather armchair",
+        "faux leather chair",
+        "PU leather chair",
+        "metal leg chair",
+        "black metal frame chair",
+        "tan leather chair",
+        "brown leather armchair",
+        "caramel leather chair",
+        "mid-century modern chair",
+        "industrial style chair",
+        "Scandinavian style armchair",
+        "curved back chair",
+        "dining room armchair",
+        "office guest chair",
+        "comfortable dining chair"
       ],
-      "description": "Classic leather armchair"
+      "description": "A stylish upholstered armchair featuring a warm tan finish and sleek black metal legs. Its gently curved backrest and cushioned seat provide both comfort and support, making it an ideal choice for dining areas, home offices, or modern living spaces."
     },
     {
       "name": "vintage_zen_dining_chair",
       "path": "Chair/vintage_zen_dining_chair.glb",
       "keywords": [
-        "vintage_zen_dining_chair",
-        "vintage",
-        "zen",
-        "dining"
+        "brown leather chair",
+        "brown dining chair",
+        "modern dining chair",
+        "upholstered dining chair",
+        "tufted dining chair",
+        "leather accent chair",
+        "armless dining chair",
+        "contemporary dining chair",
+        "brown faux leather chair",
+        "brown PU leather chair",
+        "tufted back chair",
+        "button tufted chair",
+        "padded seat chair",
+        "sled base chair",
+        "metal frame dining chair",
+        "cantilever chair",
+        "sled leg dining chair",
+        "modern minimalist chair",
+        "industrial dining chair",
+        "mid century modern dining chair"
       ],
-      "description": "Vintage zen wooden dining chair"
+      "description": "A sleek and modern dining chair featuring a tufted brown leather-look seat and back for comfort and style. Its sturdy metal sled base adds a contemporary touch while providing lasting support. Perfect for dining rooms, offices, or any space needing a refined, minimalist accent."
     },
     {
       "name": "chair (1)",
       "path": "Chair/chair (1).glb",
       "keywords": [
-        "chair"
+        "accent chair",
+        "lounge chair",
+        "modern chair",
+        "armless chair",
+        "side chair",
+        "occasional chair",
+        "slipper chair",
+        "modern minimalist chair",
+        "contemporary accent chair",
+        "sculptural chair",
+        "curved silhouette chair",
+        "low profile chair",
+        "upholstered modern chair",
+        "brown accent chair",
+        "tan chair",
+        "camel chair",
+        "faux leather chair",
+        "living room accent chair",
+        "bedroom chair",
+        "reading chair",
+        "statement chair"
       ],
-      "description": "Modern accent chair"
+      "description": "A sleek, modern accent chair featuring a sculptural silhouette and smooth, curved lines. Upholstered in rich brown fabric, it offers a minimalist, armless design that blends comfort with contemporary style—perfect for living rooms, bedrooms, or stylish lounge spaces."
     },
     {
       "name": "alko_chair",
       "path": "Chair/alko_chair.glb",
       "keywords": [
-        "alko_chair",
-        "alko"
+        "modern lounge chair",
+        "minimalist chair",
+        "contemporary accent chair",
+        "designer lounge chair",
+        "sculptural chair",
+        "bent wood chair",
+        "curved wood chair",
+        "laminated wood chair",
+        "plywood frame chair",
+        "wood loop frame chair",
+        "Scandinavian style chair",
+        "Nordic design chair",
+        "organic shape chair",
+        "ergonomic lounge chair",
+        "upholstered seat chair",
+        "cushioned lounge chair",
+        "soft fabric seat chair",
+        "living room accent chair",
+        "reading chair",
+        "low lounge chair"
       ],
-      "description": "Alko modern designer chair"
+      "description": "A modern, minimalist lounge chair featuring a smooth, continuous bent-wood frame that wraps elegantly around a plush, upholstered seat. Designed for both comfort and style, its sculptural form adds a warm, natural touch to any contemporary space."
     },
     {
       "name": "antique_heriz_8708_golden_horn_beige_rugs",
       "path": "Carpet/antique_heriz_8708_golden_horn_beige_rugs.glb",
       "keywords": [
-        "antique",
-        "heriz",
-        "golden",
-        "beige",
-        "rugs"
+        "area rug",
+        "modern area rug",
+        "contemporary rug",
+        "abstract rug",
+        "distressed rug",
+        "vintage-style rug",
+        "printed rug",
+        "designer rug",
+        "abstract pattern rug",
+        "distressed abstract rug",
+        "faded vintage rug",
+        "overdyed look rug",
+        "neutral rug",
+        "grey area rug",
+        "blue and grey rug",
+        "ivory grey rug",
+        "beige grey rug",
+        "muted tones rug",
+        "living room rug",
+        "bedroom rug",
+        "large area rug",
+        "soft pile rug",
+        "easy-care rug",
+        "minimalist rug"
       ],
-      "description": "Antique Heriz style area rug"
+      "description": "A modern abstract area rug featuring a soft blend of neutral tones with subtle blue accents. Its distressed pattern adds a contemporary, lived-in look, making it perfect for elevating living rooms, bedrooms, or office spaces with effortless style and comfort."
     },
     {
       "name": "mat",
       "path": "Carpet/mat.glb",
       "keywords": [
-        "mat"
+        "mat",
+        "floor mat",
+        "simple mat",
+        "indoor mat",
+        "area mat",
+        "flat mat",
+        "decorative mat",
+        "home mat"
       ],
-      "description": "Simple floor mat"
+      "description": "A simple, functional floor mat suitable for entryways, kitchens, or any high-traffic area. Its clean, minimal design complements a variety of interior styles."
     }
   ]
 }
