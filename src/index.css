@@ -111,6 +111,28 @@
   100% { transform: translateX(100%); }
 }
 
+@keyframes progress-fill {
+  0% { width: 0%; }
+  100% { width: 90%; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes message-fade {
+  0% { opacity: 0; transform: translateY(4px); }
+  15% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
 .animate-reveal-up {
   animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -121,6 +143,29 @@
 
 .animate-line-progress {
   animation: line-progress 1.2s ease-in-out infinite;
+}
+
+.animate-progress-fill {
+  animation: progress-fill 8s ease-out forwards;
+}
+
+.animate-skeleton-pulse {
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+
+.animate-message-fade {
+  animation: message-fade 1.5s ease-in-out;
+}
+
+.button-loading {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--accent)) 25%,
+    hsl(var(--accent-hover)) 50%,
+    hsl(var(--accent)) 75%
+  ) !important;
+  background-size: 200% auto !important;
+  animation: shimmer 1.5s linear infinite;
 }
 
 /* Stagger delays */

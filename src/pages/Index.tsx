@@ -1,42 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
+import GeneratingOverlay from "@/components/GeneratingOverlay";
 import { mockCommunityPosts } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
-const loadingMessages = [
-  "Designing your room…",
-  "Placing furniture…",
-  "Adding finishing touches…",
-  "Welcome home…",
-];
-
 export default function Index() {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
   const navigate = useNavigate();
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (!loading) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      return;
-    }
-    setLoadingStep(0);
-    intervalRef.current = setInterval(() => {
-      setLoadingStep((prev) =>
-        prev < loadingMessages.length - 1 ? prev + 1 : 0
-      );
-    }, 1500);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [loading]);
 
   const validate = (): boolean => {
     if (!prompt.trim()) {
@@ -123,6 +99,7 @@ export default function Index() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
+      {loading && <GeneratingOverlay />}
       {/* Hero */}
       <section className="flex flex-col items-center justify-center px-4 min-h-[calc(100vh-3.5rem)]">
         <div className="max-w-2xl w-full text-center space-y-10">
@@ -168,23 +145,12 @@ export default function Index() {
               <Button
                 variant="amber"
                 size="lg"
-                className="w-full"
+                className={`w-full ${loading ? "button-loading" : ""}`}
                 onClick={handleGenerate}
                 disabled={loading}
               >
                 {loading ? "Generating…" : "Generate Room"}
               </Button>
-
-              {loading && (
-                <div className="space-y-3">
-                  <div className="h-px w-full bg-border overflow-hidden">
-                    <div className="h-full w-1/3 bg-accent animate-line-progress" />
-                  </div>
-                  <p className="font-heading italic text-[1rem] text-muted-foreground">
-                    {loadingMessages[loadingStep]}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </div>

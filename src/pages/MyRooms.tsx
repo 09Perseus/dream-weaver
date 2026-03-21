@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SkeletonCard from "@/components/SkeletonCard";
 import { Link, useNavigate } from "react-router-dom";
 import { Trash2, Eye, Pencil, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -86,9 +87,15 @@ export default function MyRooms() {
 
   if (loading) {
     return (
-      <div className="container py-20 flex justify-center">
-        <div className="h-px w-32 bg-border overflow-hidden">
-          <div className="h-full w-1/3 bg-accent animate-line-progress" />
+      <div className="container py-12 md:py-16">
+        <div className="mb-10">
+          <div className="h-10 bg-muted w-48 animate-skeleton-pulse" />
+          <div className="h-4 bg-muted w-32 mt-2 animate-skeleton-pulse" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       </div>
     );
