@@ -202,9 +202,10 @@ export default function Cart() {
       console.log("Edge function response:", data, error);
 
       if (error || data?.error) {
+        const errMsg = data?.error || error?.message || "Please try again.";
         toast({
           title: "Payment failed",
-          description: data?.error || error?.message || "Please try again.",
+          description: ensureEnglishError(errMsg),
           variant: "destructive",
         });
         setLoading(false);
