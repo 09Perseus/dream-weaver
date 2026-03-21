@@ -80,10 +80,12 @@ export default function Cart() {
           globalCardElement = elements.create("card", {
             style: {
               base: {
-                color: "#F5F0E8",
-                fontFamily: "Inter, sans-serif",
+                color: getComputedStyle(document.documentElement).getPropertyValue("--text-primary").trim() ? `hsl(${getComputedStyle(document.documentElement).getPropertyValue("--text-primary").trim()})` : "#E6EDF3",
+                fontFamily: "DM Sans, sans-serif",
                 fontSize: "16px",
-                "::placeholder": { color: "#8C8880" },
+                "::placeholder": {
+                  color: getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() ? `hsl(${getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim()})` : "#8B949E",
+                },
               },
             },
           });

@@ -6,7 +6,7 @@ import UserAvatar from "@/components/UserAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-const AVATAR_COLORS = ["#C8B89A", "#C0533A", "#6A8F6A", "#5A7A9A", "#8A6A9A", "#9A8A6A"];
+const AVATAR_COLORS = ["#7C3AED", "#CF222E", "#1F883D", "#0969DA", "#8A6A9A", "#9A8A6A"];
 
 interface EditProfileDialogProps {
   open: boolean;

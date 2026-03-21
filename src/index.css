@@ -1,20 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --bg: 30 12% 5%;
-    --surface: 36 8% 9%;
-    --border: 34 8% 17%;
-    --accent: 32 27% 69%;
-    --accent-hover: 30 35% 80%;
-    --text-primary: 30 30% 94%;
-    --text-muted: 30 5% 52%;
-    --destructive: 12 53% 49%;
-    --success: 120 15% 49%;
+  :root[data-theme="dark"] {
+    --bg: 215 21% 7%;
+    --surface: 215 19% 11%;
+    --surface-2: 215 16% 16%;
+    --border: 215 14% 21%;
+    --accent: 263 89% 71%;
+    --accent-hover: 263 100% 81%;
+    --accent-green: 135 65% 52%;
+    --accent-blue: 212 100% 67%;
+    --text-primary: 212 33% 93%;
+    --text-muted: 214 7% 57%;
+    --destructive: 1 93% 63%;
+    --success: 135 65% 52%;
+    --font-heading: 'Nunito', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
 
     --background: var(--bg);
     --foreground: var(--text-primary);
@@ -23,15 +28,15 @@
     --popover: var(--surface);
     --popover-foreground: var(--text-primary);
     --primary: var(--accent);
-    --primary-foreground: var(--bg);
+    --primary-foreground: 0 0% 100%;
     --secondary: var(--surface);
     --secondary-foreground: var(--text-muted);
     --muted: var(--surface);
     --muted-foreground: var(--text-muted);
     --accent-color: var(--accent);
-    --accent-foreground: var(--bg);
+    --accent-foreground: 0 0% 100%;
     --destructive-color: var(--destructive);
-    --destructive-foreground: 30 30% 94%;
+    --destructive-foreground: 212 33% 93%;
     --border-color: var(--border);
     --input: var(--border);
     --ring: var(--accent);
@@ -40,7 +45,100 @@
     --sidebar-background: var(--bg);
     --sidebar-foreground: var(--text-muted);
     --sidebar-primary: var(--accent);
-    --sidebar-primary-foreground: var(--bg);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--surface);
+    --sidebar-accent-foreground: var(--text-primary);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--accent);
+  }
+
+  :root[data-theme="light"] {
+    --bg: 0 0% 100%;
+    --surface: 210 17% 97%;
+    --surface-2: 210 14% 92%;
+    --border: 210 13% 83%;
+    --accent: 140 48% 33%;
+    --accent-hover: 140 53% 28%;
+    --accent-green: 140 48% 33%;
+    --accent-blue: 212 92% 45%;
+    --text-primary: 210 17% 14%;
+    --text-muted: 210 7% 43%;
+    --destructive: 1 72% 48%;
+    --success: 140 48% 33%;
+    --font-heading: 'Nunito', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    --background: var(--bg);
+    --foreground: var(--text-primary);
+    --card: var(--surface);
+    --card-foreground: var(--text-primary);
+    --popover: var(--surface);
+    --popover-foreground: var(--text-primary);
+    --primary: var(--accent);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--surface);
+    --secondary-foreground: var(--text-muted);
+    --muted: var(--surface);
+    --muted-foreground: var(--text-muted);
+    --accent-color: var(--accent);
+    --accent-foreground: 0 0% 100%;
+    --destructive-color: var(--destructive);
+    --destructive-foreground: 0 0% 100%;
+    --border-color: var(--border);
+    --input: var(--border);
+    --ring: var(--accent);
+    --radius: 0px;
+
+    --sidebar-background: var(--bg);
+    --sidebar-foreground: var(--text-muted);
+    --sidebar-primary: var(--accent);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--surface);
+    --sidebar-accent-foreground: var(--text-primary);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--accent);
+  }
+
+  /* Default to dark */
+  :root:not([data-theme]) {
+    --bg: 215 21% 7%;
+    --surface: 215 19% 11%;
+    --surface-2: 215 16% 16%;
+    --border: 215 14% 21%;
+    --accent: 263 89% 71%;
+    --accent-hover: 263 100% 81%;
+    --text-primary: 212 33% 93%;
+    --text-muted: 214 7% 57%;
+    --destructive: 1 93% 63%;
+    --success: 135 65% 52%;
+    --font-heading: 'Nunito', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    --background: var(--bg);
+    --foreground: var(--text-primary);
+    --card: var(--surface);
+    --card-foreground: var(--text-primary);
+    --popover: var(--surface);
+    --popover-foreground: var(--text-primary);
+    --primary: var(--accent);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--surface);
+    --secondary-foreground: var(--text-muted);
+    --muted: var(--surface);
+    --muted-foreground: var(--text-muted);
+    --accent-color: var(--accent);
+    --accent-foreground: 0 0% 100%;
+    --destructive-color: var(--destructive);
+    --destructive-foreground: 212 33% 93%;
+    --border-color: var(--border);
+    --input: var(--border);
+    --ring: var(--accent);
+    --radius: 0px;
+
+    --sidebar-background: var(--bg);
+    --sidebar-foreground: var(--text-muted);
+    --sidebar-primary: var(--accent);
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: var(--surface);
     --sidebar-accent-foreground: var(--text-primary);
     --sidebar-border: var(--border);
@@ -56,20 +154,20 @@
   body {
     background-color: hsl(var(--bg));
     color: hsl(var(--text-primary));
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-body), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-heading), sans-serif;
     font-weight: 300;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
 
   h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-heading), sans-serif;
     font-weight: 400;
   }
 }
@@ -82,10 +180,10 @@
     text-wrap: pretty;
   }
   .font-heading {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-heading), sans-serif;
   }
   .font-body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-body), system-ui, sans-serif;
   }
 }
 
@@ -215,7 +313,7 @@
   color: hsl(var(--text-primary));
   padding: 0.5rem 0;
   width: 100%;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
   font-size: 1rem;
   transition: border-color 200ms ease;
 }
