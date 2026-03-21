@@ -67,10 +67,10 @@ export default function Index() {
       const items: PlacedItem[] = data.items;
       const furniture: FurnitureDetail[] = data.furniture;
 
-      // Get current user (may be null for anonymous)
+      // Get current session
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
       // Save to room_designs
       const { data: room, error: insertError } = await supabase
@@ -78,19 +78,24 @@ export default function Index() {
         .insert({
           description: prompt.trim(),
           items: items as any,
-          user_id: user?.id ?? "00000000-0000-0000-0000-000000000000",
+          user_id: session?.user?.id ?? undefined,
           share_token: crypto.randomUUID(),
-        })
+        } as any)
         .select("id")
         .single();
 
-      if (insertError) {
+      if (insertError || !room?.id) {
         console.error("Failed to save room:", insertError);
-        // Still navigate even if save fails — use a temp id
+        toast({
+          title: "Failed to save room",
+          description: "Failed to save room. Please try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
       }
 
-      const roomId = room?.id ?? "new";
-      navigate(`/room/${roomId}`, {
+      navigate(`/room/${room.id}`, {
         state: { items, furniture, description: prompt.trim() },
       });
     } catch (err: any) {
