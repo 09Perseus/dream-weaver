@@ -14,6 +14,9 @@ declare global {
 
 const USD_TO_JPY = 150;
 
+// Cache PAY.JP instance globally to avoid "Already instantiated" error
+let globalPayjp: any = null;
+
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
   const navigate = useNavigate();
