@@ -69,7 +69,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_IN" && session) {
-          const { data } = await supabase
+          const { data } = await (supabase as any)
             .from("carts")
             .select("items")
             .eq("user_id", session.user.id)
