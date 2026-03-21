@@ -228,7 +228,7 @@ export default function RoomCanvas({ className = '', items, furniture }: RoomCan
   const webglSupported = useMemo(() => detectWebGL(), []);
 
   return (
-    <div className={`relative w-full h-full ${className}`}>
+    <div className={`relative w-full h-screen ${className}`}>
       {/* WebGL not available fallback */}
       {!webglSupported && (
         <WebGLUnavailable items={isViewerMode ? items : undefined} />
