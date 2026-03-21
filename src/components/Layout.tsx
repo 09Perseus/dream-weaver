@@ -301,7 +301,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
             onOpenChange={setEditProfileOpen}
             userId={user.id}
             currentDisplayName={profile?.display_name ?? null}
-            currentAvatarColor={profile?.avatar_color ?? "#C8B89A"}
+            currentAvatarColor={profile?.avatar_color ?? "hsl(var(--accent))"}
             currentAvatarUrl={profile?.avatar_url ?? null}
             avatarInitial={avatarInitial}
             onSaved={() => refreshProfile()}
