@@ -31,6 +31,10 @@ export default function PostToCommunityDialog({ open, onOpenChange, roomId, onPo
       toast({ title: "Title required", description: "Please enter a title for your post.", variant: "destructive" });
       return;
     }
+    if (selectedTags.length === 0) {
+      toast({ title: "Please select at least one style tag", variant: "destructive" });
+      return;
+    }
 
     setPosting(true);
     try {
@@ -115,7 +119,9 @@ export default function PostToCommunityDialog({ open, onOpenChange, roomId, onPo
           </div>
 
           <div>
-            <label className="font-body text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground mb-2 block">Style Tags</label>
+            <label className="font-body text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground mb-2 block">
+              Style Tags <span className="text-destructive">*</span>
+            </label>
             <div className="flex flex-wrap gap-2">
               {STYLE_TAGS.map((tag) => (
                 <button
@@ -132,13 +138,16 @@ export default function PostToCommunityDialog({ open, onOpenChange, roomId, onPo
                 </button>
               ))}
             </div>
+            <p className={`font-body text-[0.75rem] mt-2 ${selectedTags.length === 0 ? "text-destructive" : "text-success"}`}>
+              {selectedTags.length === 0 ? "Select at least one style tag to continue" : `${selectedTags.length} selected`}
+            </p>
           </div>
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={posting}>
             Cancel
           </Button>
-          <Button variant="amber" onClick={handlePost} disabled={posting || !title.trim()}>
+          <Button variant="amber" onClick={handlePost} disabled={posting || !title.trim() || selectedTags.length === 0}>
             {posting ? "Posting…" : "Post"}
           </Button>
         </DialogFooter>
