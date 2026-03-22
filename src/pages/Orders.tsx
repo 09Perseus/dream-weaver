@@ -225,9 +225,9 @@ export default function Orders() {
                   </div>
                 )}
 
-                {order.stripe_payment_intent_id && (
+                {order.id && (
                   <p className="font-body text-[0.65rem] text-muted-foreground font-mono">
-                    Charge: {order.stripe_payment_intent_id}
+                    Order ref: {order.id.substring(0, 8).toUpperCase()}
                   </p>
                 )}
               </div>
