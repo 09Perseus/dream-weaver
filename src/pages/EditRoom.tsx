@@ -1163,6 +1163,27 @@ export default function EditRoom() {
                   }}
                   onAddAnother={handleAddAnother}
                   onAddToCart={handleAddToCart}
+                  onAddAllToCart={() => {
+                    const groupMap: Record<string, { detail: FurnitureDetail; count: number }> = {};
+                    for (const item of roomItems) {
+                      if (!groupMap[item.id]) {
+                        const detail = furniture.find((f) => f.id === item.id);
+                        if (detail) groupMap[item.id] = { detail, count: 0 };
+                      }
+                      if (groupMap[item.id]) groupMap[item.id].count++;
+                    }
+                    const entries = Object.values(groupMap);
+                    entries.forEach(({ detail, count }) => {
+                      addToCart({
+                        id: detail.id,
+                        name: detail.name,
+                        price: detail.price ?? 0,
+                        quantity: count,
+                        thumbnail_url: detail.thumbnail_url,
+                      });
+                    });
+                    toast({ title: `${entries.length} items added to cart` });
+                  }}
                   onAddPreviewToRoom={() => {
                     if (previewItem) {
                       handleAddFromPicker(previewItem);
