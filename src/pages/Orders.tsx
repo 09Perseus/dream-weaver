@@ -64,6 +64,32 @@ export default function Orders() {
     return () => clearTimeout(timeout);
   }, []);
 
+  const enrichOrderItems = async (orders: Order[]): Promise<Order[]> => {
+    const allItemIds = orders.flatMap(o =>
+      (o.items ?? []).map((i) => i.id).filter(Boolean)
+    );
+    const uniqueIds = [...new Set(allItemIds)];
+    if (uniqueIds.length === 0) return orders;
+
+    const { data: furnitureItems } = await supabase
+      .from("furniture_items")
+      .select("id, thumbnail_url, name")
+      .in("id", uniqueIds);
+
+    const furnitureMap = Object.fromEntries(
+      (furnitureItems ?? []).map(f => [f.id, f])
+    );
+
+    return orders.map(order => ({
+      ...order,
+      items: (order.items ?? []).map((item) => ({
+        ...item,
+        thumbnail_url: item.thumbnail_url ?? furnitureMap[item.id ?? ""]?.thumbnail_url,
+        name: item.name ?? furnitureMap[item.id ?? ""]?.name ?? item.id,
+      })),
+    }));
+  };
+
   const formatJPY = (amount: number) =>
     "¥" + Math.round(amount).toLocaleString();
 
