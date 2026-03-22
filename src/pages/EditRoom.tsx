@@ -657,7 +657,7 @@ export default function EditRoom() {
 
         {/* Left: Furniture Picker (desktop only) */}
         {!isMobile && (
-          <div className="relative" style={{ flexShrink: 0 }}>
+          <div className="relative h-full" style={{ flexShrink: 0 }}>
             {/* Toggle button on right edge */}
             <button
               onClick={() => setLeftCollapsed(prev => !prev)}
