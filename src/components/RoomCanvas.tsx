@@ -157,7 +157,6 @@ function MovableFurniture({
   const groupRef = useRef<THREE.Group>(null);
   const isDragging = useRef(false);
   const dragOffset = useRef(new THREE.Vector3());
-  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
   const intersection = useMemo(() => new THREE.Vector3(), []);
   const { camera, gl, raycaster, pointer } = useThree();
@@ -221,16 +220,7 @@ function MovableFurniture({
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (clickTimer.current) {
-      clearTimeout(clickTimer.current);
-      clickTimer.current = null;
-      onDoubleClick();
-    } else {
-      clickTimer.current = setTimeout(() => {
-        clickTimer.current = null;
-        onSingleClick();
-      }, 220);
-    }
+    onSingleClick();
   };
 
   return (
@@ -262,17 +252,10 @@ function MovableFurniture({
         </mesh>
       )}
 
-      {isSelected && !isEditMode && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-          <ringGeometry args={[0.55, 0.7, 32]} />
-          <meshBasicMaterial color="#3b82f6" transparent opacity={0.7} />
-        </mesh>
-      )}
-
-      {isSelected && isEditMode && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-          <ringGeometry args={[0.55, 0.7, 32]} />
-          <meshBasicMaterial color="#f59e0b" transparent opacity={0.9} />
+      {isSelected && (
+        <mesh scale={[1.05, 1.05, 1.05]}>
+          <boxGeometry args={furniture.size ?? [1, 1, 1]} />
+          <meshBasicMaterial color="#FFD700" wireframe transparent opacity={0.8} />
         </mesh>
       )}
     </group>
