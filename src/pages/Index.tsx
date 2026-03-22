@@ -578,9 +578,21 @@ export default function Index() {
         <div className="container py-20 md:py-28">
           <RevealSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
-              {/* Visual */}
+              {/* Visual — 3D Furniture Showcase */}
               <div className="flex justify-center">
-                <MockProductCard />
+                {showcaseItems.length > 0 ? (
+                  <Suspense fallback={
+                    <div className="max-w-[320px] w-full mx-auto">
+                      <div className="aspect-square border border-border bg-background animate-pulse" />
+                    </div>
+                  }>
+                    <FurnitureShowcase items={showcaseItems} />
+                  </Suspense>
+                ) : (
+                  <div className="max-w-[320px] w-full mx-auto">
+                    <div className="aspect-square border border-border bg-background animate-pulse" />
+                  </div>
+                )}
               </div>
 
               {/* Text */}
