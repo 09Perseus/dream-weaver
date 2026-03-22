@@ -105,6 +105,8 @@ export default function RoomView() {
         setDescription(room.description ?? "");
         setRoomOwnerId(room.user_id);
         setRoomIsCopy(!!room.is_copy);
+        setFloorTexturePath((room as any).floor_texture ?? null);
+        setWallTexturePath((room as any).wall_texture ?? null);
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
         setItems(roomItems);
 
