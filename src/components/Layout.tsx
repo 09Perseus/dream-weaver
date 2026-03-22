@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
 
 const navLinks = [
+  { label: "Home", to: "/" },
   { label: "Community", to: "/community" },
   { label: "My Rooms", to: "/my-rooms" },
 ];
