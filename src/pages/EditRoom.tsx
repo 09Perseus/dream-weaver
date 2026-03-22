@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
+import { bustCache } from "@/utils/imageUrl";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 import { getItemKey } from "@/lib/edgeFunctions";
 
