@@ -212,7 +212,7 @@ export default function MyRooms() {
             return (
               <div
                 key={room.id}
-                onClick={() => navigate(`/room/${room.id}/edit`)}
+                onClick={() => navigate(room.is_copy ? `/room/${room.id}` : `/room/${room.id}/edit`)}
                 className="animate-reveal-up overflow-hidden min-w-0"
                 style={{
                   cursor: "pointer",
