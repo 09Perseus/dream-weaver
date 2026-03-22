@@ -78,7 +78,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
             </button>
             <Link to="/" className="flex items-center">
               <span className="font-heading text-[1.25rem] tracking-[0.2em] uppercase text-accent">
-                ROOMAI
+                DREAM WEAVER
               </span>
             </Link>
           </div>
