@@ -745,7 +745,7 @@ export default function EditRoom() {
 
         {/* Right: switches between Room Items list and Item Info Card */}
         {!isMobile && (
-          <div className="relative" style={{ flexShrink: 0 }}>
+          <div className="relative h-full" style={{ flexShrink: 0 }}>
             {/* Toggle button on left edge */}
             <button
               onClick={() => setRightCollapsed(prev => !prev)}
@@ -764,10 +764,12 @@ export default function EditRoom() {
               {rightCollapsed ? "‹" : "›"}
             </button>
             <aside
-              className="flex flex-col bg-surface overflow-hidden min-h-0"
+              className="flex flex-col bg-surface min-h-0"
               style={{
                 width: rightCollapsed ? "0px" : "320px",
                 minWidth: rightCollapsed ? "0px" : "320px",
+                height: "100%",
+                overflow: rightCollapsed ? "hidden" : "visible",
                 transition: "width 300ms ease, min-width 300ms ease",
                 borderLeft: rightCollapsed ? "none" : "1px solid hsl(var(--border))",
               }}
@@ -780,7 +782,7 @@ export default function EditRoom() {
                   transition: "opacity 200ms ease",
                   display: "flex",
                   flexDirection: "column",
-                  overflow: "hidden",
+                  minHeight: 0,
                 }}
               >
                 <RightPanel
