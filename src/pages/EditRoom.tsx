@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
+import { bustCache } from "@/utils/imageUrl";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 import { getItemKey } from "@/lib/edgeFunctions";
 
@@ -83,7 +84,7 @@ function ItemInfoCard({
         {/* Image */}
         {detail?.thumbnail_url && detail.thumbnail_url !== "PENDING_UPLOAD" ? (
           <img
-            src={detail.thumbnail_url}
+            src={bustCache(detail.thumbnail_url)}
             alt={detail.name}
             className="w-full aspect-square object-cover rounded-lg border border-border"
           />
@@ -244,7 +245,7 @@ function RightPanel({
                     <div className="flex items-center gap-3">
                       {group.detail?.thumbnail_url && group.detail.thumbnail_url !== "PENDING_UPLOAD" ? (
                         <img
-                          src={group.detail.thumbnail_url}
+                          src={bustCache(group.detail.thumbnail_url)}
                           alt={group.detail?.name ?? group.furnitureId}
                           className="h-10 w-10 object-cover flex-shrink-0 rounded"
                         />
@@ -628,7 +629,7 @@ export default function EditRoom() {
               <div className="flex items-center gap-3">
                 {item.thumbnail_url ? (
                   <img
-                    src={item.thumbnail_url}
+                    src={bustCache(item.thumbnail_url)}
                     alt={item.name}
                     className="h-10 w-10 object-cover flex-shrink-0 rounded"
                   />

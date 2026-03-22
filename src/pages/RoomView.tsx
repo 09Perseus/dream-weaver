@@ -11,6 +11,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { bustCache } from "@/utils/imageUrl";
 
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
@@ -408,7 +409,7 @@ export default function RoomView() {
                   {furniture.map((item) => (
                     <div key={item.id} className="flex items-center gap-3 py-4 border-b border-border last:border-b-0">
                       {item.thumbnail_url && item.thumbnail_url !== "PENDING_UPLOAD" ? (
-                        <img src={item.thumbnail_url} alt={item.name} className="h-12 w-12 object-cover bg-surface flex-shrink-0" />
+                        <img src={bustCache(item.thumbnail_url)} alt={item.name} className="h-12 w-12 object-cover bg-surface flex-shrink-0" />
                       ) : (
                         <div className="h-12 w-12 bg-surface border border-border flex items-center justify-center flex-shrink-0">
                           <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>

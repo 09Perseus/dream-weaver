@@ -1,4 +1,5 @@
 import type { FurnitureDetail } from "@/lib/edgeFunctions";
+import { bustCache } from "@/utils/imageUrl";
 import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { toast } from "@/hooks/use-toast";
@@ -38,7 +39,7 @@ export default function FurnitureDetailPanel({ item, onBack }: Props) {
       <div className="w-full aspect-[4/3] bg-surface border-b border-border overflow-hidden shrink-0">
         {item.thumbnail_url && item.thumbnail_url !== "PENDING_UPLOAD" ? (
           <img
-            src={item.thumbnail_url}
+            src={bustCache(item.thumbnail_url)}
             alt={item.name}
             className="w-full h-full object-cover"
           />

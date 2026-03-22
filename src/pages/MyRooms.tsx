@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Pencil, Share2, EyeOff, Trash2 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { bustCache } from "@/utils/imageUrl";
 
 interface Room {
   id: string;
@@ -206,7 +207,7 @@ export default function MyRooms() {
                   )}
                   {(room as any).thumbnail_url ? (
                     <img
-                      src={(room as any).thumbnail_url}
+                      src={bustCache((room as any).thumbnail_url)}
                       alt={displayDesc}
                       className="w-full h-full object-cover"
                     />

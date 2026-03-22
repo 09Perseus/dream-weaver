@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { bustCache } from "@/utils/imageUrl";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -294,7 +295,7 @@ export default function Cart() {
                 <div className="h-14 w-14 bg-surface border border-border flex-shrink-0 overflow-hidden">
                   {item.thumbnailUrl ? (
                     <img
-                      src={item.thumbnailUrl}
+                      src={bustCache(item.thumbnailUrl)}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
