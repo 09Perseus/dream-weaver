@@ -140,7 +140,7 @@ serve(async (req) => {
   } catch (err) {
     console.error("create-checkout error:", err);
     return new Response(
-      JSON.stringify({ error: "Payment processing failed", details: err.message }),
+      JSON.stringify({ error: "Payment processing failed", details: (err as Error).message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
