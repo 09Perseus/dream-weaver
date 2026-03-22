@@ -732,7 +732,7 @@ export default function RoomCanvas({
                 setInternalEditId(null);
               }
             }}
-            gl={{ antialias: true }}
+            gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
             <ambientLight intensity={0.7} />
             <directionalLight position={[0, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
