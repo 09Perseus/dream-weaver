@@ -159,29 +159,113 @@ function ItemInfoCard({
   );
 }
 
-// ── Right Panel — switches between list and info card ─────────────────────────
+// ── Preview Info Card (for picker preview, not placed items) ──────────────────
+function PreviewInfoCard({
+  item,
+  formatPrice,
+  onAddToRoom,
+  onBack,
+}: {
+  item: PickerItem & { description?: string | null; real_width?: number | null; real_height?: number | null; real_depth?: number | null; style_tags?: string[] | null };
+  formatPrice: (price: number) => string;
+  onAddToRoom: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-2 p-4 border-b border-border shrink-0">
+        <button
+          onClick={onBack}
+          className="font-body text-[0.75rem] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+        >
+          ← Back
+        </button>
+        <span className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground ml-auto">
+          Preview
+        </span>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {item.thumbnail_url ? (
+          <img
+            src={bustCache(item.thumbnail_url)}
+            alt={item.name}
+            className="w-full aspect-square object-cover rounded-lg border border-border"
+          />
+        ) : (
+          <div className="w-full aspect-square bg-muted rounded-lg border border-border flex items-center justify-center">
+            <span className="text-5xl">🛋️</span>
+          </div>
+        )}
+        <div>
+          <p className="font-heading text-lg text-foreground">{item.name}</p>
+          {item.description && (
+            <p className="font-body text-[0.75rem] text-muted-foreground mt-1">{item.description}</p>
+          )}
+        </div>
+        <div className="flex items-center justify-between py-3 border-t border-border">
+          <span className="font-body text-[0.75rem] text-muted-foreground uppercase tracking-wide">Price</span>
+          <span className="font-heading text-xl text-accent">{formatPrice(item.price)}</span>
+        </div>
+        {(item.real_width || item.real_height || item.real_depth) && (
+          <div className="py-3 border-t border-border space-y-1">
+            <span className="font-body text-[0.7rem] text-muted-foreground uppercase tracking-wide">Dimensions</span>
+            <p className="font-body text-[0.8rem] text-foreground">
+              {item.real_width?.toFixed(2) ?? '—'}m × {item.real_depth?.toFixed(2) ?? '—'}m × {item.real_height?.toFixed(2) ?? '—'}m
+            </p>
+          </div>
+        )}
+        {item.style_tags && item.style_tags.length > 0 && (
+          <div className="py-3 border-t border-border space-y-1">
+            <span className="font-body text-[0.7rem] text-muted-foreground uppercase tracking-wide">Style</span>
+            <div className="flex flex-wrap gap-1">
+              {item.style_tags.map((tag) => (
+                <span key={tag} className="font-body text-[0.65rem] px-2 py-0.5 border border-border text-muted-foreground rounded-sm">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        <button
+          onClick={onAddToRoom}
+          className="w-full py-2 px-4 bg-accent text-white text-sm font-body rounded-lg hover:opacity-90 transition-opacity"
+        >
+          Add to Room
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Right Panel — switches between list, info card, and preview ───────────────
 function RightPanel({
   roomItems,
   furniture,
   selectedItemId,
   editingItemId,
+  previewItem,
   formatPrice,
   onSelectItem,
   onDeleteItem,
   onAddAnother,
   onAddToCart,
+  onAddPreviewToRoom,
   onBack,
+  onClearPreview,
 }: {
   roomItems: PlacedItem[];
   furniture: FurnitureDetail[];
   selectedItemId: string | null;
   editingItemId: string | null;
+  previewItem: (PickerItem & { description?: string | null; real_width?: number | null; real_height?: number | null; real_depth?: number | null; style_tags?: string[] | null }) | null;
   formatPrice: (price: number) => string;
   onSelectItem: (key: string) => void;
   onDeleteItem: (key: string) => void;
   onAddAnother: (furnitureId: string) => void;
   onAddToCart: (furnitureId: string) => void;
+  onAddPreviewToRoom: () => void;
   onBack: () => void;
+  onClearPreview: () => void;
 }) {
   const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
   const selectedDetail = selectedItem ? furniture.find((f) => f.id === selectedItem.id) : undefined;
@@ -213,6 +297,13 @@ function RightPanel({
           onAddToCart={() => onAddToCart(selectedItem.id)}
           onBack={onBack}
           formatPrice={formatPrice}
+        />
+      ) : previewItem ? (
+        <PreviewInfoCard
+          item={previewItem}
+          formatPrice={formatPrice}
+          onAddToRoom={onAddPreviewToRoom}
+          onBack={onClearPreview}
         />
       ) : (
         <>
