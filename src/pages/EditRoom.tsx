@@ -336,6 +336,30 @@ function RightPanel({
             </h3>
           </div>
 
+          {groupedItems.length > 0 && (
+            <button
+              onClick={onAddAllToCart}
+              style={{
+                width: "100%",
+                background: "hsl(var(--accent))",
+                border: "none",
+                color: "hsl(var(--background))",
+                fontFamily: "var(--font-body)",
+                fontSize: "0.7rem",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase" as const,
+                padding: "0.65rem",
+                cursor: "pointer",
+                flexShrink: 0,
+                transition: "opacity 150ms ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+            >
+              ADD ALL TO CART ({groupedItems.length} items)
+            </button>
+          )}
+
           <div className="flex-1 overflow-y-auto min-h-0">
             {roomItems.length === 0 ? (
               <p className="font-body text-[0.75rem] text-muted-foreground
