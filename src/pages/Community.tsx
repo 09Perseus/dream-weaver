@@ -46,7 +46,7 @@ export default function Community() {
 
     supabase
       .from("community_posts")
-      .select("*")
+      .select("*, profiles:user_id(display_name, avatar_url, avatar_color)")
       .eq("is_visible", true)
       .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
       .limit(12)
