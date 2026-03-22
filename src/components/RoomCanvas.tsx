@@ -64,7 +64,7 @@ export interface FurnitureItem {
   size?: [number, number, number];
 }
 
-function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
+function Model({ path, displaySize = 1, onLoad, onError }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void }) {
   const cleanPath = path
     .replace(/^\/+/, "")
     .replace(/^furnitures\//, "")
@@ -73,33 +73,39 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   const { scene } = useGLTF(`/furnitures/${cleanPath}`);
 
   const cloned = useMemo(() => {
-    const c = scene.clone();
+    try {
+      const c = scene.clone();
 
-    const cameras: THREE.Camera[] = [];
-    c.traverse((node) => {
-      if ((node as THREE.Camera).isCamera) {
-        cameras.push(node as THREE.Camera);
+      const cameras: THREE.Camera[] = [];
+      c.traverse((node) => {
+        if ((node as THREE.Camera).isCamera) {
+          cameras.push(node as THREE.Camera);
+        }
+      });
+      cameras.forEach(cam => cam.removeFromParent());
+
+      const box = new THREE.Box3().setFromObject(c);
+      if (box.isEmpty()) { onLoad?.(); return c; }
+
+      const size = box.getSize(new THREE.Vector3());
+      const longestSide = Math.max(size.x, size.y, size.z);
+
+      if (longestSide > 0 && Number.isFinite(longestSide)) {
+        const scale = displaySize / longestSide;
+        c.scale.setScalar(scale);
       }
-    });
-    cameras.forEach(cam => cam.removeFromParent());
 
-    const box = new THREE.Box3().setFromObject(c);
-    if (box.isEmpty()) return c;
+      const scaledBox = new THREE.Box3().setFromObject(c);
+      if (!scaledBox.isEmpty() && Number.isFinite(scaledBox.min.y)) {
+        c.position.y -= scaledBox.min.y;
+      }
 
-    const size = box.getSize(new THREE.Vector3());
-    const longestSide = Math.max(size.x, size.y, size.z);
-
-    if (longestSide > 0 && Number.isFinite(longestSide)) {
-      const scale = displaySize / longestSide;
-      c.scale.setScalar(scale);
+      onLoad?.();
+      return c;
+    } catch (err) {
+      onError?.();
+      return scene;
     }
-
-    const scaledBox = new THREE.Box3().setFromObject(c);
-    if (!scaledBox.isEmpty() && Number.isFinite(scaledBox.min.y)) {
-      c.position.y -= scaledBox.min.y;
-    }
-
-    return c;
   }, [scene, displaySize]);
 
   return <primitive object={cloned} />;
