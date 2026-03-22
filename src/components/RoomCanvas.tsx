@@ -111,13 +111,14 @@ function Model({ path, displaySize = 1, onLoad, onError }: { path: string; displ
   return <primitive object={cloned} />;
 }
 
-class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string }, { hasError: boolean }> {
+class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string; onError?: () => void }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() {
     return { hasError: true };
   }
   componentDidCatch(error: any) {
     console.error("Model failed to load:", (this.props as any).itemId, error?.message || error);
+    this.props.onError?.();
   }
   render() {
     if (this.state.hasError) {
