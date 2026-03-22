@@ -540,6 +540,7 @@ export default function RoomCanvas({
   editingItemId: controlledEditingId,
   onSelectItem: externalOnSelect,
   onEditItem: externalOnEdit,
+  onDeselect: externalOnDeselect,
   onPositionChange: externalOnPositionChange,
   onRotationChange: externalOnRotationChange,
 }: RoomCanvasProps) {
