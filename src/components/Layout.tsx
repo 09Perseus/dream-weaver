@@ -84,7 +84,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
           </div>
 
           {/* Desktop nav links */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
