@@ -582,8 +582,16 @@ function RoomFloor({ textureUrl, texture }: { textureUrl?: string; texture: THRE
       setLocalTexture(null);
       return;
     }
-    const url = textureUrl ?? "/furnitures/Flooring/darkoak.png";
-    const cancel = loadTexture(url, 4, (t) => setLocalTexture(t));
+    const url = textureUrl
+      ? textureUrl.startsWith("/") || textureUrl.startsWith("http")
+        ? textureUrl
+        : `/furnitures/${textureUrl.replace(/^furnitures\//, "")}`
+      : "/furnitures/Flooring/darkoak.png";
+    const cancel = loadTexture(url, 2, (t) => {
+      t.repeat.set(2, 2);
+      t.needsUpdate = true;
+      setLocalTexture(t);
+    });
     return () => {
       cancel();
     };
@@ -624,9 +632,13 @@ function RoomWalls({
       setLocalTexture(null);
       return;
     }
-    const url = textureUrl ?? "/furnitures/wallpapers/japanese_shoji_pattern.png";
+    const url = textureUrl
+      ? textureUrl.startsWith("/") || textureUrl.startsWith("http")
+        ? textureUrl
+        : `/furnitures/${textureUrl.replace(/^furnitures\//, "")}`
+      : "/furnitures/wallpapers/japanese_shoji_pattern.png";
     const cancel = loadTexture(url, 3, (t) => {
-      t.repeat.set(3, 2);
+      t.repeat.set(1.5, 1);
       t.needsUpdate = true;
       setLocalTexture(t);
     });
@@ -733,9 +745,14 @@ export default function RoomCanvas({
       return;
     }
 
-    const fullPath = wallpaper?.path ? rawPath : `/furnitures/${rawPath}`;
+    const fullPath =
+      rawPath.startsWith("/") || rawPath.startsWith("http")
+        ? rawPath
+        : `/furnitures/${rawPath.replace(/^furnitures\//, "")}`;
 
     const cancel = loadTexture(fullPath, 3, (texture) => {
+      texture.repeat.set(1.5, 1);
+      texture.needsUpdate = true;
       setWallTexture((prev) => {
         prev?.dispose();
         return texture;
@@ -757,9 +774,14 @@ export default function RoomCanvas({
       return;
     }
 
-    const fullPath = flooring?.path ? rawPath : `/furnitures/${rawPath}`;
+    const fullPath =
+      rawPath.startsWith("/") || rawPath.startsWith("http")
+        ? rawPath
+        : `/furnitures/${rawPath.replace(/^furnitures\//, "")}`;
 
-    const cancel = loadTexture(fullPath, 4, (texture) => {
+    const cancel = loadTexture(fullPath, 2, (texture) => {
+      texture.repeat.set(2, 2);
+      texture.needsUpdate = true;
       setFloorTexture((prev) => {
         prev?.dispose();
         return texture;
