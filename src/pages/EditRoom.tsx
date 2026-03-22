@@ -894,6 +894,7 @@ export default function EditRoom() {
                 setEditingItemId(null);
                 toast({ title: "Item removed" });
               }}
+              onAddAnother={handleAddAnother}
               onBack={() => {
                 setSelectedItemId(null);
                 setEditingItemId(null);
