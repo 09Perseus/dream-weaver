@@ -388,9 +388,11 @@ function InfoCard({
 
         <div>
           <p className="font-heading text-lg text-foreground capitalize">{displayName}</p>
-          <p className="font-body text-[0.75rem] text-muted-foreground mt-1">
-            {furniture.description ?? "A beautifully crafted piece for your room."}
-          </p>
+          {furniture?.description && (
+            <p className="font-body text-[0.75rem] text-muted-foreground mt-1">
+              {furniture.description}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center justify-between py-3 border-t border-border">

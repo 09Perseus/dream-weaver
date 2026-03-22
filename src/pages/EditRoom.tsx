@@ -100,9 +100,11 @@ function ItemInfoCard({
           <p className="font-heading text-lg text-foreground">
             {detail?.name ?? item.id}
           </p>
-          <p className="font-body text-[0.75rem] text-muted-foreground mt-1">
-            A beautifully crafted piece for your room.
-          </p>
+          {detail?.description && (
+            <p className="font-body text-[0.75rem] text-muted-foreground mt-1">
+              {detail.description}
+            </p>
+          )}
         </div>
 
         {/* Price */}
