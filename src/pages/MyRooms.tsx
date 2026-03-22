@@ -214,16 +214,8 @@ export default function MyRooms() {
                   </p>
                   <div
                     className="flex items-center px-4 py-3 border-t border-border"
-                    style={{ justifyContent: room.is_copy ? "space-around" : "space-between" }}
+                    style={{ justifyContent: "space-around" }}
                   >
-                    <button
-                      onClick={() => navigate(`/room/${room.id}`)}
-                      title="View Room"
-                      className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: buttonColors.view, border: "none" }}
-                    >
-                      <Eye size={16} color="white" />
-                    </button>
                     <button
                       onClick={() => navigate(`/room/${room.id}/edit`)}
                       title="Edit Room"
