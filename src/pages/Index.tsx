@@ -617,6 +617,8 @@ export default function Index() {
             setError={setError}
             loading={loading}
             onGenerate={handleGenerate}
+            remaining={remaining}
+            showBadge={remaining > 0}
           />
         </RevealSection>
       </section>
