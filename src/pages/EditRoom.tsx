@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useParams, useLocation, useNavigate, useBlocker } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Undo, Trash2, Share2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
@@ -487,12 +487,6 @@ export default function EditRoom() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [saveStatus]);
 
-  // Block React Router navigation
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      saveStatus === "unsaved" &&
-      currentLocation.pathname !== nextLocation.pathname
-  );
 
   const handleAddFromPicker = async (pickerItem: PickerItem) => {
     const instanceId = `${pickerItem.id}_${Date.now()}`;
@@ -977,27 +971,6 @@ export default function EditRoom() {
         />
       )}
 
-      {/* Unsaved changes blocker dialog */}
-      {blocker.state === "blocked" && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
-          <div className="bg-surface border border-border p-8 max-w-[360px] w-[90%] rounded-lg">
-            <h2 className="font-heading text-lg font-semibold text-foreground mb-3">
-              Unsaved Changes
-            </h2>
-            <p className="font-body text-[0.85rem] text-muted-foreground mb-6 leading-relaxed">
-              You have unsaved changes that are still saving. Are you sure you want to leave?
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button variant="outline" size="sm" onClick={() => blocker.reset?.()}>
-                Stay
-              </Button>
-              <Button variant="destructive" size="sm" onClick={() => blocker.proceed?.()}>
-                Leave
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
