@@ -439,33 +439,58 @@ export default function EditRoom() {
     toast({ title: "Undo successful" });
   };
 
-  const handleSave = async () => {
+  // ── Autosave logic ──────────────────────────────────────────────────────────
+  const performSave = useCallback(async () => {
     if (!roomId) return;
-    setSaving(true);
+    setSaveStatus("saving");
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({ title: "Sign in required", variant: "destructive" });
-        return;
-      }
+      if (!session) { setSaveStatus("unsaved"); return; }
       const { error } = await supabase
         .from("room_designs")
         .update({ items: roomItems as any, description: roomName })
         .eq("id", roomId)
         .eq("user_id", session.user.id);
       if (error) {
-        toast({ title: "Failed to save", description: error.message, variant: "destructive" });
+        console.error("Autosave error:", error);
+        setSaveStatus("unsaved");
         return;
       }
-      toast({ title: "Room saved!" });
-      setUndoStack([]);
+      lastSavedItems.current = roomItems;
+      lastSavedName.current = roomName;
+      setSaveStatus("saved");
       setTimeout(() => { if (roomId) captureRoomThumbnail(roomId); }, 1500);
-    } catch (err) {
-      toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
-    } finally {
-      setSaving(false);
+    } catch {
+      setSaveStatus("unsaved");
     }
-  };
+  }, [roomId, roomItems, roomName]);
+
+  // Debounced autosave on roomItems or roomName change
+  useEffect(() => {
+    const itemsSame = JSON.stringify(roomItems) === JSON.stringify(lastSavedItems.current);
+    const nameSame = roomName === lastSavedName.current;
+    if (itemsSame && nameSame) return;
+    setSaveStatus("unsaved");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => { performSave(); }, 2000);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [roomItems, roomName, performSave]);
+
+  // Warn on browser close
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (saveStatus !== "saved") { e.preventDefault(); e.returnValue = ""; }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [saveStatus]);
+
+  // Block React Router navigation
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      saveStatus === "unsaved" &&
+      currentLocation.pathname !== nextLocation.pathname
+  );
 
   const handleAddFromPicker = async (pickerItem: PickerItem) => {
     const instanceId = `${pickerItem.id}_${Date.now()}`;
