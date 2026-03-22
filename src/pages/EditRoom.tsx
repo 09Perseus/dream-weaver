@@ -136,7 +136,9 @@ function ItemInfoCard({
 
         {/* Buttons */}
         <div className="space-y-2 pt-1">
-          <button className="w-full py-2 px-4 bg-accent text-white text-sm
+          <button
+            onClick={onAddToCart}
+            className="w-full py-2 px-4 bg-accent text-white text-sm
                              font-body rounded-lg hover:opacity-90 transition-opacity">
             Add to Cart
           </button>
