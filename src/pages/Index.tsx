@@ -683,6 +683,7 @@ export default function Index() {
             onGenerate={handleGenerate}
             remaining={remaining}
             showBadge={remaining > 0}
+            isAuthenticated={!!user}
           />
         </RevealSection>
       </section>
