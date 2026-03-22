@@ -377,6 +377,52 @@ export default function Index() {
     <div>
       {loading && <GeneratingOverlay />}
 
+      {/* ═══ UPGRADE DIALOG ═══ */}
+      {showUpgradeDialog && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+          onClick={() => setShowUpgradeDialog(false)}
+        >
+          <div
+            className="bg-card border border-border text-center"
+            style={{ padding: "2.5rem", maxWidth: "400px", width: "90%" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="font-body text-[0.7rem] tracking-[0.15em] uppercase text-accent" style={{ marginBottom: "0.75rem" }}>
+              FREE LIMIT REACHED
+            </p>
+            <h2 className="font-heading text-[1.5rem] font-semibold text-foreground" style={{ marginBottom: "0.75rem" }}>
+              You've used your 3 free rooms
+            </h2>
+            <p className="font-body text-[0.85rem] text-muted-foreground leading-relaxed" style={{ marginBottom: "2rem" }}>
+              Pro plans are coming soon with unlimited room generations, priority rendering, and exclusive styles.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setShowUpgradeDialog(false)}
+                className="w-full font-body text-[0.75rem] tracking-[0.1em] uppercase cursor-pointer transition-opacity hover:opacity-90"
+                style={{
+                  background: "hsl(var(--accent))",
+                  border: "none",
+                  color: "hsl(var(--background))",
+                  padding: "0.85rem 2rem",
+                }}
+              >
+                NOTIFY ME WHEN PRO LAUNCHES
+              </button>
+              <button
+                onClick={() => setShowUpgradeDialog(false)}
+                className="w-full font-body text-[0.7rem] tracking-[0.1em] text-muted-foreground cursor-pointer border border-border bg-transparent hover:border-accent transition-colors"
+                style={{ padding: "0.6rem" }}
+              >
+                MAYBE LATER
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══ HERO ═══ */}
       <section className="hero-section relative flex flex-col items-center justify-center px-4 min-h-[100vh]" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
         <div className="max-w-3xl w-full text-center space-y-4">
