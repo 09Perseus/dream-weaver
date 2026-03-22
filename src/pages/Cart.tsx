@@ -291,10 +291,18 @@ export default function Cart() {
                 key={item.id}
                 className="flex items-center gap-4 py-5 border-b border-border"
               >
-                <div className="h-14 w-14 bg-surface border border-border flex items-center justify-center flex-shrink-0">
-                  <span className="font-body text-[0.6rem] text-muted-foreground">
-                    3D
-                  </span>
+                <div className="h-14 w-14 bg-surface border border-border flex-shrink-0 overflow-hidden">
+                  {item.thumbnailUrl ? (
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-body text-[0.85rem] text-foreground truncate">
