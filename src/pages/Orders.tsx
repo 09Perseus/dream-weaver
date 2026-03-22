@@ -49,12 +49,13 @@ export default function Orders() {
         .select("*")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false })
-        .then(({ data, error: fetchError }) => {
+        .then(async ({ data, error: fetchError }) => {
           console.log("Orders:", data?.length, fetchError);
           if (fetchError) {
             setError(true);
           } else {
-            setOrders((data as unknown as Order[]) ?? []);
+            const enriched = await enrichOrderItems((data as unknown as Order[]) ?? []);
+            setOrders(enriched);
           }
           setLoading(false);
         });
