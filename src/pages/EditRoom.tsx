@@ -427,6 +427,43 @@ function RightPanel({
               })
             )}
           </div>
+
+          {/* ── Surfaces section ── */}
+          <div className="border-t border-border p-4 shrink-0">
+            <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground mb-3">
+              Surfaces
+            </h3>
+
+            <p className="font-body text-[0.65rem] text-muted-foreground mb-1.5">Floor</p>
+            <div className="grid grid-cols-4 gap-1.5 mb-3">
+              {FLOOR_TEXTURES.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onFloorTextureChange(t.url)}
+                  title={t.label}
+                  className={`aspect-square rounded overflow-hidden border-2 transition-colors cursor-pointer
+                    ${floorTexturePath === t.url ? 'border-accent' : 'border-border hover:border-muted-foreground'}`}
+                >
+                  <img src={t.url} alt={t.label} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+
+            <p className="font-body text-[0.65rem] text-muted-foreground mb-1.5">Walls</p>
+            <div className="grid grid-cols-4 gap-1.5">
+              {WALL_TEXTURES.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onWallTextureChange(t.url)}
+                  title={t.label}
+                  className={`aspect-square rounded overflow-hidden border-2 transition-colors cursor-pointer
+                    ${wallTexturePath === t.url ? 'border-accent' : 'border-border hover:border-muted-foreground'}`}
+                >
+                  <img src={t.url} alt={t.label} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
         </>
       )}
     </div>
