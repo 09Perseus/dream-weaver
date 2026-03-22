@@ -160,6 +160,7 @@ function RightPanel({
   formatPrice,
   onSelectItem,
   onDeleteItem,
+  onAddAnother,
   onBack,
 }: {
   roomItems: PlacedItem[];
@@ -169,10 +170,27 @@ function RightPanel({
   formatPrice: (price: number) => string;
   onSelectItem: (key: string) => void;
   onDeleteItem: (key: string) => void;
+  onAddAnother: (furnitureId: string) => void;
   onBack: () => void;
 }) {
   const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
   const selectedDetail = selectedItem ? furniture.find((f) => f.id === selectedItem.id) : undefined;
+
+  // Group items by furniture id
+  const groupedItems = useMemo(() => {
+    const acc: Record<string, { furnitureId: string; instances: PlacedItem[]; detail: FurnitureDetail | undefined }> = {};
+    for (const item of roomItems) {
+      if (!acc[item.id]) {
+        acc[item.id] = {
+          furnitureId: item.id,
+          instances: [],
+          detail: furniture.find((f) => f.id === item.id),
+        };
+      }
+      acc[item.id].instances.push(item);
+    }
+    return Object.values(acc);
+  }, [roomItems, furniture]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -194,32 +212,32 @@ function RightPanel({
             </h3>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0">
             {roomItems.length === 0 ? (
               <p className="font-body text-[0.75rem] text-muted-foreground
                             text-center py-8 px-4">
                 No furniture in this room. Add items from the picker.
               </p>
             ) : (
-              roomItems.map((item) => {
-                const key = getItemKey(item);
-                const detail = furniture.find((f) => f.id === item.id);
-                const isSelected = selectedItemId === key;
+              groupedItems.map((group) => {
+                const hasSelectedInstance = group.instances.some(
+                  (i) => getItemKey(i) === selectedItemId
+                );
                 return (
                   <button
-                    key={key}
-                    onClick={() => onSelectItem(key)}
+                    key={group.furnitureId}
+                    onClick={() => onSelectItem(getItemKey(group.instances[0]))}
                     className={`w-full text-left px-4 py-3 border-b border-border
                                 transition-colors cursor-pointer min-h-[44px]
-                                ${isSelected
+                                ${hasSelectedInstance
                         ? 'bg-accent/10 border-l-2 border-l-accent'
                         : 'hover:bg-background'}`}
                   >
                     <div className="flex items-center gap-3">
-                      {detail?.thumbnail_url && detail.thumbnail_url !== "PENDING_UPLOAD" ? (
+                      {group.detail?.thumbnail_url && group.detail.thumbnail_url !== "PENDING_UPLOAD" ? (
                         <img
-                          src={detail.thumbnail_url}
-                          alt={detail?.name ?? item.id}
+                          src={group.detail.thumbnail_url}
+                          alt={group.detail?.name ?? group.furnitureId}
                           className="h-10 w-10 object-cover flex-shrink-0 rounded"
                         />
                       ) : (
@@ -231,14 +249,46 @@ function RightPanel({
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="font-body text-[0.8rem] text-foreground truncate">
-                          {detail?.name ?? item.id}
+                          {group.detail?.name ?? group.furnitureId}
                         </p>
                         <p className="font-body text-[0.7rem] text-accent">
-                          {detail ? formatPrice(detail.price) : '—'}
+                          {group.detail ? formatPrice(group.detail.price) : '—'}
                         </p>
                       </div>
-                      <span className="font-body text-[0.65rem] text-muted-foreground shrink-0">
-                        →
+
+                      {/* Quantity badge */}
+                      <span className="font-body text-[0.65rem] font-semibold bg-accent text-accent-foreground
+                                       px-2 py-0.5 rounded-sm min-w-[28px] text-center shrink-0">
+                        ×{group.instances.length}
+                      </span>
+
+                      {/* Add one more */}
+                      <span
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddAnother(group.furnitureId);
+                        }}
+                        className="h-6 w-6 border border-border rounded flex items-center justify-center
+                                   text-muted-foreground hover:text-foreground hover:border-accent
+                                   transition-colors cursor-pointer shrink-0 text-base leading-none"
+                      >
+                        +
+                      </span>
+
+                      {/* Remove one */}
+                      <span
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const last = group.instances[group.instances.length - 1];
+                          onDeleteItem(getItemKey(last));
+                        }}
+                        className="h-6 w-6 border border-border rounded flex items-center justify-center
+                                   text-muted-foreground hover:text-foreground hover:border-destructive
+                                   transition-colors cursor-pointer shrink-0 text-base leading-none"
+                      >
+                        −
                       </span>
                     </div>
                   </button>
