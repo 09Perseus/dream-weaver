@@ -19,6 +19,8 @@ interface LocationState {
   items?: PlacedItem[];
   furniture?: FurnitureDetail[];
   description?: string;
+  floor_texture?: string;
+  wall_texture?: string;
 }
 
 export default function RoomView() {
@@ -34,6 +36,8 @@ export default function RoomView() {
   const [items, setItems] = useState<PlacedItem[]>(navState?.items ?? []);
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
   const [description, setDescription] = useState(navState?.description ?? "");
+  const [floorTexturePath, setFloorTexturePath] = useState<string | null>(navState?.floor_texture ?? null);
+  const [wallTexturePath, setWallTexturePath] = useState<string | null>(navState?.wall_texture ?? null);
   const [loading, setLoading] = useState(!navState?.items);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
@@ -101,6 +105,8 @@ export default function RoomView() {
         setDescription(room.description ?? "");
         setRoomOwnerId(room.user_id);
         setRoomIsCopy(!!room.is_copy);
+        setFloorTexturePath((room as any).floor_texture ?? null);
+        setWallTexturePath((room as any).wall_texture ?? null);
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
         setItems(roomItems);
 
@@ -301,7 +307,7 @@ export default function RoomView() {
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
       {/* Canvas */}
       <div id="room-canvas" className="flex-1 p-4 lg:p-6" style={{ transition: "flex 300ms ease" }}>
-        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} onAllModelsLoaded={handleAllModelsLoaded} />
+        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} wallpaper={wallTexturePath ? { path: wallTexturePath } : null} flooring={floorTexturePath ? { path: floorTexturePath } : null} onAllModelsLoaded={handleAllModelsLoaded} />
       </div>
 
       {/* Sidebar */}

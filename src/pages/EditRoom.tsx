@@ -20,6 +20,8 @@ interface LocationState {
   items?: PlacedItem[];
   furniture?: FurnitureDetail[];
   description?: string;
+  floor_texture?: string;
+  wall_texture?: string;
 }
 
 interface PickerItem {
@@ -443,6 +445,8 @@ export default function EditRoom() {
   const [isCopy, setIsCopy] = useState(false);
   const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<(PickerItem & { description?: string | null; real_width?: number | null; real_height?: number | null; real_depth?: number | null; style_tags?: string[] | null }) | null>(null);
+  const [floorTexturePath, setFloorTexturePath] = useState<string | null>(navState?.floor_texture ?? null);
+  const [wallTexturePath, setWallTexturePath] = useState<string | null>(navState?.wall_texture ?? null);
   const [roomName, setRoomName] = useState(navState?.description || "My Room");
   const [isEditingName, setIsEditingName] = useState(false);
   const [leftCollapsed, setLeftCollapsed] = useState(
@@ -460,11 +464,13 @@ export default function EditRoom() {
       try {
         const { data: room, error } = await supabase
           .from("room_designs")
-          .select("is_copy, user_id, description, items")
+          .select("is_copy, user_id, description, items, floor_texture, wall_texture")
           .eq("id", roomId)
           .maybeSingle();
         if (error || !room) { setLoading(false); return; }
         setIsCopy(!!room.is_copy);
+        setFloorTexturePath((room as any).floor_texture ?? null);
+        setWallTexturePath((room as any).wall_texture ?? null);
         setDescription(room.description ?? "");
         setRoomName(room.description || "My Room");
         const rawItems = (room.items as any as PlacedItem[]) ?? [];
@@ -968,6 +974,8 @@ export default function EditRoom() {
               style={{ minHeight: isMobile ? '60vh' : '100%' }}
               items={roomItems}
               furniture={furniture}
+              wallpaper={wallTexturePath ? { path: wallTexturePath } : null}
+              flooring={floorTexturePath ? { path: floorTexturePath } : null}
               selectedItemId={selectedItemId}
               editingItemId={editingItemId}
               onSelectItem={(key) => {
