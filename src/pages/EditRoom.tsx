@@ -957,7 +957,7 @@ export default function EditRoom() {
                 toast({ title: "Item removed" });
               }}
               onAddAnother={handleAddAnother}
-                  onAddToCart={handleAddToCart}
+              onAddToCart={handleAddToCart}
               onBack={() => {
                 setSelectedItemId(null);
                 setEditingItemId(null);
