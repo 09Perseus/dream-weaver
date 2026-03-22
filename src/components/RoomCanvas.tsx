@@ -64,7 +64,7 @@ export interface FurnitureItem {
   size?: [number, number, number];
 }
 
-function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }) {
+function Model({ path, displaySize = 1, onLoad, onError }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void }) {
   const cleanPath = path
     .replace(/^\/+/, "")
     .replace(/^furnitures\//, "")
@@ -73,45 +73,52 @@ function Model({ path, displaySize = 1 }: { path: string; displaySize?: number }
   const { scene } = useGLTF(`/furnitures/${cleanPath}`);
 
   const cloned = useMemo(() => {
-    const c = scene.clone();
+    try {
+      const c = scene.clone();
 
-    const cameras: THREE.Camera[] = [];
-    c.traverse((node) => {
-      if ((node as THREE.Camera).isCamera) {
-        cameras.push(node as THREE.Camera);
+      const cameras: THREE.Camera[] = [];
+      c.traverse((node) => {
+        if ((node as THREE.Camera).isCamera) {
+          cameras.push(node as THREE.Camera);
+        }
+      });
+      cameras.forEach(cam => cam.removeFromParent());
+
+      const box = new THREE.Box3().setFromObject(c);
+      if (box.isEmpty()) { onLoad?.(); return c; }
+
+      const size = box.getSize(new THREE.Vector3());
+      const longestSide = Math.max(size.x, size.y, size.z);
+
+      if (longestSide > 0 && Number.isFinite(longestSide)) {
+        const scale = displaySize / longestSide;
+        c.scale.setScalar(scale);
       }
-    });
-    cameras.forEach(cam => cam.removeFromParent());
 
-    const box = new THREE.Box3().setFromObject(c);
-    if (box.isEmpty()) return c;
+      const scaledBox = new THREE.Box3().setFromObject(c);
+      if (!scaledBox.isEmpty() && Number.isFinite(scaledBox.min.y)) {
+        c.position.y -= scaledBox.min.y;
+      }
 
-    const size = box.getSize(new THREE.Vector3());
-    const longestSide = Math.max(size.x, size.y, size.z);
-
-    if (longestSide > 0 && Number.isFinite(longestSide)) {
-      const scale = displaySize / longestSide;
-      c.scale.setScalar(scale);
+      onLoad?.();
+      return c;
+    } catch (err) {
+      onError?.();
+      return scene;
     }
-
-    const scaledBox = new THREE.Box3().setFromObject(c);
-    if (!scaledBox.isEmpty() && Number.isFinite(scaledBox.min.y)) {
-      c.position.y -= scaledBox.min.y;
-    }
-
-    return c;
   }, [scene, displaySize]);
 
   return <primitive object={cloned} />;
 }
 
-class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string }, { hasError: boolean }> {
+class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string; onError?: () => void }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() {
     return { hasError: true };
   }
   componentDidCatch(error: any) {
     console.error("Model failed to load:", (this.props as any).itemId, error?.message || error);
+    this.props.onError?.();
   }
   render() {
     if (this.state.hasError) {
@@ -135,6 +142,7 @@ function MovableFurniture({
   onPositionChange,
   onRotationChange,
   activeRotationDir,
+  onModelLoad,
 }: {
   furniture: FurnitureItem;
   isSelected: boolean;
@@ -144,6 +152,7 @@ function MovableFurniture({
   onPositionChange: (pos: [number, number, number]) => void;
   onRotationChange?: (rot: [number, number, number]) => void;
   activeRotationDir?: number;
+  onModelLoad?: () => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const isDragging = useRef(false);
@@ -234,7 +243,7 @@ function MovableFurniture({
       onClick={handleClick}
     >
       {furniture.path && furniture.path !== "PENDING_UPLOAD" ? (
-        <ModelErrorBoundary itemId={furniture.id}>
+        <ModelErrorBoundary itemId={furniture.id} onError={onModelLoad}>
           <Suspense
             fallback={
               <mesh>
@@ -243,7 +252,7 @@ function MovableFurniture({
               </mesh>
             }
           >
-            <Model path={furniture.path} displaySize={furniture.displaySize} />
+            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} />
           </Suspense>
         </ModelErrorBoundary>
       ) : (
@@ -519,6 +528,7 @@ export default function RoomCanvas({
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
   const [internalEditId, setInternalEditId] = useState<string | null>(null);
   const [rotationDir, setRotationDir] = useState<number>(0);
+  const [loadedCount, setLoadedCount] = useState(0);
 
   const selectedId = isControlled ? (controlledSelectedId ?? null) : internalSelectedId;
   const editId = isControlled ? (controlledEditingId ?? null) : internalEditId;
@@ -608,6 +618,9 @@ export default function RoomCanvas({
         ...f,
         position: [f.position[0], 0, f.position[2]] as [number, number, number],
       }));
+
+  const totalModels = activeFurnitures.filter(f => f.path && f.path !== "PENDING_UPLOAD").length;
+  const allLoaded = totalModels === 0 || loadedCount >= totalModels;
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handlePositionChange = (id: string, newPos: [number, number, number]) => {
@@ -722,7 +735,36 @@ export default function RoomCanvas({
           </div>
         )}
 
+        {/* Model loading overlay */}
+        {webglSupported && !allLoaded && totalModels > 0 && (
+          <div
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6"
+            style={{ background: "hsl(var(--bg))" }}
+          >
+            <div
+              style={{ width: "200px", height: "1px", background: "hsl(var(--border))", overflow: "hidden" }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  background: "hsl(var(--accent))",
+                  width: `${totalModels > 0 ? (loadedCount / totalModels) * 100 : 0}%`,
+                  transition: "width 400ms ease",
+                }}
+              />
+            </div>
+            <p className="font-heading text-base italic font-light text-muted-foreground tracking-wide">
+              {loadedCount === 0
+                ? "Designing your room..."
+                : loadedCount < totalModels
+                  ? `Placing furniture... ${loadedCount}/${totalModels}`
+                  : "Welcome home."}
+            </p>
+          </div>
+        )}
+
         {webglSupported && (
+          <div style={{ opacity: allLoaded ? 1 : 0, transition: "opacity 600ms ease", width: "100%", height: "100%" }}>
           <Canvas
             shadows
             style={{ width: "100%", height: "100%" }}
@@ -837,11 +879,13 @@ export default function RoomCanvas({
                 onDoubleClick={() => handleDoubleClick(f.id)}
                 onPositionChange={(pos) => handlePositionChange(f.id, pos)}
                 onRotationChange={(rot) => handleRotationChange(f.id, rot)}
+                onModelLoad={() => setLoadedCount(prev => prev + 1)}
               />
             ))}
 
             <CameraController editId={editId} />
           </Canvas>
+          </div>
         )}
       </div>
 
