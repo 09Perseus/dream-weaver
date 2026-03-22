@@ -751,12 +751,13 @@ export default function EditRoom() {
     toast({ title: "Item added" });
   };
 
-  const filteredPicker =
+  const filteredPicker = (
     activeCategory === "All"
       ? pickerItems
       : pickerItems.filter(
         (i) => i.category?.toLowerCase() === CATEGORY_MAP[activeCategory]
-      );
+      )
+  ).filter((i) => i.category?.toLowerCase() !== "texture");
 
   if (loading) {
     return (
