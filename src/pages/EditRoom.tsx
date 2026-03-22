@@ -206,6 +206,7 @@ function RightPanel({
           detail={selectedDetail}
           isEditMode={editingItemId === selectedItemId}
           onDelete={() => onDeleteItem(selectedItemId!)}
+          onAddToCart={() => onAddToCart(selectedItem.id)}
           onBack={onBack}
           formatPrice={formatPrice}
         />
