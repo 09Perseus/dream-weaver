@@ -508,6 +508,11 @@ export default function EditRoom() {
           .eq("id", roomId)
           .maybeSingle();
         if (error || !room) { setLoading(false); return; }
+        // Redirect copied rooms to view-only
+        if (room.is_copy) {
+          navigate(`/room/${roomId}`, { replace: true });
+          return;
+        }
         setIsCopy(!!room.is_copy);
         setFloorTexturePath((room as any).floor_texture ?? null);
         setWallTexturePath((room as any).wall_texture ?? null);

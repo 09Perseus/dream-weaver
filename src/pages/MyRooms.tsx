@@ -265,14 +265,16 @@ export default function MyRooms() {
                     className="flex items-center px-4 py-3 border-t border-border"
                     style={{ justifyContent: "space-around" }}
                   >
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigate(`/room/${room.id}/edit`); }}
-                      title="Edit Room"
-                      className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: buttonColors.edit, border: "none" }}
-                    >
-                      <Pencil size={16} color={theme === "dark" ? "#0D1117" : "white"} />
-                    </button>
+                    {!room.is_copy && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigate(`/room/${room.id}/edit`); }}
+                        title="Edit Room"
+                        className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
+                        style={{ background: buttonColors.edit, border: "none" }}
+                      >
+                        <Pencil size={16} color={theme === "dark" ? "#0D1117" : "white"} />
+                      </button>
+                    )}
                     {!room.is_copy && (
                       <button
                         onClick={(e) => { e.stopPropagation(); isPosted ? handleUnpost(room.id) : setPostDialogRoomId(room.id); }}
