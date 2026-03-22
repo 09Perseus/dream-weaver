@@ -59,9 +59,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
       ? user.email[0].toUpperCase()
       : "?";
 
-  const memberSince = user?.created_at
-    ? format(new Date(user.created_at), "MMMM yyyy")
-    : null;
+  const memberSince = user?.created_at ? format(new Date(user.created_at), "MMMM yyyy") : null;
 
   return (
     <div ref={ref} className="min-h-screen flex flex-col">
@@ -76,9 +74,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
               <Menu className="h-5 w-5" />
             </button>
             <Link to="/" className="flex items-center">
-              <span className="font-heading text-[1.25rem] tracking-[0.2em] uppercase text-accent">
-                ROOMAI
-              </span>
+              <span className="font-heading text-[1.25rem] tracking-[0.2em] uppercase text-accent">DREAM WEAVER</span>
             </Link>
           </div>
 
@@ -89,9 +85,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                 key={link.to}
                 to={link.to}
                 className={`font-body text-[0.75rem] tracking-[0.15em] uppercase transition-colors duration-200 ${
-                  location.pathname === link.to
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                  location.pathname === link.to ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {link.label}
@@ -114,12 +108,17 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                   {Object.entries(CURRENCIES).map(([code, { symbol }]) => (
                     <button
                       key={code}
-                      onClick={() => { setCurrency(code as CurrencyCode); setCurrencyOpen(false); }}
+                      onClick={() => {
+                        setCurrency(code as CurrencyCode);
+                        setCurrencyOpen(false);
+                      }}
                       className={`w-full flex items-center justify-between px-3 py-2.5 font-body text-[0.75rem] tracking-[0.05em] border-b border-border last:border-b-0 bg-transparent cursor-pointer transition-colors ${
                         currency === code ? "text-accent" : "text-foreground hover:text-accent"
                       }`}
                     >
-                      <span>{symbol} {code}</span>
+                      <span>
+                        {symbol} {code}
+                      </span>
                       {currency === code && <span className="text-accent">✓</span>}
                     </button>
                   ))}
@@ -138,9 +137,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
 
             <Link to="/cart" className="relative min-h-[44px] min-w-[44px] flex items-center justify-center">
               <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-              {totalItems > 0 && (
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-accent" />
-              )}
+              {totalItems > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-accent" />}
             </Link>
 
             {user ? (
@@ -161,35 +158,40 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                 {dropdownOpen && (
                   <div
                     className="absolute right-0 top-[48px] z-50 bg-surface border border-border"
-                    style={{ width: isMobile ? 'calc(100vw - 2rem)' : 240 }}
+                    style={{ width: isMobile ? "calc(100vw - 2rem)" : 240 }}
                   >
                     <div className="p-4 border-b border-border">
-                      <p className="font-body text-[0.75rem] text-muted-foreground truncate">
-                        {user.email}
-                      </p>
+                      <p className="font-body text-[0.75rem] text-muted-foreground truncate">{user.email}</p>
                       {memberSince && (
-                        <p className="font-body text-[0.7rem] text-muted-foreground mt-1">
-                          Member since {memberSince}
-                        </p>
+                        <p className="font-body text-[0.7rem] text-muted-foreground mt-1">Member since {memberSince}</p>
                       )}
                     </div>
 
                     <button
-                      onClick={() => { setDropdownOpen(false); navigate("/my-rooms"); }}
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate("/my-rooms");
+                      }}
                       className="w-full flex items-center gap-3 px-4 py-3 font-body text-[0.8rem] text-foreground hover:bg-background hover:text-accent transition-colors border-b border-border text-left cursor-pointer min-h-[44px]"
                     >
                       <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                       My Rooms
                     </button>
                     <button
-                      onClick={() => { setDropdownOpen(false); navigate("/orders"); }}
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate("/orders");
+                      }}
                       className="w-full flex items-center gap-3 px-4 py-3 font-body text-[0.8rem] text-foreground hover:bg-background hover:text-accent transition-colors border-b border-border text-left cursor-pointer min-h-[44px]"
                     >
                       <ShoppingBag className="h-4 w-4 text-muted-foreground" />
                       My Orders
                     </button>
                     <button
-                      onClick={() => { setDropdownOpen(false); setEditProfileOpen(true); }}
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        setEditProfileOpen(true);
+                      }}
                       className="w-full flex items-center gap-3 px-4 py-3 font-body text-[0.8rem] text-foreground hover:bg-background hover:text-accent transition-colors border-b border-border text-left cursor-pointer min-h-[44px]"
                     >
                       <Pencil className="h-4 w-4 text-muted-foreground" />
@@ -206,7 +208,10 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                       Sign Out
                     </button>
                     <button
-                      onClick={() => { setDropdownOpen(false); setDeleteAccountOpen(true); }}
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        setDeleteAccountOpen(true);
+                      }}
                       className="w-full flex items-center gap-3 px-4 py-3 font-body text-[0.8rem] text-destructive hover:bg-destructive/10 transition-colors text-left cursor-pointer min-h-[44px]"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -250,9 +255,7 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
               className="font-body text-[0.8rem] tracking-[0.15em] uppercase px-6 py-4 border-b border-border min-h-[52px] flex items-center gap-2 text-muted-foreground"
             >
               Cart
-              {totalItems > 0 && (
-                <span className="font-body text-[0.7rem] text-accent">({totalItems})</span>
-              )}
+              {totalItems > 0 && <span className="font-body text-[0.7rem] text-accent">({totalItems})</span>}
             </Link>
             <button
               onClick={toggleTheme}
@@ -274,13 +277,19 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
                   <span className="font-body text-[0.75rem] text-muted-foreground truncate">{user.email}</span>
                 </div>
                 <button
-                  onClick={() => { setMobileOpen(false); setEditProfileOpen(true); }}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    setEditProfileOpen(true);
+                  }}
                   className="font-body text-[0.8rem] tracking-[0.15em] uppercase text-muted-foreground text-left px-6 py-4 border-b border-border min-h-[52px]"
                 >
                   Edit Profile
                 </button>
                 <button
-                  onClick={() => { setMobileOpen(false); handleSignOut(); }}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleSignOut();
+                  }}
                   className="font-body text-[0.8rem] tracking-[0.15em] uppercase text-muted-foreground text-left px-6 py-4 border-b border-border min-h-[52px]"
                 >
                   Sign Out
