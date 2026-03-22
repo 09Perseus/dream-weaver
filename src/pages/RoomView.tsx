@@ -224,7 +224,8 @@ export default function RoomView() {
 
   const performCopy = async () => {
     // Use post title if available, otherwise fall back to room description
-    const copyDescription = communityPost?.title || description;
+    const copyDescription = communityPost?.title || description || "Copied Room";
+    console.log("Copying room with name:", copyDescription, "| Post title:", communityPost?.title, "| Original description:", description);
     const { data, error } = await (supabase as any)
       .from("room_designs")
       .insert({
@@ -240,7 +241,7 @@ export default function RoomView() {
       .select("id")
       .single();
     if (error) throw error;
-    toast({ title: "Room copied to your account!" });
+    toast({ title: `"${copyDescription}" saved to My Rooms` });
     navigate(`/room/${data.id}`, { replace: true });
   };
 
