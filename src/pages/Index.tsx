@@ -335,6 +335,10 @@ export default function Index() {
       }
 
       if (!user?.id) {
+        // Increment guest counter
+        const current = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
+        localStorage.setItem("roomai_guest_generations", String(current + 1));
+        setGenerationsUsed(current + 1);
         navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
         return;
       }
