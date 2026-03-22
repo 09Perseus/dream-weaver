@@ -347,6 +347,8 @@ export default function Index() {
 
       const items: PlacedItem[] = data.items;
       const furniture: FurnitureDetail[] = data.furniture;
+      const floor_texture: string | undefined = data.floor_texture;
+      const wall_texture: string | undefined = data.wall_texture;
 
       if (authLoading) {
         toast({ title: "Still loading session", description: "Please try again in a moment.", variant: "destructive" });
@@ -355,7 +357,14 @@ export default function Index() {
 
       const { data: roomRows, error: insertError } = await supabase
         .from("room_designs")
-        .insert({ description: prompt.trim(), items: items as any, user_id: user.id, share_token: crypto.randomUUID() })
+        .insert({
+          description: prompt.trim(),
+          items: items as any,
+          user_id: user.id,
+          share_token: crypto.randomUUID(),
+          floor_texture: floor_texture ?? null,
+          wall_texture: wall_texture ?? null,
+        })
         .select("id")
         .limit(1);
 
@@ -364,11 +373,11 @@ export default function Index() {
       if (insertError || !room?.id) {
         console.error("Room save error:", insertError);
         toast({ title: "Room generated!", description: "Could not save to your account, but you can still view it." });
-        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
+        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim(), floor_texture, wall_texture } });
         return;
       }
 
-      navigate(`/room/${room.id}/edit`, { state: { items, furniture, description: prompt.trim() } });
+      navigate(`/room/${room.id}/edit`, { state: { items, furniture, description: prompt.trim(), floor_texture, wall_texture } });
     } catch (err: any) {
       console.error("Unexpected error:", err);
       toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
