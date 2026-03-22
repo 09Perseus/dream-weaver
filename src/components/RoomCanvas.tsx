@@ -700,10 +700,9 @@ export default function RoomCanvas({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (isControlled) {
-          if (externalOnEdit && editId) externalOnEdit(editId);
-          if (externalOnSelect && selectedId) externalOnSelect(selectedId);
-        } else {
+        if (isControlled && externalOnDeselect) {
+          externalOnDeselect();
+        } else if (!isControlled) {
           setInternalEditId(null);
           setInternalSelectedId(null);
         }
@@ -711,7 +710,7 @@ export default function RoomCanvas({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [editId, selectedId, isControlled, externalOnEdit, externalOnSelect]);
+  }, [isControlled, externalOnDeselect]);
 
   return (
     <div
