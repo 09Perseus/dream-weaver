@@ -621,11 +621,12 @@ export default function RoomCanvas({
     if (!isViewerMode) return [];
     return items.map((item) => {
       const detail = furniture.find((f) => f.id === item.id);
+      const key = getItemKey(item);
       const width  = Math.max(detail?.real_width  ?? 0.8, 0.4);
       const height = Math.max(detail?.real_height ?? 0.8, 0.2);
       const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
       return {
-        id: item.id,
+        id: key,
         name: detail?.name,
         position: [item.x, 0, item.z] as [number, number, number],
         rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
