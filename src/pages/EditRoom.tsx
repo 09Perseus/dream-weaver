@@ -316,6 +316,7 @@ export default function EditRoom() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addItem: addToCart } = useCart();
   const navState = location.state as LocationState | null;
   const isMobile = useIsMobile();
   const { formatPrice } = useCurrency();
