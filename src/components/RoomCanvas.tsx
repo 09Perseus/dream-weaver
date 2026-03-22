@@ -253,17 +253,10 @@ function MovableFurniture({
         </mesh>
       )}
 
-      {isSelected && !isEditMode && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-          <ringGeometry args={[0.55, 0.7, 32]} />
-          <meshBasicMaterial color="#3b82f6" transparent opacity={0.7} />
-        </mesh>
-      )}
-
-      {isSelected && isEditMode && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-          <ringGeometry args={[0.55, 0.7, 32]} />
-          <meshBasicMaterial color="#f59e0b" transparent opacity={0.9} />
+      {isSelected && (
+        <mesh scale={[1.05, 1.05, 1.05]}>
+          <boxGeometry args={furniture.size ?? [1, 1, 1]} />
+          <meshBasicMaterial color="#FFD700" wireframe transparent opacity={0.8} />
         </mesh>
       )}
     </group>
