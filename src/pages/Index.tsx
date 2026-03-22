@@ -78,6 +78,8 @@ function PromptInput({
   loading,
   onGenerate,
   onFocusChange,
+  remaining,
+  showBadge = false,
 }: {
   prompt: string;
   setPrompt: (v: string) => void;
@@ -86,6 +88,8 @@ function PromptInput({
   loading: boolean;
   onGenerate: () => void;
   onFocusChange?: (focused: boolean) => void;
+  remaining?: number;
+  showBadge?: boolean;
 }) {
   return (
     <div className="space-y-4 max-w-[600px] w-full mx-auto" style={{ marginTop: "1.5rem" }}>
@@ -140,16 +144,42 @@ function PromptInput({
         </p>
       )}
 
-      <Button
-        variant="amber"
-        size="lg"
-        className={`w-full ${loading ? "button-loading" : ""}`}
-        style={{ borderRadius: "8px", marginTop: "0.5rem" }}
-        onClick={onGenerate}
-        disabled={loading}
-      >
-        {loading ? "Generating…" : "Generate Room"}
-      </Button>
+      <div className="relative inline-block w-full" style={{ marginTop: "0.5rem" }}>
+        <Button
+          variant="amber"
+          size="lg"
+          className={`w-full ${loading ? "button-loading" : ""}`}
+          style={{ borderRadius: "8px" }}
+          onClick={onGenerate}
+          disabled={loading}
+        >
+          {loading ? "Generating…" : "Generate Room"}
+        </Button>
+        {showBadge && (
+          <span
+            className="absolute font-body font-bold text-[0.55rem] tracking-[0.1em]"
+            style={{
+              top: "-8px",
+              right: "-8px",
+              background: "hsl(var(--accent))",
+              color: "hsl(var(--background))",
+              padding: "0.15rem 0.35rem",
+              borderRadius: "2px",
+            }}
+          >
+            FREE
+          </span>
+        )}
+      </div>
+
+      {/* Monetization hint */}
+      {remaining !== undefined && (
+        <p className="font-body text-[0.75rem] text-muted-foreground text-center tracking-[0.05em]" style={{ marginTop: "0.75rem" }}>
+          {remaining > 0
+            ? `${remaining} free ${remaining === 1 ? "room" : "rooms"} remaining · Pro plans coming soon`
+            : "Free limit reached · Pro plans coming soon"}
+        </p>
+      )}
     </div>
   );
 }
@@ -178,8 +208,11 @@ export default function Index() {
   const [loading, setLoading] = useState(false);
   const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
   const [inputFocused, setInputFocused] = useState(false);
+  const [generationsUsed, setGenerationsUsed] = useState(0);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const remaining = Math.max(0, 3 - generationsUsed);
 
   // Typing animation
   const roomTypes = ["BEDROOM.", "LIVING ROOM.", "HOME OFFICE.", "DINING ROOM.", "STUDIO.", "SANCTUARY."];
@@ -205,6 +238,24 @@ export default function Index() {
     }, isDeleting ? 60 : 100);
     return () => clearTimeout(timeout);
   }, [typedText, isDeleting, currentIndex]);
+
+  // Load generation count
+  useEffect(() => {
+    const loadCount = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { count } = await supabase
+          .from("room_designs")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", session.user.id)
+          .eq("is_copy", false);
+        setGenerationsUsed(count ?? 0);
+      } else {
+        setGenerationsUsed(parseInt(localStorage.getItem("roomai_guest_generations") ?? "0"));
+      }
+    };
+    loadCount();
+  }, [user]);
 
   useEffect(() => {
     supabase
@@ -233,6 +284,27 @@ export default function Index() {
 
   const handleGenerate = async () => {
     if (!validate()) return;
+
+    // Check generation limit
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { count } = await supabase
+        .from("room_designs")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", session.user.id)
+        .eq("is_copy", false);
+      if ((count ?? 0) >= 3) {
+        setShowUpgradeDialog(true);
+        return;
+      }
+    } else {
+      const guestCount = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
+      if (guestCount >= 3) {
+        setShowUpgradeDialog(true);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("generate-room", {
@@ -263,6 +335,10 @@ export default function Index() {
       }
 
       if (!user?.id) {
+        // Increment guest counter
+        const current = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
+        localStorage.setItem("roomai_guest_generations", String(current + 1));
+        setGenerationsUsed(current + 1);
         navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
         return;
       }
@@ -282,6 +358,7 @@ export default function Index() {
         return;
       }
 
+      setGenerationsUsed(prev => prev + 1);
       navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
     } catch (err: any) {
       console.error("Unexpected error:", err);
@@ -299,6 +376,52 @@ export default function Index() {
   return (
     <div>
       {loading && <GeneratingOverlay />}
+
+      {/* ═══ UPGRADE DIALOG ═══ */}
+      {showUpgradeDialog && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+          onClick={() => setShowUpgradeDialog(false)}
+        >
+          <div
+            className="bg-card border border-border text-center"
+            style={{ padding: "2.5rem", maxWidth: "400px", width: "90%" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="font-body text-[0.7rem] tracking-[0.15em] uppercase text-accent" style={{ marginBottom: "0.75rem" }}>
+              FREE LIMIT REACHED
+            </p>
+            <h2 className="font-heading text-[1.5rem] font-semibold text-foreground" style={{ marginBottom: "0.75rem" }}>
+              You've used your 3 free rooms
+            </h2>
+            <p className="font-body text-[0.85rem] text-muted-foreground leading-relaxed" style={{ marginBottom: "2rem" }}>
+              Pro plans are coming soon with unlimited room generations, priority rendering, and exclusive styles.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setShowUpgradeDialog(false)}
+                className="w-full font-body text-[0.75rem] tracking-[0.1em] uppercase cursor-pointer transition-opacity hover:opacity-90"
+                style={{
+                  background: "hsl(var(--accent))",
+                  border: "none",
+                  color: "hsl(var(--background))",
+                  padding: "0.85rem 2rem",
+                }}
+              >
+                NOTIFY ME WHEN PRO LAUNCHES
+              </button>
+              <button
+                onClick={() => setShowUpgradeDialog(false)}
+                className="w-full font-body text-[0.7rem] tracking-[0.1em] text-muted-foreground cursor-pointer border border-border bg-transparent hover:border-accent transition-colors"
+                style={{ padding: "0.6rem" }}
+              >
+                MAYBE LATER
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ HERO ═══ */}
       <section className="hero-section relative flex flex-col items-center justify-center px-4 min-h-[100vh]" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
@@ -372,6 +495,8 @@ export default function Index() {
               loading={loading}
               onGenerate={handleGenerate}
               onFocusChange={setInputFocused}
+              remaining={remaining}
+              showBadge={remaining > 0}
             />
           </div>
         </div>
@@ -538,6 +663,8 @@ export default function Index() {
             setError={setError}
             loading={loading}
             onGenerate={handleGenerate}
+            remaining={remaining}
+            showBadge={remaining > 0}
           />
         </RevealSection>
       </section>
