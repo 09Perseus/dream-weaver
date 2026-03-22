@@ -631,7 +631,10 @@ export default function RoomCanvas({
   // ── Map viewer data ────────────────────────────────────────────────────────
   const viewerFurnitures: FurnitureItem[] = useMemo(() => {
     if (!isViewerMode) return [];
-    return items.map((item) => {
+    return items.filter((item) => {
+      const detail = furniture.find((f) => f.id === item.id);
+      return detail?.category !== "texture";
+    }).map((item) => {
       const detail = furniture.find((f) => f.id === item.id);
       const key = getItemKey(item);
       const width  = Math.max(detail?.real_width  ?? 0.8, 0.4);
