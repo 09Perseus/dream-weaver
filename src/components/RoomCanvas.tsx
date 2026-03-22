@@ -108,7 +108,7 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected, isMoving }:
     }
   }, [scene, displaySize]);
 
-  // Apply emissive glow when selected
+  // Apply emissive glow based on state
   useEffect(() => {
     if (!cloned) return;
     cloned.traverse((child: any) => {
@@ -116,14 +116,22 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected, isMoving }:
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         materials.forEach((mat: any) => {
           if (mat.emissive) {
-            mat.emissive = isSelected ? new THREE.Color("#FFD700") : new THREE.Color("#000000");
-            mat.emissiveIntensity = isSelected ? 0.4 : 0;
+            if (isMoving) {
+              mat.emissive = new THREE.Color("#00BFFF");
+              mat.emissiveIntensity = 0.5;
+            } else if (isSelected) {
+              mat.emissive = new THREE.Color("#FFD700");
+              mat.emissiveIntensity = 0.4;
+            } else {
+              mat.emissive = new THREE.Color("#000000");
+              mat.emissiveIntensity = 0;
+            }
             mat.needsUpdate = true;
           }
         });
       }
     });
-  }, [isSelected, cloned]);
+  }, [isSelected, isMoving, cloned]);
 
   return <primitive object={cloned} />;
 }
