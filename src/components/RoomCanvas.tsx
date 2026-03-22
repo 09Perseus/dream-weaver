@@ -64,7 +64,7 @@ export interface FurnitureItem {
   size?: [number, number, number];
 }
 
-function Model({ path, displaySize = 1, onLoad, onError }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void }) {
+function Model({ path, displaySize = 1, onLoad, onError, isSelected }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void; isSelected?: boolean }) {
   const cleanPath = path
     .replace(/^\/+/, "")
     .replace(/^furnitures\//, "")
