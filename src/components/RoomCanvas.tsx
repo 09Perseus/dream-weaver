@@ -142,6 +142,7 @@ function MovableFurniture({
   onPositionChange,
   onRotationChange,
   activeRotationDir,
+  onModelLoad,
 }: {
   furniture: FurnitureItem;
   isSelected: boolean;
@@ -151,6 +152,7 @@ function MovableFurniture({
   onPositionChange: (pos: [number, number, number]) => void;
   onRotationChange?: (rot: [number, number, number]) => void;
   activeRotationDir?: number;
+  onModelLoad?: () => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const isDragging = useRef(false);
