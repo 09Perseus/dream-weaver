@@ -629,7 +629,7 @@ export default function EditRoom() {
               <div className="flex items-center gap-3">
                 {item.thumbnail_url ? (
                   <img
-                    src={item.thumbnail_url}
+                    src={bustCache(item.thumbnail_url)}
                     alt={item.name}
                     className="h-10 w-10 object-cover flex-shrink-0 rounded"
                   />

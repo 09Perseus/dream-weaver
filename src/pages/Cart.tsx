@@ -295,7 +295,7 @@ export default function Cart() {
                 <div className="h-14 w-14 bg-surface border border-border flex-shrink-0 overflow-hidden">
                   {item.thumbnailUrl ? (
                     <img
-                      src={item.thumbnailUrl}
+                      src={bustCache(item.thumbnailUrl)}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />

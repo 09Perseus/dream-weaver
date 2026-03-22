@@ -55,7 +55,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
             )}
             {thumbnailUrl ? (
               <img
-                src={thumbnailUrl}
+                src={bustCache(thumbnailUrl)}
                 alt={title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
