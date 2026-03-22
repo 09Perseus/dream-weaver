@@ -64,7 +64,7 @@ export interface FurnitureItem {
   size?: [number, number, number];
 }
 
-function Model({ path, displaySize = 1, onLoad, onError }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void }) {
+function Model({ path, displaySize = 1, onLoad, onError, isSelected }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void; isSelected?: boolean }) {
   const cleanPath = path
     .replace(/^\/+/, "")
     .replace(/^furnitures\//, "")
@@ -107,6 +107,23 @@ function Model({ path, displaySize = 1, onLoad, onError }: { path: string; displ
       return scene;
     }
   }, [scene, displaySize]);
+
+  // Apply emissive glow when selected
+  useEffect(() => {
+    if (!cloned) return;
+    cloned.traverse((child: any) => {
+      if (child instanceof THREE.Mesh && child.material) {
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((mat: any) => {
+          if (mat.emissive) {
+            mat.emissive = isSelected ? new THREE.Color("#FFD700") : new THREE.Color("#000000");
+            mat.emissiveIntensity = isSelected ? 0.4 : 0;
+            mat.needsUpdate = true;
+          }
+        });
+      }
+    });
+  }, [isSelected, cloned]);
 
   return <primitive object={cloned} />;
 }
@@ -157,14 +174,16 @@ function MovableFurniture({
   const groupRef = useRef<THREE.Group>(null);
   const isDragging = useRef(false);
   const dragOffset = useRef(new THREE.Vector3());
+  const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
   const intersection = useMemo(() => new THREE.Vector3(), []);
   const { camera, gl, raycaster, pointer } = useThree();
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    if (!isEditMode) return;
     e.stopPropagation();
-    isDragging.current = true;
+    pointerDownPos.current = { x: e.clientX, y: e.clientY };
+    if (!isEditMode) return;
+    isDragging.current = false;
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
     dragOffset.current.set(intersection.x - furniture.position[0], 0, intersection.z - furniture.position[2]);
@@ -177,7 +196,7 @@ function MovableFurniture({
       onRotationChange([currentRot[0], currentRot[1] + activeRotationDir * speed * delta, currentRot[2]]);
     }
 
-    if (!isDragging.current || !isEditMode) return;
+    if (!isEditMode || !isDragging.current) return;
     raycaster.setFromCamera(pointer, camera);
     raycaster.ray.intersectPlane(floorPlane, intersection);
     const newX = intersection.x - dragOffset.current.x;
@@ -187,16 +206,34 @@ function MovableFurniture({
 
   useEffect(() => {
     const canvas = gl.domElement;
-    const handleUp = () => {
-      isDragging.current = false;
+    const handleMove = (e: PointerEvent) => {
+      if (!pointerDownPos.current || !isEditMode) return;
+      const dx = Math.abs(e.clientX - pointerDownPos.current.x);
+      const dy = Math.abs(e.clientY - pointerDownPos.current.y);
+      if (dx > 5 || dy > 5) {
+        isDragging.current = true;
+      }
     };
+    const handleUp = (e: PointerEvent) => {
+      if (pointerDownPos.current && !isDragging.current) {
+        const dx = Math.abs(e.clientX - pointerDownPos.current.x);
+        const dy = Math.abs(e.clientY - pointerDownPos.current.y);
+        if (dx < 5 && dy < 5) {
+          onSingleClick();
+        }
+      }
+      isDragging.current = false;
+      pointerDownPos.current = null;
+    };
+    canvas.addEventListener("pointermove", handleMove);
     canvas.addEventListener("pointerup", handleUp);
     canvas.addEventListener("pointerleave", handleUp);
     return () => {
+      canvas.removeEventListener("pointermove", handleMove);
       canvas.removeEventListener("pointerup", handleUp);
       canvas.removeEventListener("pointerleave", handleUp);
     };
-  }, [gl]);
+  }, [gl, isEditMode, onSingleClick]);
 
   useEffect(() => {
     if (!isEditMode || !onRotationChange) return;
@@ -218,11 +255,6 @@ function MovableFurniture({
     onRotationChange([r[0], r[1] + delta, r[2]]);
   };
 
-  const handleClick = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation();
-    onSingleClick();
-  };
-
   return (
     <group
       ref={groupRef}
@@ -230,7 +262,6 @@ function MovableFurniture({
       rotation={furniture.rotation}
       onPointerDown={handlePointerDown}
       onWheel={handleWheel}
-      onClick={handleClick}
     >
       {furniture.path && furniture.path !== "PENDING_UPLOAD" ? (
         <ModelErrorBoundary itemId={furniture.id} onError={onModelLoad}>
@@ -242,20 +273,13 @@ function MovableFurniture({
               </mesh>
             }
           >
-            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} />
+            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} isSelected={isSelected} />
           </Suspense>
         </ModelErrorBoundary>
       ) : (
         <mesh castShadow receiveShadow>
           <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-          <meshStandardMaterial color={furniture.color || "white"} emissive={isSelected ? "#333333" : "#000000"} />
-        </mesh>
-      )}
-
-      {isSelected && (
-        <mesh scale={[1.05, 1.05, 1.05]}>
-          <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-          <meshBasicMaterial color="#FFD700" wireframe transparent opacity={0.8} />
+          <meshStandardMaterial color={furniture.color || "white"} emissive={isSelected ? "#FFD700" : "#000000"} emissiveIntensity={isSelected ? 0.4 : 0} />
         </mesh>
       )}
     </group>
