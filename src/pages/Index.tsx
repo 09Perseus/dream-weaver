@@ -174,8 +174,8 @@ function PromptInput({
         )}
       </div>
 
-      {/* Monetization hint */}
-      {remaining !== undefined && (
+      {/* Monetization hint — only for logged-in users */}
+      {isAuthenticated && remaining !== undefined && (
         <p className="font-body text-[0.75rem] text-muted-foreground text-center tracking-[0.05em]" style={{ marginTop: "0.75rem" }}>
           {remaining > 0
             ? `${remaining} free ${remaining === 1 ? "room" : "rooms"} remaining · Pro plans coming soon`
