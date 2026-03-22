@@ -205,9 +205,7 @@ export default function MyRooms() {
           {rooms.map((room, i) => {
             const isPosted = postedRoomIds.has(room.id);
             const desc = room.description ?? "Untitled Room";
-            const displayDesc = room.is_copy
-              ? (desc.startsWith("Copy of") ? desc : `Copy of ${desc}`).slice(0, 60)
-              : desc.length > 60 ? desc.slice(0, 60) + "…" : desc;
+            const displayDesc = desc.length > 60 ? desc.slice(0, 60) + "…" : desc;
 
             return (
               <div
