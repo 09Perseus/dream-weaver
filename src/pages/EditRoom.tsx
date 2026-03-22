@@ -46,6 +46,7 @@ function ItemInfoCard({
   detail,
   isEditMode,
   onDelete,
+  onAddToCart,
   onBack,
   formatPrice,
 }: {
@@ -53,6 +54,7 @@ function ItemInfoCard({
   detail: FurnitureDetail | undefined;
   isEditMode: boolean;
   onDelete: () => void;
+  onAddToCart: () => void;
   onBack: () => void;
   formatPrice: (price: number) => string;
 }) {
