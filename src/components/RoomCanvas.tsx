@@ -228,7 +228,16 @@ function MovableFurniture({
         const dx = Math.abs(e.clientX - pointerDownPos.current.x);
         const dy = Math.abs(e.clientY - pointerDownPos.current.y);
         if (dx < 5 && dy < 5) {
-          onSingleClick();
+          const now = Date.now();
+          if (now - lastClickTime.current < 350) {
+            // Double click — enter move mode
+            onDoubleClick();
+            lastClickTime.current = 0;
+          } else {
+            // Single click — select
+            lastClickTime.current = now;
+            onSingleClick();
+          }
         }
       }
       isDragging.current = false;
