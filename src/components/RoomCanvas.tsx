@@ -870,19 +870,7 @@ export default function RoomCanvas({
             <directionalLight position={[0, 4, 8]} intensity={0.5} />
 
             {/* ── Floor ── */}
-            <mesh
-              position={[0, 0, 0]}
-              rotation={[Math.PI / 2, 0, 0]}
-              receiveShadow
-              raycast={() => null}
-            >
-              <planeGeometry args={[roomSize, roomSize]} />
-              <meshStandardMaterial
-                map={floorTexture ?? undefined}
-                color={floorTexture ? "#ffffff" : "#f0ece4"}
-                side={THREE.BackSide}
-              />
-            </mesh>
+            <RoomFloor textureUrl={flooring?.path} texture={floorTexture} />
 
             {/* ── Ceiling ── */}
             <mesh
@@ -894,61 +882,8 @@ export default function RoomCanvas({
               <meshStandardMaterial color="#faf7f2" side={THREE.BackSide} transparent opacity={0.9} />
             </mesh>
 
-            {/* ── Back Wall (-Z) ── */}
-            <mesh
-              position={[0, halfH, -halfW]}
-              rotation={[0, Math.PI, 0]}
-              raycast={() => null}
-            >
-              <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial
-                map={wallTexture ?? undefined}
-                color={wallTexture ? "#ffffff" : "#faf7f2"}
-                side={THREE.BackSide}
-              />
-            </mesh>
-
-            {/* ── Front Wall (+Z) ── */}
-            <mesh
-              position={[0, halfH, halfW]}
-              rotation={[0, 0, 0]}
-              raycast={() => null}
-            >
-              <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial
-                map={wallTexture ?? undefined}
-                color={wallTexture ? "#ffffff" : "#faf7f2"}
-                side={THREE.BackSide}
-              />
-            </mesh>
-
-            {/* ── Left Wall (-X) ── */}
-            <mesh
-              position={[-halfW, halfH, 0]}
-              rotation={[0, -Math.PI / 2, 0]}
-              raycast={() => null}
-            >
-              <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial
-                map={wallTexture ?? undefined}
-                color={wallTexture ? "#ffffff" : "#faf7f2"}
-                side={THREE.BackSide}
-              />
-            </mesh>
-
-            {/* ── Right Wall (+X) ── */}
-            <mesh
-              position={[halfW, halfH, 0]}
-              rotation={[0, Math.PI / 2, 0]}
-              raycast={() => null}
-            >
-              <planeGeometry args={[roomSize, roomHeight]} />
-              <meshStandardMaterial
-                map={wallTexture ?? undefined}
-                color={wallTexture ? "#ffffff" : "#faf7f2"}
-                side={THREE.BackSide}
-              />
-            </mesh>
+            {/* ── Walls ── */}
+            <RoomWalls textureUrl={wallpaper?.path} texture={wallTexture} roomSize={roomSize} roomHeight={roomHeight} />
 
             <gridHelper
               args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]}
