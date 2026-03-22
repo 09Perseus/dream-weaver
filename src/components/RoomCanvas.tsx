@@ -291,7 +291,7 @@ function MovableFurniture({
               </mesh>
             }
           >
-            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} isSelected={isSelected} />
+            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} isSelected={isSelected} isMoving={isEditMode} />
           </Suspense>
         </ModelErrorBoundary>
       ) : (
