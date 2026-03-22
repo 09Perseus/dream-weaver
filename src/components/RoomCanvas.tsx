@@ -692,6 +692,22 @@ export default function RoomCanvas({
 
   const webglSupported = useMemo(() => detectWebGL(), []);
 
+  // Escape to exit move mode
+  useEffect(() => {
+    if (!editId) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isControlled && externalOnEdit) {
+          externalOnEdit(editId); // toggle off
+        } else {
+          setInternalEditId(null);
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [editId, isControlled, externalOnEdit]);
+
   return (
     <div
       className={`relative flex ${isMobile ? "flex-col" : "flex-row"} ${className}`}
