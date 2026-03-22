@@ -242,7 +242,7 @@ export default function MyRooms() {
                     </button>
                     {!room.is_copy && (
                       <button
-                        onClick={() => isPosted ? handleUnpost(room.id) : setPostDialogRoomId(room.id)}
+                        onClick={(e) => { e.stopPropagation(); isPosted ? handleUnpost(room.id) : setPostDialogRoomId(room.id); }}
                         disabled={unposting === room.id}
                         title={isPosted ? "Remove from Community" : "Post to Community"}
                         className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
