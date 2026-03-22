@@ -578,6 +578,7 @@ function RoomFloor({ textureUrl, texture }: { textureUrl?: string; texture: THRE
         map={activeTexture ?? undefined}
         color={activeTexture ? "#ffffff" : "#8B6914"}
         roughness={0.8}
+        side={THREE.DoubleSide}
       />
     </mesh>
   );
@@ -607,7 +608,7 @@ function RoomWalls({ textureUrl, texture, roomSize, roomHeight }: { textureUrl?:
       map={activeTexture ?? undefined}
       color={activeTexture ? "#ffffff" : "#D4C5A9"}
       roughness={0.9}
-      side={THREE.FrontSide}
+      side={THREE.DoubleSide}
     />
   );
 
