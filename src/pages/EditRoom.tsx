@@ -283,6 +283,12 @@ export default function EditRoom() {
   const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
   const [roomName, setRoomName] = useState(navState?.description || "My Room");
   const [isEditingName, setIsEditingName] = useState(false);
+  const [leftCollapsed, setLeftCollapsed] = useState(
+    typeof window !== "undefined" && window.innerWidth < 768
+  );
+  const [rightCollapsed, setRightCollapsed] = useState(
+    typeof window !== "undefined" && window.innerWidth < 768
+  );
 
   // Fetch room from DB if no nav state
   useEffect(() => {
