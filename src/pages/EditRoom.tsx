@@ -368,7 +368,12 @@ export default function EditRoom() {
         setIsCopy(!!room.is_copy);
         setDescription(room.description ?? "");
         setRoomName(room.description || "My Room");
-        const items = (room.items as any as PlacedItem[]) ?? [];
+        const rawItems = (room.items as any as PlacedItem[]) ?? [];
+        // Ensure every item has a unique instanceId (older saves may lack one)
+        const items = rawItems.map((item) => ({
+          ...item,
+          instanceId: item.instanceId ?? `${item.id}_${Math.random().toString(36).substr(2, 9)}`,
+        }));
         setRoomItems(items);
         lastSavedItems.current = items;
         lastSavedName.current = room.description || "My Room";
