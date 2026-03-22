@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
+const FurnitureShowcase = lazy(() => import("@/components/FurnitureShowcase"));
+
 interface FeaturedPost {
   id: string;
   title: string;
