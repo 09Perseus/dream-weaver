@@ -676,10 +676,12 @@ export default function EditRoom() {
               {leftCollapsed ? "›" : "‹"}
             </button>
             <aside
-              className="flex flex-col bg-surface overflow-hidden min-h-0"
+              className="flex flex-col bg-surface min-h-0"
               style={{
                 width: leftCollapsed ? "0px" : "288px",
                 minWidth: leftCollapsed ? "0px" : "288px",
+                height: "100%",
+                overflow: leftCollapsed ? "hidden" : "visible",
                 transition: "width 300ms ease, min-width 300ms ease",
                 borderRight: leftCollapsed ? "none" : "1px solid hsl(var(--border))",
               }}
@@ -692,7 +694,7 @@ export default function EditRoom() {
                   transition: "opacity 200ms ease",
                   display: "flex",
                   flexDirection: "column",
-                  overflow: "hidden",
+                  minHeight: 0,
                 }}
               >
                 {pickerContent}
