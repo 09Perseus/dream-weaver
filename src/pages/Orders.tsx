@@ -193,9 +193,34 @@ export default function Orders() {
                 {items.length > 0 && (
                   <div className="mb-3">
                     {items.map((item, i) => (
-                      <p key={i} className="font-body text-[0.8rem] text-foreground">
-                        {item.name ?? "Item"} × {item.quantity ?? 1}
-                      </p>
+                      <div key={i} className="flex items-center gap-3 py-3 border-b border-border last:border-b-0">
+                        <div className="w-12 h-12 flex-shrink-0 border border-border bg-muted overflow-hidden">
+                          {item.thumbnail_url ? (
+                            <img
+                              src={item.thumbnail_url}
+                              alt={item.name ?? "Item"}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center font-body text-[0.6rem] text-muted-foreground">
+                              3D
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-body text-[0.85rem] text-foreground truncate">
+                            {item.name ?? "Item"}
+                          </p>
+                          <p className="font-body text-[0.75rem] text-muted-foreground">
+                            ×{item.quantity ?? 1}
+                          </p>
+                        </div>
+                        {item.price !== undefined && (
+                          <p className="font-body text-[0.85rem] text-accent flex-shrink-0">
+                            {formatPrice(item.price)}
+                          </p>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
