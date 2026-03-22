@@ -356,7 +356,7 @@ export default function EditRoom() {
   const handleDeleteSelected = useCallback(() => {
     if (!selectedItemId) return;
     setUndoStack((prev) => [...prev, roomItems]);
-    setRoomItems((prev) => prev.filter((item) => item.id !== selectedItemId));
+    setRoomItems((prev) => prev.filter((item) => getItemKey(item) !== selectedItemId));
     setSelectedItemId(null);
     setEditingItemId(null);
     toast({ title: "Item removed" });
