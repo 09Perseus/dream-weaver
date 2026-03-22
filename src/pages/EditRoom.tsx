@@ -40,6 +40,7 @@ const CATEGORY_MAP: Record<string, string> = {
   "Plants": "plant",
   "Rugs": "rug",
   "Shelves": "shelf",
+  "Textures": "texture",
 };
 
 // ── Item Info Card ────────────────────────────────────────────────────────────
@@ -189,7 +190,11 @@ function PreviewInfoCard({
           <img
             src={bustCache(item.thumbnail_url)}
             alt={item.name}
-            className="w-full aspect-square object-cover rounded-lg border border-border"
+            className={`w-full rounded-lg border border-border ${
+              item.category?.toLowerCase() === 'texture'
+                ? 'aspect-auto object-contain'
+                : 'aspect-square object-cover'
+            }`}
           />
         ) : (
           <div className="w-full aspect-square bg-muted rounded-lg border border-border flex items-center justify-center">
@@ -744,7 +749,11 @@ export default function EditRoom() {
                   <img
                     src={bustCache(item.thumbnail_url)}
                     alt={item.name}
-                    className="h-10 w-10 object-cover flex-shrink-0 rounded"
+                    className={`flex-shrink-0 rounded ${
+                      item.category?.toLowerCase() === 'texture'
+                        ? 'h-14 w-14 object-contain border border-border'
+                        : 'h-10 w-10 object-cover'
+                    }`}
                   />
                 ) : (
                   <div className="h-10 w-10 border border-border bg-muted rounded
