@@ -675,10 +675,27 @@ export default function EditRoom() {
 
         <div className="w-px h-6 bg-border shrink-0" />
 
-        <Button variant="amber" size="sm" onClick={handleSave} disabled={saving} className="min-h-[44px]">
-          <Save className="h-4 w-4" />
-          <span className="hidden md:inline">{saving ? "Saving…" : "Save"}</span>
-        </Button>
+        {/* Autosave status indicator */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {saveStatus === "saving" && (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              <span className="font-body text-[0.7rem] tracking-[0.08em] text-muted-foreground">SAVING…</span>
+            </>
+          )}
+          {saveStatus === "saved" && (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="font-body text-[0.7rem] tracking-[0.08em] text-muted-foreground">SAVED</span>
+            </>
+          )}
+          {saveStatus === "unsaved" && (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span className="font-body text-[0.7rem] tracking-[0.08em] text-muted-foreground hidden md:inline">UNSAVED</span>
+            </>
+          )}
+        </div>
 
         <Button variant="outline" size="sm" onClick={handleUndo} disabled={undoStack.length === 0} className="min-h-[44px]">
           <Undo className="h-4 w-4" />
