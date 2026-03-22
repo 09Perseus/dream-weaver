@@ -6,7 +6,7 @@ import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Eye, Pencil, Share2, EyeOff, Trash2 } from "lucide-react";
+import { Pencil, Share2, EyeOff, Trash2 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 
 interface Room {
@@ -31,7 +31,6 @@ export default function MyRooms() {
   const { theme } = useTheme();
 
   const buttonColors = {
-    view: "#4A90D9",
     edit: theme === "dark" ? "#C8B89A" : "#E16F24",
     post: theme === "dark" ? "#2EA043" : "#0969DA",
     unpost: theme === "dark" ? "#1F6E2E" : "#6E7781",
@@ -215,16 +214,8 @@ export default function MyRooms() {
                   </p>
                   <div
                     className="flex items-center px-4 py-3 border-t border-border"
-                    style={{ justifyContent: room.is_copy ? "space-around" : "space-between" }}
+                    style={{ justifyContent: "space-around" }}
                   >
-                    <button
-                      onClick={() => navigate(`/room/${room.id}`)}
-                      title="View Room"
-                      className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: buttonColors.view, border: "none" }}
-                    >
-                      <Eye size={16} color="white" />
-                    </button>
                     <button
                       onClick={() => navigate(`/room/${room.id}/edit`)}
                       title="Edit Room"
