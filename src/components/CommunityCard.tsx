@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { bustCache } from "@/utils/imageUrl";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import UserAvatar from "@/components/UserAvatar";
