@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import roomPreview from "@/assets/room-preview.png";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
