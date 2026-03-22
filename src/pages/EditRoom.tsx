@@ -290,10 +290,6 @@ function RightPanel({
   onAddPreviewToRoom: () => void;
   onBack: () => void;
   onClearPreview: () => void;
-  floorTexturePath: string | null;
-  wallTexturePath: string | null;
-  onFloorTextureChange: (url: string) => void;
-  onWallTextureChange: (url: string) => void;
 }) {
   const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
   const selectedDetail = selectedItem ? furniture.find((f) => f.id === selectedItem.id) : undefined;
