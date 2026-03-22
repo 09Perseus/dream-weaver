@@ -539,6 +539,7 @@ export default function EditRoom() {
             floor_offset: null,
             style_tags: null,
             buy_url: null,
+            description: null,
           },
         ]);
       }
