@@ -301,7 +301,7 @@ export default function RoomView() {
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
       {/* Canvas */}
       <div id="room-canvas" className="flex-1 p-4 lg:p-6" style={{ transition: "flex 300ms ease" }}>
-        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} />
+        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} onAllModelsLoaded={handleAllModelsLoaded} />
       </div>
 
       {/* Sidebar */}
