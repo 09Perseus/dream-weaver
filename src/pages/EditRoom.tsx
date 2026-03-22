@@ -826,6 +826,43 @@ export default function EditRoom() {
           ))
         )}
       </div>
+
+      {/* ── Surfaces section (fixed at bottom) ── */}
+      <div className="border-t border-border p-3 shrink-0">
+        <p className="font-body text-[0.65rem] tracking-[0.12em] text-muted-foreground uppercase mb-3">
+          Surfaces
+        </p>
+
+        <p className="font-body text-[0.6rem] tracking-[0.1em] text-muted-foreground mb-1.5">Floor</p>
+        <div className="grid grid-cols-4 gap-1.5 mb-3">
+          {FLOOR_TEXTURES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setFloorTexturePath(t.url)}
+              title={t.label}
+              className={`aspect-square rounded-sm overflow-hidden border-2 transition-colors cursor-pointer
+                ${floorTexturePath === t.url ? 'border-accent' : 'border-transparent outline outline-1 outline-border'}`}
+            >
+              <img src={t.url} alt={t.label} className="w-full h-full object-cover block" />
+            </button>
+          ))}
+        </div>
+
+        <p className="font-body text-[0.6rem] tracking-[0.1em] text-muted-foreground mb-1.5">Wall</p>
+        <div className="grid grid-cols-4 gap-1.5">
+          {WALL_TEXTURES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setWallTexturePath(t.url)}
+              title={t.label}
+              className={`aspect-square rounded-sm overflow-hidden border-2 transition-colors cursor-pointer
+                ${wallTexturePath === t.url ? 'border-accent' : 'border-transparent outline outline-1 outline-border'}`}
+            >
+              <img src={t.url} alt={t.label} className="w-full h-full object-cover block" />
+            </button>
+          ))}
+        </div>
+      </div>
     </>
   );
 
