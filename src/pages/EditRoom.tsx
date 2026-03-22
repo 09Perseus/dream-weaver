@@ -635,10 +635,48 @@ export default function EditRoom() {
 
         {/* Left: Furniture Picker (desktop only) */}
         {!isMobile && (
-          <aside className="w-72 shrink-0 border-r border-border flex flex-col
-                            bg-surface overflow-hidden min-h-0">
-            {pickerContent}
-          </aside>
+          <div className="relative" style={{ flexShrink: 0 }}>
+            {/* Toggle button on right edge */}
+            <button
+              onClick={() => setLeftCollapsed(prev => !prev)}
+              className="absolute top-1/2 -translate-y-1/2 z-20 flex items-center justify-center cursor-pointer"
+              style={{
+                right: "-16px",
+                width: "16px",
+                height: "48px",
+                background: "hsl(var(--surface))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "0 4px 4px 0",
+                color: "hsl(var(--text-muted))",
+                fontSize: "0.7rem",
+              }}
+            >
+              {leftCollapsed ? "›" : "‹"}
+            </button>
+            <aside
+              className="flex flex-col bg-surface overflow-hidden min-h-0"
+              style={{
+                width: leftCollapsed ? "0px" : "288px",
+                minWidth: leftCollapsed ? "0px" : "288px",
+                transition: "width 300ms ease, min-width 300ms ease",
+                borderRight: leftCollapsed ? "none" : "1px solid hsl(var(--border))",
+              }}
+            >
+              <div
+                style={{
+                  width: "288px",
+                  height: "100%",
+                  opacity: leftCollapsed ? 0 : 1,
+                  transition: "opacity 200ms ease",
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                }}
+              >
+                {pickerContent}
+              </div>
+            </aside>
+          </div>
         )}
 
         {/* Center: 3D Canvas — pure canvas, no sidebar inside */}
