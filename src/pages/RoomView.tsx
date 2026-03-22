@@ -10,7 +10,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
+
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
 interface LocationState {
@@ -112,12 +112,87 @@ export default function RoomView() {
     fetchRoom();
   }, [id, navState]);
 
-  // Capture thumbnail after render
+  // Capture thumbnail after furniture loads
   useEffect(() => {
-    if (!id || loading) return;
-    const timer = setTimeout(() => { captureRoomThumbnail(id); }, 3000);
+    if (!id || !furniture || furniture.length === 0) return;
+
+    const captureRoomThumbnail = async (roomId: string) => {
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      const tryCapture = async (): Promise<void> => {
+        attempts++;
+        console.log(`Thumbnail capture attempt ${attempts}`);
+
+        const container = document.getElementById("room-canvas");
+        const canvas = container?.querySelector("canvas") as HTMLCanvasElement;
+
+        if (!canvas) {
+          if (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return tryCapture();
+          }
+          console.log("Canvas never found, skipping thumbnail");
+          return;
+        }
+
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+
+        try {
+          const blob = await new Promise<Blob | null>(resolve => {
+            canvas.toBlob(resolve, "image/jpeg", 0.85);
+          });
+
+          if (!blob) {
+            console.error("Canvas toBlob returned null");
+            return;
+          }
+
+          console.log("Captured thumbnail blob:", blob.size, "bytes");
+
+          const filename = `room-${roomId}-${Date.now()}.jpg`;
+          const { error: uploadError } = await supabase.storage
+            .from("thumbnails")
+            .upload(filename, blob, { contentType: "image/jpeg", upsert: true });
+
+          if (uploadError) {
+            console.error("Thumbnail upload error:", uploadError);
+            return;
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from("thumbnails")
+            .getPublicUrl(filename);
+
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) return;
+
+          const { error: updateError } = await supabase
+            .from("room_designs")
+            .update({ thumbnail_url: publicUrl })
+            .eq("id", roomId)
+            .eq("user_id", session.user.id);
+
+          if (updateError) {
+            console.error("Thumbnail DB update error:", updateError);
+            return;
+          }
+
+          console.log("Thumbnail saved successfully:", publicUrl);
+        } catch (err: any) {
+          console.error("Thumbnail capture error:", err.message);
+        }
+      };
+
+      await tryCapture();
+    };
+
+    const timer = setTimeout(() => {
+      captureRoomThumbnail(id);
+    }, 5000);
     return () => clearTimeout(timer);
-  }, [id, loading]);
+  }, [furniture, id]);
 
   const handleAddItem = (item: FurnitureDetail) => {
     addItem({ id: item.id, name: item.name, price: item.price, thumbnailUrl: item.thumbnail_url ?? "" });
@@ -233,7 +308,7 @@ export default function RoomView() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
       {/* Canvas */}
-      <div className="flex-1 p-4 lg:p-6">
+      <div id="room-canvas" className="flex-1 p-4 lg:p-6">
         <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} />
       </div>
 
