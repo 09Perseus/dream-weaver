@@ -277,8 +277,8 @@ Return ONLY a raw JSON object (no explanation, no markdown, no code fences) in e
     return new Response(JSON.stringify({
       items: validated,
       furniture,
-      floor_texture: `/furnitures/Textures/${floorTexture}.png`,
-      wall_texture: `/furnitures/Textures/${wallTexture}.png`,
+      floor_texture: `/furnitures/Flooring/${floorTexture}.png`,
+      wall_texture: `/furnitures/wallpapers/${wallTexture}.png`,
     }), {
       status: 200, headers: jsonHeaders,
     });
