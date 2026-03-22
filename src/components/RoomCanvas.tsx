@@ -607,7 +607,7 @@ function RoomWalls({ textureUrl, texture, roomSize, roomHeight }: { textureUrl?:
       map={activeTexture ?? undefined}
       color={activeTexture ? "#ffffff" : "#D4C5A9"}
       roughness={0.9}
-      side={THREE.FrontSide}
+      side={THREE.DoubleSide}
     />
   );
 
