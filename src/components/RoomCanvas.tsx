@@ -566,6 +566,7 @@ export default function RoomCanvas({
   onDeselect: externalOnDeselect,
   onPositionChange: externalOnPositionChange,
   onRotationChange: externalOnRotationChange,
+  onAllModelsLoaded,
 }: RoomCanvasProps) {
   const isControlled = externalOnSelect !== undefined;
   const isViewerMode = !!(items && furniture);
