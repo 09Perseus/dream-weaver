@@ -167,17 +167,16 @@ function RightPanel({
   selectedItemId: string | null;
   editingItemId: string | null;
   formatPrice: (price: number) => string;
-  onSelectItem: (id: string) => void;
-  onDeleteItem: (id: string) => void;
+  onSelectItem: (key: string) => void;
+  onDeleteItem: (key: string) => void;
   onBack: () => void;
 }) {
-  const selectedItem = roomItems.find((i) => i.id === selectedItemId);
-  const selectedDetail = furniture.find((f) => f.id === selectedItemId);
+  const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
+  const selectedDetail = selectedItem ? furniture.find((f) => f.id === selectedItem.id) : undefined;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {selectedItem ? (
-        // ── Info card ───────────────────────────────────────────────────
         <ItemInfoCard
           item={selectedItem}
           detail={selectedDetail}
@@ -187,7 +186,6 @@ function RightPanel({
           formatPrice={formatPrice}
         />
       ) : (
-        // ── Room items list ─────────────────────────────────────────────
         <>
           <div className="p-4 border-b border-border shrink-0">
             <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase
@@ -204,12 +202,13 @@ function RightPanel({
               </p>
             ) : (
               roomItems.map((item) => {
+                const key = getItemKey(item);
                 const detail = furniture.find((f) => f.id === item.id);
-                const isSelected = selectedItemId === item.id;
+                const isSelected = selectedItemId === key;
                 return (
                   <button
-                    key={item.id}
-                    onClick={() => onSelectItem(item.id)}
+                    key={key}
+                    onClick={() => onSelectItem(key)}
                     className={`w-full text-left px-4 py-3 border-b border-border
                                 transition-colors cursor-pointer min-h-[44px]
                                 ${isSelected
