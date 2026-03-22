@@ -717,14 +717,22 @@ export default function EditRoom() {
           </p>
         ) : (
           filteredPicker.map((item) => (
-            <button
+            <div
               key={item.id}
-              onClick={() => {
-                handleAddFromPicker(item);
-                if (isMobile) setPickerDrawerOpen(false);
+              onClick={async () => {
+                // Fetch full detail for preview
+                const { data: fullDetail } = await supabase
+                  .from("furniture_items")
+                  .select("*")
+                  .eq("id", item.id)
+                  .maybeSingle();
+                setPreviewItem(fullDetail ? { ...item, description: fullDetail.description, real_width: fullDetail.real_width, real_height: fullDetail.real_height, real_depth: fullDetail.real_depth, style_tags: fullDetail.style_tags } : item);
+                setSelectedItemId(null);
+                setEditingItemId(null);
               }}
-              className="w-full text-left px-4 py-3 border-b border-border
-                         hover:bg-background transition-colors cursor-pointer min-h-[44px]"
+              className={`w-full text-left px-4 py-3 border-b border-border
+                         transition-colors cursor-pointer min-h-[44px]
+                         ${previewItem?.id === item.id ? 'bg-accent/5' : 'hover:bg-background'}`}
             >
               <div className="flex items-center gap-3">
                 {item.thumbnail_url ? (
@@ -743,9 +751,21 @@ export default function EditRoom() {
                   <p className="font-body text-[0.8rem] text-foreground truncate">{item.name}</p>
                   <p className="font-body text-[0.7rem] text-accent">{formatPrice(item.price)}</p>
                 </div>
-                <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddFromPicker(item);
+                    if (isMobile) setPickerDrawerOpen(false);
+                  }}
+                  className="h-7 w-7 border border-border rounded flex items-center justify-center
+                             text-muted-foreground hover:text-foreground hover:border-accent
+                             transition-colors cursor-pointer shrink-0"
+                  title="Add to room"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
               </div>
-            </button>
+            </div>
           ))
         )}
       </div>
