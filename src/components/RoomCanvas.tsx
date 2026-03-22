@@ -776,6 +776,21 @@ export default function RoomCanvas({
           </div>
         )}
 
+        {/* Move mode hint */}
+        {editId && webglSupported && (
+          <div
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none font-body text-[0.75rem] tracking-[0.08em]"
+            style={{
+              background: "hsl(var(--surface))",
+              border: "1px solid hsl(var(--accent))",
+              padding: "0.4rem 1rem",
+              color: "hsl(var(--text-muted))",
+            }}
+          >
+            DRAG TO MOVE · CLICK ANYWHERE TO STOP · ESC TO EXIT
+          </div>
+        )}
+
         {/* Model loading overlay */}
         {webglSupported && !allLoaded && totalModels > 0 && (
           <div
