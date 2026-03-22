@@ -292,15 +292,11 @@ export default function Index() {
   };
 
   const checkGenerationLimit = async (): Promise<boolean> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      const guestCount = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
-      return guestCount < 3;
-    }
+    if (!user) return false;
     const { data: profile } = await supabase
       .from("profiles")
       .select("total_rooms_generated")
-      .eq("id", session.user.id)
+      .eq("id", user.id)
       .single();
     return (profile?.total_rooms_generated ?? 0) < 3;
   };
