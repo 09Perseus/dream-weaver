@@ -123,14 +123,32 @@ export default function RoomView() {
   useEffect(() => {
     if (!id || !furniture || furniture.length === 0) return;
 
+    const uploadThumbnail = async (blob: Blob, roomId: string) => {
+      const filename = `room-${roomId}-${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("thumbnails")
+        .upload(filename, blob, { contentType: "image/jpeg", upsert: true });
+      if (uploadError) { console.error("Thumbnail upload error:", uploadError); return; }
+
+      const { data: { publicUrl } } = supabase.storage.from("thumbnails").getPublicUrl(filename);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error: updateError } = await supabase
+        .from("room_designs")
+        .update({ thumbnail_url: publicUrl })
+        .eq("id", roomId)
+        .eq("user_id", session.user.id);
+      if (updateError) console.error("Thumbnail DB update error:", updateError);
+      else console.log("Thumbnail saved successfully:", publicUrl);
+    };
+
     const captureRoomThumbnail = async (roomId: string) => {
       let attempts = 0;
       const maxAttempts = 10;
 
       const tryCapture = async (): Promise<void> => {
         attempts++;
-        console.log(`Thumbnail capture attempt ${attempts}`);
-
         const container = document.getElementById("room-canvas");
         const canvas = container?.querySelector("canvas") as HTMLCanvasElement;
 
@@ -139,54 +157,45 @@ export default function RoomView() {
             await new Promise(resolve => setTimeout(resolve, 1000));
             return tryCapture();
           }
-          console.log("Canvas never found, skipping thumbnail");
           return;
         }
 
-        await new Promise(resolve => requestAnimationFrame(resolve));
-        await new Promise(resolve => requestAnimationFrame(resolve));
-
         try {
-          const blob = await new Promise<Blob | null>(resolve => {
-            canvas.toBlob(resolve, "image/jpeg", 0.85);
-          });
+          const r3fState = (window as any).__r3f_store?.getState?.();
+          const camera = r3fState?.camera;
+          const controls = r3fState?.controls;
 
-          if (!blob) {
-            console.error("Canvas toBlob returned null");
-            return;
+          if (camera && controls) {
+            const savedPosition = camera.position.clone();
+            const savedTarget = controls.target?.clone();
+
+            camera.position.set(8, 10, 8);
+            if (controls.target) controls.target.set(0, 0, 0);
+            controls.update?.();
+
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await new Promise(resolve => requestAnimationFrame(resolve));
+
+            const blob = await new Promise<Blob | null>(resolve => {
+              canvas.toBlob(resolve, "image/jpeg", 0.9);
+            });
+
+            camera.position.copy(savedPosition);
+            if (savedTarget && controls.target) controls.target.copy(savedTarget);
+            controls.update?.();
+
+            if (!blob) return;
+            await uploadThumbnail(blob, roomId);
+          } else {
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            const blob = await new Promise<Blob | null>(resolve => {
+              canvas.toBlob(resolve, "image/jpeg", 0.9);
+            });
+            if (!blob) return;
+            await uploadThumbnail(blob, roomId);
           }
-
-          console.log("Captured thumbnail blob:", blob.size, "bytes");
-
-          const filename = `room-${roomId}-${Date.now()}.jpg`;
-          const { error: uploadError } = await supabase.storage
-            .from("thumbnails")
-            .upload(filename, blob, { contentType: "image/jpeg", upsert: true });
-
-          if (uploadError) {
-            console.error("Thumbnail upload error:", uploadError);
-            return;
-          }
-
-          const { data: { publicUrl } } = supabase.storage
-            .from("thumbnails")
-            .getPublicUrl(filename);
-
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) return;
-
-          const { error: updateError } = await supabase
-            .from("room_designs")
-            .update({ thumbnail_url: publicUrl })
-            .eq("id", roomId)
-            .eq("user_id", session.user.id);
-
-          if (updateError) {
-            console.error("Thumbnail DB update error:", updateError);
-            return;
-          }
-
-          console.log("Thumbnail saved successfully:", publicUrl);
         } catch (err: any) {
           console.error("Thumbnail capture error:", err.message);
         }
@@ -195,9 +204,7 @@ export default function RoomView() {
       await tryCapture();
     };
 
-    const timer = setTimeout(() => {
-      captureRoomThumbnail(id);
-    }, 5000);
+    const timer = setTimeout(() => { captureRoomThumbnail(id); }, 5000);
     return () => clearTimeout(timer);
   }, [furniture, id]);
 

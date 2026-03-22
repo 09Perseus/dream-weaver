@@ -958,6 +958,7 @@ export default function RoomCanvas({
               />
             ))}
 
+            <StoreExposer />
             <CameraController editId={editId} />
           </Canvas>
           </div>
