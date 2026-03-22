@@ -86,6 +86,17 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected, isMoving }:
       });
       cameras.forEach(cam => cam.removeFromParent());
 
+      // Deep-clone materials so emissive changes don't bleed across instances
+      c.traverse((node) => {
+        if (node instanceof THREE.Mesh && node.material) {
+          if (Array.isArray(node.material)) {
+            node.material = node.material.map((m: THREE.Material) => m.clone());
+          } else {
+            node.material = node.material.clone();
+          }
+        }
+      });
+
       const box = new THREE.Box3().setFromObject(c);
       if (box.isEmpty()) { onLoad?.(); return c; }
 
