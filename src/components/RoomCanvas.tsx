@@ -108,6 +108,23 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected }: { path: s
     }
   }, [scene, displaySize]);
 
+  // Apply emissive glow when selected
+  useEffect(() => {
+    if (!cloned) return;
+    cloned.traverse((child: any) => {
+      if (child instanceof THREE.Mesh && child.material) {
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((mat: any) => {
+          if (mat.emissive) {
+            mat.emissive = isSelected ? new THREE.Color("#FFD700") : new THREE.Color("#000000");
+            mat.emissiveIntensity = isSelected ? 0.4 : 0;
+            mat.needsUpdate = true;
+          }
+        });
+      }
+    });
+  }, [isSelected, cloned]);
+
   return <primitive object={cloned} />;
 }
 
