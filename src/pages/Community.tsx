@@ -18,9 +18,10 @@ interface CommunityPost {
   style_tags: string[] | null;
   created_at: string | null;
   room_design_id: string;
-  room_designs: {
-    id: string;
-    description: string | null;
+  profiles: {
+    display_name: string | null;
+    avatar_url: string | null;
+    avatar_color: string | null;
   } | null;
 }
 
