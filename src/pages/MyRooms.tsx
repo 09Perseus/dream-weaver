@@ -233,7 +233,7 @@ export default function MyRooms() {
                     style={{ justifyContent: "space-around" }}
                   >
                     <button
-                      onClick={() => navigate(`/room/${room.id}/edit`)}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/room/${room.id}/edit`); }}
                       title="Edit Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
                       style={{ background: buttonColors.edit, border: "none" }}
