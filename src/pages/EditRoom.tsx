@@ -244,6 +244,20 @@ function PreviewInfoCard({
   );
 }
 
+// ── Texture options ───────────────────────────────────────────────────────────
+const FLOOR_TEXTURES = [
+  { id: "darkoak", label: "Dark Oak", url: "/furnitures/Textures/darkoak.png" },
+  { id: "marble", label: "Marble", url: "/furnitures/Textures/marble.png" },
+  { id: "chess", label: "Chess", url: "/furnitures/Textures/chess.png" },
+  { id: "tatami", label: "Tatami", url: "/furnitures/Textures/tatami.png" },
+];
+const WALL_TEXTURES = [
+  { id: "japanese_shoji_pattern", label: "Shoji", url: "/furnitures/Textures/japanese_shoji_pattern.png" },
+  { id: "japanese_bamboo_pattern", label: "Bamboo", url: "/furnitures/Textures/japanese_bamboo_pattern.png" },
+  { id: "japanese_sakura_pattern", label: "Sakura", url: "/furnitures/Textures/japanese_sakura_pattern.png" },
+  { id: "japanese_seigaiha_pattern", label: "Seigaiha", url: "/furnitures/Textures/japanese_seigaiha_pattern.png" },
+];
+
 // ── Right Panel — switches between list, info card, and preview ───────────────
 function RightPanel({
   roomItems,
@@ -259,6 +273,10 @@ function RightPanel({
   onAddPreviewToRoom,
   onBack,
   onClearPreview,
+  floorTexturePath,
+  wallTexturePath,
+  onFloorTextureChange,
+  onWallTextureChange,
 }: {
   roomItems: PlacedItem[];
   furniture: FurnitureDetail[];
@@ -273,6 +291,10 @@ function RightPanel({
   onAddPreviewToRoom: () => void;
   onBack: () => void;
   onClearPreview: () => void;
+  floorTexturePath: string | null;
+  wallTexturePath: string | null;
+  onFloorTextureChange: (url: string) => void;
+  onWallTextureChange: (url: string) => void;
 }) {
   const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
   const selectedDetail = selectedItem ? furniture.find((f) => f.id === selectedItem.id) : undefined;
