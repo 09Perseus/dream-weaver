@@ -297,7 +297,7 @@ function MovableFurniture({
       ) : (
         <mesh castShadow receiveShadow>
           <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-          <meshStandardMaterial color={furniture.color || "white"} emissive={isSelected ? "#FFD700" : "#000000"} emissiveIntensity={isSelected ? 0.4 : 0} />
+          <meshStandardMaterial color={furniture.color || "white"} emissive={isEditMode ? "#00BFFF" : (isSelected ? "#FFD700" : "#000000")} emissiveIntensity={isEditMode ? 0.5 : (isSelected ? 0.4 : 0)} />
         </mesh>
       )}
     </group>
