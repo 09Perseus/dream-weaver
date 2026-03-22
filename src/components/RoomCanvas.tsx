@@ -243,7 +243,7 @@ function MovableFurniture({
       onClick={handleClick}
     >
       {furniture.path && furniture.path !== "PENDING_UPLOAD" ? (
-        <ModelErrorBoundary itemId={furniture.id}>
+        <ModelErrorBoundary itemId={furniture.id} onError={onModelLoad}>
           <Suspense
             fallback={
               <mesh>
@@ -252,7 +252,7 @@ function MovableFurniture({
               </mesh>
             }
           >
-            <Model path={furniture.path} displaySize={furniture.displaySize} />
+            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} />
           </Suspense>
         </ModelErrorBoundary>
       ) : (
