@@ -528,6 +528,7 @@ export default function RoomCanvas({
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
   const [internalEditId, setInternalEditId] = useState<string | null>(null);
   const [rotationDir, setRotationDir] = useState<number>(0);
+  const [loadedCount, setLoadedCount] = useState(0);
 
   const selectedId = isControlled ? (controlledSelectedId ?? null) : internalSelectedId;
   const editId = isControlled ? (controlledEditingId ?? null) : internalEditId;
