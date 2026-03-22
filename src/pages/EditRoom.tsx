@@ -437,6 +437,7 @@ export default function EditRoom() {
   const [posted, setPosted] = useState(false);
   const [isCopy, setIsCopy] = useState(false);
   const [pickerDrawerOpen, setPickerDrawerOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState<(PickerItem & { description?: string | null; real_width?: number | null; real_height?: number | null; real_depth?: number | null; style_tags?: string[] | null }) | null>(null);
   const [roomName, setRoomName] = useState(navState?.description || "My Room");
   const [isEditingName, setIsEditingName] = useState(false);
   const [leftCollapsed, setLeftCollapsed] = useState(
