@@ -464,7 +464,7 @@ export default function EditRoom() {
       try {
         const { data: room, error } = await supabase
           .from("room_designs")
-          .select("is_copy, user_id, description, items")
+          .select("is_copy, user_id, description, items, floor_texture, wall_texture")
           .eq("id", roomId)
           .maybeSingle();
         if (error || !room) { setLoading(false); return; }
