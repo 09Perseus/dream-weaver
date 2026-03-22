@@ -195,6 +195,7 @@ export default function Index() {
   const [inputFocused, setInputFocused] = useState(false);
   const [generationsUsed, setGenerationsUsed] = useState(0);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showcaseItems, setShowcaseItems] = useState<any[]>([]);
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const remaining = Math.max(0, 3 - generationsUsed);
