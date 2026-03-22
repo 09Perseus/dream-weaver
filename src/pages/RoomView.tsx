@@ -308,7 +308,7 @@ export default function RoomView() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
       {/* Canvas */}
-      <div className="flex-1 p-4 lg:p-6">
+      <div id="room-canvas" className="flex-1 p-4 lg:p-6">
         <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} />
       </div>
 
