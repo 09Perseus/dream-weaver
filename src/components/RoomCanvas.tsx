@@ -552,6 +552,91 @@ function loadTexture(
   return () => { cancelled = true; };
 }
 
+// ── Room Floor component ─────────────────────────────────────────────────────
+function RoomFloor({ textureUrl, texture }: { textureUrl?: string; texture: THREE.Texture | null }) {
+  const [localTexture, setLocalTexture] = useState<THREE.Texture | null>(null);
+
+  // Load texture directly if no preloaded texture is provided but a URL is
+  useEffect(() => {
+    if (texture) { setLocalTexture(null); return; }
+    const url = textureUrl ?? "/furnitures/Flooring/darkoak.png";
+    const cancel = loadTexture(url, 4, (t) => setLocalTexture(t));
+    return () => { cancel(); };
+  }, [textureUrl, texture]);
+
+  const activeTexture = texture ?? localTexture;
+
+  return (
+    <mesh
+      rotation={[-Math.PI / 2, 0, 0]}
+      position={[0, 0, 0]}
+      receiveShadow
+      raycast={() => null}
+    >
+      <planeGeometry args={[7.5, 7.5]} />
+      <meshStandardMaterial
+        map={activeTexture ?? undefined}
+        color={activeTexture ? "#ffffff" : "#8B6914"}
+        roughness={0.8}
+      />
+    </mesh>
+  );
+}
+
+// ── Room Walls component ─────────────────────────────────────────────────────
+function RoomWalls({ textureUrl, texture, roomSize, roomHeight }: { textureUrl?: string; texture: THREE.Texture | null; roomSize: number; roomHeight: number }) {
+  const [localTexture, setLocalTexture] = useState<THREE.Texture | null>(null);
+  const halfW = roomSize / 2;
+  const halfH = roomHeight / 2;
+
+  useEffect(() => {
+    if (texture) { setLocalTexture(null); return; }
+    const url = textureUrl ?? "/furnitures/wallpapers/japanese_shoji_pattern.png";
+    const cancel = loadTexture(url, 3, (t) => {
+      t.repeat.set(3, 2);
+      t.needsUpdate = true;
+      setLocalTexture(t);
+    });
+    return () => { cancel(); };
+  }, [textureUrl, texture]);
+
+  const activeTexture = texture ?? localTexture;
+
+  const mat = (
+    <meshStandardMaterial
+      map={activeTexture ?? undefined}
+      color={activeTexture ? "#ffffff" : "#D4C5A9"}
+      roughness={0.9}
+      side={THREE.FrontSide}
+    />
+  );
+
+  return (
+    <>
+      {/* Back Wall (-Z) */}
+      <mesh position={[0, halfH, -halfW]} raycast={() => null} receiveShadow>
+        <planeGeometry args={[roomSize, roomHeight]} />
+        {mat}
+      </mesh>
+      {/* Front Wall (+Z) */}
+      <mesh position={[0, halfH, halfW]} rotation={[0, Math.PI, 0]} raycast={() => null} receiveShadow>
+        <planeGeometry args={[roomSize, roomHeight]} />
+        {mat}
+      </mesh>
+      {/* Left Wall (-X) */}
+      <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null} receiveShadow>
+        <planeGeometry args={[roomSize, roomHeight]} />
+        {mat}
+      </mesh>
+      {/* Right Wall (+X) */}
+      <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null} receiveShadow>
+        <planeGeometry args={[roomSize, roomHeight]} />
+        {mat}
+      </mesh>
+    </>
+  );
+}
+
 export default function RoomCanvas({
   className = "",
   style,
