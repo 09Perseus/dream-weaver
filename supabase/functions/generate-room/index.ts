@@ -84,7 +84,8 @@ serve(async (req) => {
 
     const { data: furnitureItems, error: dbError } = await sb
       .from("furniture_items")
-      .select("*");
+      .select("*")
+      .neq("category", "texture");
 
     if (dbError || !furnitureItems) {
       throw new Error(`Failed to fetch furniture: ${dbError?.message}`);
