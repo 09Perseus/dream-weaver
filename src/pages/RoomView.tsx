@@ -442,18 +442,31 @@ export default function RoomView() {
                 </Button>
               )}
 
+              {roomIsCopy && (
+                <div className="p-4 border border-border bg-muted/50">
+                  <p className="font-body text-[0.8rem] text-foreground mb-3">
+                    This is a saved room. Generate your own to customize it.
+                  </p>
+                  <Button variant="amber" className="w-full" onClick={() => navigate("/")}>
+                    Generate My Own
+                  </Button>
+                </div>
+              )}
+
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    if (!user) { toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" }); return; }
-                    navigate(`/room/${id}/edit`);
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </Button>
+                {!roomIsCopy && (
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      if (!user) { toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" }); return; }
+                      navigate(`/room/${id}/edit`);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </Button>
+                )}
                 {!roomIsCopy && (
                   <Button
                     variant="outline"
