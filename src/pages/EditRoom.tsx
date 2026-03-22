@@ -487,12 +487,6 @@ export default function EditRoom() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [saveStatus]);
 
-  // Block React Router navigation
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      saveStatus === "unsaved" &&
-      currentLocation.pathname !== nextLocation.pathname
-  );
 
   const handleAddFromPicker = async (pickerItem: PickerItem) => {
     const instanceId = `${pickerItem.id}_${Date.now()}`;
