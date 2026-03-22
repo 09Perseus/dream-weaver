@@ -313,12 +313,50 @@ export default function RoomView() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
       {/* Canvas */}
-      <div id="room-canvas" className="flex-1 p-4 lg:p-6">
+      <div id="room-canvas" className="flex-1 p-4 lg:p-6" style={{ transition: "flex 300ms ease" }}>
         <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} />
       </div>
 
       {/* Sidebar */}
-      <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-border bg-surface">
+      <div className="relative" style={{ flexShrink: 0 }}>
+        {/* Toggle button */}
+        <button
+          onClick={() => setSidebarCollapsed(prev => !prev)}
+          className="absolute top-1/2 -translate-y-1/2 z-20 hidden lg:flex items-center justify-center cursor-pointer"
+          style={{
+            left: "-16px",
+            width: "16px",
+            height: "48px",
+            background: "hsl(var(--surface))",
+            border: "1px solid hsl(var(--border))",
+            borderRadius: "4px 0 0 4px",
+            color: "hsl(var(--text-muted))",
+            fontSize: "0.7rem",
+          }}
+        >
+          {sidebarCollapsed ? "‹" : "›"}
+        </button>
+
+        <aside
+          className="bg-surface"
+          style={{
+            width: isMobile ? "100%" : (sidebarCollapsed ? "0px" : "384px"),
+            minWidth: isMobile ? undefined : (sidebarCollapsed ? "0px" : "384px"),
+            transition: "width 300ms ease, min-width 300ms ease",
+            overflow: "hidden",
+            borderLeft: sidebarCollapsed && !isMobile ? "none" : "1px solid hsl(var(--border))",
+            borderTop: isMobile ? "1px solid hsl(var(--border))" : undefined,
+          }}
+        >
+          <div
+            style={{
+              width: isMobile ? "100%" : "384px",
+              height: "100%",
+              overflowY: "auto",
+              opacity: sidebarCollapsed && !isMobile ? 0 : 1,
+              transition: "opacity 200ms ease",
+            }}
+          >
         {selectedItem ? (
           <FurnitureDetailPanel item={selectedItem} onBack={() => setSelectedItem(null)} />
         ) : (
