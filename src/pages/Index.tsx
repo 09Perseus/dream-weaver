@@ -78,6 +78,8 @@ function PromptInput({
   loading,
   onGenerate,
   onFocusChange,
+  remaining,
+  showBadge = false,
 }: {
   prompt: string;
   setPrompt: (v: string) => void;
@@ -86,6 +88,8 @@ function PromptInput({
   loading: boolean;
   onGenerate: () => void;
   onFocusChange?: (focused: boolean) => void;
+  remaining?: number;
+  showBadge?: boolean;
 }) {
   return (
     <div className="space-y-4 max-w-[600px] w-full mx-auto" style={{ marginTop: "1.5rem" }}>
@@ -140,16 +144,42 @@ function PromptInput({
         </p>
       )}
 
-      <Button
-        variant="amber"
-        size="lg"
-        className={`w-full ${loading ? "button-loading" : ""}`}
-        style={{ borderRadius: "8px", marginTop: "0.5rem" }}
-        onClick={onGenerate}
-        disabled={loading}
-      >
-        {loading ? "Generating…" : "Generate Room"}
-      </Button>
+      <div className="relative inline-block w-full" style={{ marginTop: "0.5rem" }}>
+        <Button
+          variant="amber"
+          size="lg"
+          className={`w-full ${loading ? "button-loading" : ""}`}
+          style={{ borderRadius: "8px" }}
+          onClick={onGenerate}
+          disabled={loading}
+        >
+          {loading ? "Generating…" : "Generate Room"}
+        </Button>
+        {showBadge && (
+          <span
+            className="absolute font-body font-bold text-[0.55rem] tracking-[0.1em]"
+            style={{
+              top: "-8px",
+              right: "-8px",
+              background: "hsl(var(--accent))",
+              color: "hsl(var(--background))",
+              padding: "0.15rem 0.35rem",
+              borderRadius: "2px",
+            }}
+          >
+            FREE
+          </span>
+        )}
+      </div>
+
+      {/* Monetization hint */}
+      {remaining !== undefined && (
+        <p className="font-body text-[0.75rem] text-muted-foreground text-center tracking-[0.05em]" style={{ marginTop: "0.75rem" }}>
+          {remaining > 0
+            ? `${remaining} free ${remaining === 1 ? "room" : "rooms"} remaining · Pro plans coming soon`
+            : "Free limit reached · Pro plans coming soon"}
+        </p>
+      )}
     </div>
   );
 }
