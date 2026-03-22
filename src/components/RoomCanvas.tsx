@@ -511,6 +511,15 @@ function CameraController({ editId }: { editId: string | null }) {
   );
 }
 
+function StoreExposer() {
+  const state = useThree();
+  useEffect(() => {
+    (window as any).__r3f_store = { getState: () => state };
+    return () => { delete (window as any).__r3f_store; };
+  }, [state]);
+  return null;
+}
+
 // ── Texture loader helper ─────────────────────────────────────────────────────
 // Loads a texture from a path, sets repeat wrapping, and calls back with the result.
 
@@ -958,6 +967,7 @@ export default function RoomCanvas({
               />
             ))}
 
+            <StoreExposer />
             <CameraController editId={editId} />
           </Canvas>
           </div>
