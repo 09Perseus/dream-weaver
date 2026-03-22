@@ -13,13 +13,23 @@ interface ShowcaseItem {
   category: string;
 }
 
-/* ── Auto-rotating 3D model ── */
+/* ── Auto-rotating 3D model with wireframe-to-solid reveal ── */
 
-function AutoRotatingModel({ url }: { url: string }) {
+function AutoRotatingModel({ url, revealKey }: { url: string; revealKey: number }) {
   const { scene } = useGLTF(url);
   const groupRef = useRef<THREE.Group>(null);
+  const progressRef = useRef(0);
+  const originalMaterials = useRef<Map<THREE.Mesh, THREE.Material | THREE.Material[]>>(new Map());
+  const wireframeMaterials = useRef<Map<THREE.Mesh, THREE.Material>>(new Map());
+  const initialized = useRef(false);
 
   const clonedScene = useMemo(() => {
+    // Reset on new scene
+    initialized.current = false;
+    progressRef.current = 0;
+    originalMaterials.current.clear();
+    wireframeMaterials.current.clear();
+
     try {
       const cloned = scene.clone(true);
 
@@ -40,11 +50,61 @@ function AutoRotatingModel({ url }: { url: string }) {
     } catch {
       return scene.clone(true);
     }
-  }, [scene]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene, revealKey]);
 
   useFrame((_, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.4;
+    }
+
+    // Initialize wireframe materials on first frame
+    if (!initialized.current && clonedScene) {
+      clonedScene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          // Store original
+          originalMaterials.current.set(mesh, mesh.material);
+
+          // Create wireframe version
+          const origMat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+          const color = (origMat as THREE.MeshStandardMaterial).color?.clone?.() ?? new THREE.Color("hsl(36, 45%, 70%)");
+          const wireMat = new THREE.MeshBasicMaterial({
+            color,
+            wireframe: true,
+            transparent: true,
+            opacity: 1,
+          });
+          wireframeMaterials.current.set(mesh, wireMat);
+          mesh.material = wireMat;
+        }
+      });
+      initialized.current = true;
+    }
+
+    // Animate transition: 0 → 1 over ~1.5 seconds
+    if (progressRef.current < 1) {
+      progressRef.current = Math.min(1, progressRef.current + delta / 1.5);
+      const t = progressRef.current;
+      // Smooth ease-in-out
+      const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+      clonedScene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          const wireMat = wireframeMaterials.current.get(mesh);
+          const origMats = originalMaterials.current.get(mesh);
+
+          if (wireMat && origMats && ease >= 1) {
+            // Fully revealed — swap to original
+            mesh.material = origMats;
+            wireMat.dispose();
+          } else if (wireMat) {
+            // Fade wireframe opacity down as we approach solid
+            (wireMat as THREE.MeshBasicMaterial).opacity = 1 - ease * 0.7;
+          }
+        }
+      });
     }
   });
 
@@ -96,7 +156,7 @@ export default function FurnitureShowcase({ items }: { items: ShowcaseItem[] }) 
           <directionalLight position={[3, 5, 3]} intensity={0.8} />
           <directionalLight position={[-3, 2, -2]} intensity={0.3} />
           <Suspense fallback={null}>
-            <AutoRotatingModel url={currentItem.file_url} />
+            <AutoRotatingModel url={currentItem.file_url} revealKey={currentIndex} />
           </Suspense>
           <OrbitControls
             enableZoom={false}
