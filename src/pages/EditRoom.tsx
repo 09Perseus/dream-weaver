@@ -84,7 +84,7 @@ function ItemInfoCard({
         {/* Image */}
         {detail?.thumbnail_url && detail.thumbnail_url !== "PENDING_UPLOAD" ? (
           <img
-            src={detail.thumbnail_url}
+            src={bustCache(detail.thumbnail_url)}
             alt={detail.name}
             className="w-full aspect-square object-cover rounded-lg border border-border"
           />
