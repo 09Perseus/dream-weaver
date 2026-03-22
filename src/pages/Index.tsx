@@ -80,6 +80,7 @@ function PromptInput({
   onFocusChange,
   remaining,
   showBadge = false,
+  isAuthenticated = true,
 }: {
   prompt: string;
   setPrompt: (v: string) => void;
@@ -90,6 +91,7 @@ function PromptInput({
   onFocusChange?: (focused: boolean) => void;
   remaining?: number;
   showBadge?: boolean;
+  isAuthenticated?: boolean;
 }) {
   return (
     <div className="space-y-4 max-w-[600px] w-full mx-auto" style={{ marginTop: "1.5rem" }}>
@@ -153,7 +155,7 @@ function PromptInput({
           onClick={onGenerate}
           disabled={loading}
         >
-          {loading ? "Generating…" : "Generate Room"}
+          {loading ? "Generating…" : !isAuthenticated ? "Sign In to Generate" : "Generate Room"}
         </Button>
         {showBadge && (
           <span
@@ -210,7 +212,7 @@ export default function Index() {
   const [inputFocused, setInputFocused] = useState(false);
   const [generationsUsed, setGenerationsUsed] = useState(0);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const remaining = Math.max(0, 3 - generationsUsed);
 
@@ -242,19 +244,27 @@ export default function Index() {
   // Load generation count from profiles.total_rooms_generated
   useEffect(() => {
     const loadCount = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      if (user) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("total_rooms_generated")
-          .eq("id", session.user.id)
+          .eq("id", user.id)
           .single();
         setGenerationsUsed(profile?.total_rooms_generated ?? 0);
       } else {
-        setGenerationsUsed(parseInt(localStorage.getItem("roomai_guest_generations") ?? "0"));
+        setGenerationsUsed(0);
       }
     };
     loadCount();
+  }, [user]);
+
+  // Restore pending description after login redirect
+  useEffect(() => {
+    const pending = localStorage.getItem("roomai_pending_description");
+    if (pending && user) {
+      setPrompt(pending);
+      localStorage.removeItem("roomai_pending_description");
+    }
   }, [user]);
 
   useEffect(() => {
@@ -283,31 +293,29 @@ export default function Index() {
   };
 
   const checkGenerationLimit = async (): Promise<boolean> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      const guestCount = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
-      return guestCount < 3;
-    }
+    if (!user) return false;
     const { data: profile } = await supabase
       .from("profiles")
       .select("total_rooms_generated")
-      .eq("id", session.user.id)
+      .eq("id", user.id)
       .single();
     return (profile?.total_rooms_generated ?? 0) < 3;
   };
 
   const incrementGenerationCount = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      const current = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
-      localStorage.setItem("roomai_guest_generations", String(current + 1));
-      return;
-    }
-    await supabase.rpc("increment_room_generation_count", { user_id_input: session.user.id });
+    if (!user) return;
+    await supabase.rpc("increment_room_generation_count", { user_id_input: user.id });
   };
 
   const handleGenerate = async () => {
     if (!validate()) return;
+
+    // Require authentication
+    if (!user) {
+      localStorage.setItem("roomai_pending_description", prompt.trim());
+      navigate("/sign-in?redirect=/&reason=generate");
+      return;
+    }
 
     const canGenerate = await checkGenerationLimit();
     if (!canGenerate) {
@@ -345,11 +353,6 @@ export default function Index() {
 
       if (authLoading) {
         toast({ title: "Still loading session", description: "Please try again in a moment.", variant: "destructive" });
-        return;
-      }
-
-      if (!user?.id) {
-        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
         return;
       }
 
@@ -506,6 +509,7 @@ export default function Index() {
               onFocusChange={setInputFocused}
               remaining={remaining}
               showBadge={remaining > 0}
+              isAuthenticated={!!user}
             />
           </div>
         </div>
@@ -674,6 +678,7 @@ export default function Index() {
             onGenerate={handleGenerate}
             remaining={remaining}
             showBadge={remaining > 0}
+            isAuthenticated={!!user}
           />
         </RevealSection>
       </section>
