@@ -879,6 +879,7 @@ export default function RoomCanvas({
                 onDoubleClick={() => handleDoubleClick(f.id)}
                 onPositionChange={(pos) => handlePositionChange(f.id, pos)}
                 onRotationChange={(rot) => handleRotationChange(f.id, rot)}
+                onModelLoad={() => setLoadedCount(prev => prev + 1)}
               />
             ))}
 
