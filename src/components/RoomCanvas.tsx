@@ -603,9 +603,11 @@ function RoomFloor({ textureUrl, texture }: { textureUrl?: string; texture: THRE
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow raycast={() => null}>
       <planeGeometry args={[7.5, 7.5]} />
       <meshStandardMaterial
+        key={activeTexture?.uuid || "fallback"}
         map={activeTexture ?? undefined}
         color={activeTexture ? "#ffffff" : "#8B6914"}
         roughness={0.8}
+        side={THREE.DoubleSide}
       />
     </mesh>
   );
@@ -1052,6 +1054,8 @@ export default function RoomCanvas({
                 args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]}
                 position={[0, 0.01, 0]}
                 raycast={() => null}
+                material-transparent={true}
+                material-opacity={0.5}
               />
 
               {/* ── Furniture ── */}
