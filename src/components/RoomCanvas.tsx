@@ -49,6 +49,7 @@ interface RoomCanvasProps {
   flooring?: { path: string } | null;
   onSelectItem?: (id: string) => void;
   onEditItem?: (id: string) => void;
+  onDeselect?: () => void;
   onPositionChange?: (id: string, pos: [number, number, number]) => void;
   onRotationChange?: (id: string, rot: [number, number, number]) => void;
 }
