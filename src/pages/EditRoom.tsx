@@ -244,6 +244,20 @@ function PreviewInfoCard({
   );
 }
 
+// ── Texture options ───────────────────────────────────────────────────────────
+const FLOOR_TEXTURES = [
+  { id: "darkoak", label: "Dark Oak", url: "/furnitures/Textures/darkoak.png" },
+  { id: "marble", label: "Marble", url: "/furnitures/Textures/marble.png" },
+  { id: "chess", label: "Chess", url: "/furnitures/Textures/chess.png" },
+  { id: "tatami", label: "Tatami", url: "/furnitures/Textures/tatami.png" },
+];
+const WALL_TEXTURES = [
+  { id: "japanese_shoji_pattern", label: "Shoji", url: "/furnitures/Textures/japanese_shoji_pattern.png" },
+  { id: "japanese_bamboo_pattern", label: "Bamboo", url: "/furnitures/Textures/japanese_bamboo_pattern.png" },
+  { id: "japanese_sakura_pattern", label: "Sakura", url: "/furnitures/Textures/japanese_sakura_pattern.png" },
+  { id: "japanese_seigaiha_pattern", label: "Seigaiha", url: "/furnitures/Textures/japanese_seigaiha_pattern.png" },
+];
+
 // ── Right Panel — switches between list, info card, and preview ───────────────
 function RightPanel({
   roomItems,
@@ -259,6 +273,10 @@ function RightPanel({
   onAddPreviewToRoom,
   onBack,
   onClearPreview,
+  floorTexturePath,
+  wallTexturePath,
+  onFloorTextureChange,
+  onWallTextureChange,
 }: {
   roomItems: PlacedItem[];
   furniture: FurnitureDetail[];
@@ -273,6 +291,10 @@ function RightPanel({
   onAddPreviewToRoom: () => void;
   onBack: () => void;
   onClearPreview: () => void;
+  floorTexturePath: string | null;
+  wallTexturePath: string | null;
+  onFloorTextureChange: (url: string) => void;
+  onWallTextureChange: (url: string) => void;
 }) {
   const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
   const selectedDetail = selectedItem ? furniture.find((f) => f.id === selectedItem.id) : undefined;
@@ -404,6 +426,43 @@ function RightPanel({
                 );
               })
             )}
+          </div>
+
+          {/* ── Surfaces section ── */}
+          <div className="border-t border-border p-4 shrink-0">
+            <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase text-muted-foreground mb-3">
+              Surfaces
+            </h3>
+
+            <p className="font-body text-[0.65rem] text-muted-foreground mb-1.5">Floor</p>
+            <div className="grid grid-cols-4 gap-1.5 mb-3">
+              {FLOOR_TEXTURES.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onFloorTextureChange(t.url)}
+                  title={t.label}
+                  className={`aspect-square rounded overflow-hidden border-2 transition-colors cursor-pointer
+                    ${floorTexturePath === t.url ? 'border-accent' : 'border-border hover:border-muted-foreground'}`}
+                >
+                  <img src={t.url} alt={t.label} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+
+            <p className="font-body text-[0.65rem] text-muted-foreground mb-1.5">Walls</p>
+            <div className="grid grid-cols-4 gap-1.5">
+              {WALL_TEXTURES.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onWallTextureChange(t.url)}
+                  title={t.label}
+                  className={`aspect-square rounded overflow-hidden border-2 transition-colors cursor-pointer
+                    ${wallTexturePath === t.url ? 'border-accent' : 'border-border hover:border-muted-foreground'}`}
+                >
+                  <img src={t.url} alt={t.label} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
         </>
       )}
@@ -575,7 +634,12 @@ export default function EditRoom() {
       if (!session) { setSaveStatus("unsaved"); return; }
       const { error } = await supabase
         .from("room_designs")
-        .update({ items: roomItems as any, description: roomName })
+        .update({
+          items: roomItems as any,
+          description: roomName,
+          floor_texture: floorTexturePath,
+          wall_texture: wallTexturePath,
+        } as any)
         .eq("id", roomId)
         .eq("user_id", session.user.id);
       if (error) {
@@ -590,9 +654,9 @@ export default function EditRoom() {
     } catch {
       setSaveStatus("unsaved");
     }
-  }, [roomId, roomItems, roomName]);
+  }, [roomId, roomItems, roomName, floorTexturePath, wallTexturePath]);
 
-  // Debounced autosave on roomItems or roomName change
+  // Debounced autosave on roomItems, roomName, or texture change
   useEffect(() => {
     const itemsSame = JSON.stringify(roomItems) === JSON.stringify(lastSavedItems.current);
     const nameSame = roomName === lastSavedName.current;
@@ -602,6 +666,15 @@ export default function EditRoom() {
     saveTimerRef.current = setTimeout(() => { performSave(); }, 2000);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
   }, [roomItems, roomName, performSave]);
+
+  // Trigger save on texture changes
+  useEffect(() => {
+    if (!roomId) return;
+    setSaveStatus("unsaved");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => { performSave(); }, 1000);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [floorTexturePath, wallTexturePath]);
 
   // Warn on browser close
   useEffect(() => {
@@ -1082,6 +1155,10 @@ export default function EditRoom() {
                     setEditingItemId(null);
                   }}
                   onClearPreview={() => setPreviewItem(null)}
+                  floorTexturePath={floorTexturePath}
+                  wallTexturePath={wallTexturePath}
+                  onFloorTextureChange={setFloorTexturePath}
+                  onWallTextureChange={setWallTexturePath}
                 />
               </div>
             </aside>
@@ -1123,6 +1200,10 @@ export default function EditRoom() {
                 setEditingItemId(null);
               }}
               onClearPreview={() => setPreviewItem(null)}
+              floorTexturePath={floorTexturePath}
+              wallTexturePath={wallTexturePath}
+              onFloorTextureChange={setFloorTexturePath}
+              onWallTextureChange={setWallTexturePath}
             />
           </div>
         )}
