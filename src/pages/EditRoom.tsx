@@ -717,31 +717,69 @@ export default function EditRoom() {
 
         {/* Right: switches between Room Items list and Item Info Card */}
         {!isMobile && (
-          <aside className="w-80 shrink-0 border-l border-border flex flex-col
-                            bg-surface overflow-hidden min-h-0">
-            <RightPanel
-              roomItems={roomItems}
-              furniture={furniture}
-              selectedItemId={selectedItemId}
-              editingItemId={editingItemId}
-              formatPrice={formatPrice}
-              onSelectItem={(id) => {
-                setSelectedItemId((prev) => prev === id ? null : id);
-                setEditingItemId(null);
+          <div className="relative" style={{ flexShrink: 0 }}>
+            {/* Toggle button on left edge */}
+            <button
+              onClick={() => setRightCollapsed(prev => !prev)}
+              className="absolute top-1/2 -translate-y-1/2 z-20 flex items-center justify-center cursor-pointer"
+              style={{
+                left: "-16px",
+                width: "16px",
+                height: "48px",
+                background: "hsl(var(--surface))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "4px 0 0 4px",
+                color: "hsl(var(--text-muted))",
+                fontSize: "0.7rem",
               }}
-              onDeleteItem={(id) => {
-                setUndoStack((prev) => [...prev, roomItems]);
-                setRoomItems((prev) => prev.filter((item) => item.id !== id));
-                setSelectedItemId(null);
-                setEditingItemId(null);
-                toast({ title: "Item removed" });
+            >
+              {rightCollapsed ? "‹" : "›"}
+            </button>
+            <aside
+              className="flex flex-col bg-surface overflow-hidden min-h-0"
+              style={{
+                width: rightCollapsed ? "0px" : "320px",
+                minWidth: rightCollapsed ? "0px" : "320px",
+                transition: "width 300ms ease, min-width 300ms ease",
+                borderLeft: rightCollapsed ? "none" : "1px solid hsl(var(--border))",
               }}
-              onBack={() => {
-                setSelectedItemId(null);
-                setEditingItemId(null);
-              }}
-            />
-          </aside>
+            >
+              <div
+                style={{
+                  width: "320px",
+                  height: "100%",
+                  opacity: rightCollapsed ? 0 : 1,
+                  transition: "opacity 200ms ease",
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                }}
+              >
+                <RightPanel
+                  roomItems={roomItems}
+                  furniture={furniture}
+                  selectedItemId={selectedItemId}
+                  editingItemId={editingItemId}
+                  formatPrice={formatPrice}
+                  onSelectItem={(id) => {
+                    setSelectedItemId((prev) => prev === id ? null : id);
+                    setEditingItemId(null);
+                  }}
+                  onDeleteItem={(id) => {
+                    setUndoStack((prev) => [...prev, roomItems]);
+                    setRoomItems((prev) => prev.filter((item) => item.id !== id));
+                    setSelectedItemId(null);
+                    setEditingItemId(null);
+                    toast({ title: "Item removed" });
+                  }}
+                  onBack={() => {
+                    setSelectedItemId(null);
+                    setEditingItemId(null);
+                  }}
+                />
+              </div>
+            </aside>
+          </div>
         )}
 
         {/* Mobile: right panel below canvas */}
