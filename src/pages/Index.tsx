@@ -302,13 +302,8 @@ export default function Index() {
   };
 
   const incrementGenerationCount = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      const current = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
-      localStorage.setItem("roomai_guest_generations", String(current + 1));
-      return;
-    }
-    await supabase.rpc("increment_room_generation_count", { user_id_input: session.user.id });
+    if (!user) return;
+    await supabase.rpc("increment_room_generation_count", { user_id_input: user.id });
   };
 
   const handleGenerate = async () => {
