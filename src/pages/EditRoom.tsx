@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+import { getItemKey } from "@/lib/edgeFunctions";
 
 interface LocationState {
   items?: PlacedItem[];
@@ -166,17 +167,16 @@ function RightPanel({
   selectedItemId: string | null;
   editingItemId: string | null;
   formatPrice: (price: number) => string;
-  onSelectItem: (id: string) => void;
-  onDeleteItem: (id: string) => void;
+  onSelectItem: (key: string) => void;
+  onDeleteItem: (key: string) => void;
   onBack: () => void;
 }) {
-  const selectedItem = roomItems.find((i) => i.id === selectedItemId);
-  const selectedDetail = furniture.find((f) => f.id === selectedItemId);
+  const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
+  const selectedDetail = selectedItem ? furniture.find((f) => f.id === selectedItem.id) : undefined;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {selectedItem ? (
-        // ── Info card ───────────────────────────────────────────────────
         <ItemInfoCard
           item={selectedItem}
           detail={selectedDetail}
@@ -186,7 +186,6 @@ function RightPanel({
           formatPrice={formatPrice}
         />
       ) : (
-        // ── Room items list ─────────────────────────────────────────────
         <>
           <div className="p-4 border-b border-border shrink-0">
             <h3 className="font-body text-[0.7rem] tracking-[0.1em] uppercase
@@ -203,12 +202,13 @@ function RightPanel({
               </p>
             ) : (
               roomItems.map((item) => {
+                const key = getItemKey(item);
                 const detail = furniture.find((f) => f.id === item.id);
-                const isSelected = selectedItemId === item.id;
+                const isSelected = selectedItemId === key;
                 return (
                   <button
-                    key={item.id}
-                    onClick={() => onSelectItem(item.id)}
+                    key={key}
+                    onClick={() => onSelectItem(key)}
                     className={`w-full text-left px-4 py-3 border-b border-border
                                 transition-colors cursor-pointer min-h-[44px]
                                 ${isSelected
@@ -356,7 +356,7 @@ export default function EditRoom() {
   const handleDeleteSelected = useCallback(() => {
     if (!selectedItemId) return;
     setUndoStack((prev) => [...prev, roomItems]);
-    setRoomItems((prev) => prev.filter((item) => item.id !== selectedItemId));
+    setRoomItems((prev) => prev.filter((item) => getItemKey(item) !== selectedItemId));
     setSelectedItemId(null);
     setEditingItemId(null);
     toast({ title: "Item removed" });
@@ -415,16 +415,13 @@ export default function EditRoom() {
   };
 
   const handleAddFromPicker = async (pickerItem: PickerItem) => {
-    if (roomItems.some((ri) => ri.id === pickerItem.id)) {
-      toast({ title: "Already added", description: "This item is already in the room." });
-      return;
-    }
+    const instanceId = `${pickerItem.id}_${Date.now()}`;
     setUndoStack((prev) => [...prev, roomItems]);
     setRoomItems((prev) => [
       ...prev,
-      { id: pickerItem.id, x: 0, y: 0, z: 0, rotation: 0, scale: 1 },
+      { id: pickerItem.id, instanceId, x: 0, y: 0, z: 0, rotation: 0, scale: 1 },
     ]);
-    setSelectedItemId(pickerItem.id);
+    setSelectedItemId(instanceId);
 
     // Fetch full furniture detail (including file_url) from DB
     if (!furniture.find((f) => f.id === pickerItem.id)) {
@@ -614,7 +611,10 @@ export default function EditRoom() {
         {/* Selection status + cancel */}
         {selectedItemId && (
           <span className="font-body text-[0.75rem] text-muted-foreground tracking-[0.05em] hidden md:inline truncate max-w-[200px]">
-            {furniture.find(f => f.id === selectedItemId)?.name ?? "Item"}
+            {(() => {
+              const item = roomItems.find(i => getItemKey(i) === selectedItemId);
+              return item ? (furniture.find(f => f.id === item.id)?.name ?? "Item") : "Item";
+            })()}
             {editingItemId === selectedItemId ? " — MOVING" : " — SELECTED"}
           </span>
         )}
@@ -657,7 +657,7 @@ export default function EditRoom() {
 
         {/* Left: Furniture Picker (desktop only) */}
         {!isMobile && (
-          <div className="relative" style={{ flexShrink: 0 }}>
+          <div className="relative h-full" style={{ flexShrink: 0 }}>
             {/* Toggle button on right edge */}
             <button
               onClick={() => setLeftCollapsed(prev => !prev)}
@@ -711,25 +711,29 @@ export default function EditRoom() {
               furniture={furniture}
               selectedItemId={selectedItemId}
               editingItemId={editingItemId}
-              onSelectItem={(id) => {
-                setSelectedItemId((prev) => prev === id ? null : id);
+              onSelectItem={(key) => {
+                setSelectedItemId((prev) => prev === key ? null : key);
                 setEditingItemId(null);
               }}
-              onEditItem={(id) => {
-                setSelectedItemId(id);
-                setEditingItemId((prev) => prev === id ? null : id);
+              onEditItem={(key) => {
+                setSelectedItemId(key);
+                setEditingItemId((prev) => prev === key ? null : key);
               }}
-              onPositionChange={(id, pos) => {
+              onDeselect={() => {
+                setSelectedItemId(null);
+                setEditingItemId(null);
+              }}
+              onPositionChange={(key, pos) => {
                 setRoomItems((prev) =>
                   prev.map((item) =>
-                    item.id === id ? { ...item, x: pos[0], y: pos[1], z: pos[2] } : item
+                    getItemKey(item) === key ? { ...item, x: pos[0], y: pos[1], z: pos[2] } : item
                   )
                 );
               }}
-              onRotationChange={(id, rot) => {
+              onRotationChange={(key, rot) => {
                 setRoomItems((prev) =>
                   prev.map((item) =>
-                    item.id === id ? { ...item, rotation: (rot[1] * 180) / Math.PI } : item
+                    getItemKey(item) === key ? { ...item, rotation: (rot[1] * 180) / Math.PI } : item
                   )
                 );
               }}
@@ -789,7 +793,7 @@ export default function EditRoom() {
                   }}
                   onDeleteItem={(id) => {
                     setUndoStack((prev) => [...prev, roomItems]);
-                    setRoomItems((prev) => prev.filter((item) => item.id !== id));
+                    setRoomItems((prev) => prev.filter((item) => getItemKey(item) !== id));
                     setSelectedItemId(null);
                     setEditingItemId(null);
                     toast({ title: "Item removed" });
@@ -819,7 +823,7 @@ export default function EditRoom() {
               }}
               onDeleteItem={(id) => {
                 setUndoStack((prev) => [...prev, roomItems]);
-                setRoomItems((prev) => prev.filter((item) => item.id !== id));
+                setRoomItems((prev) => prev.filter((item) => getItemKey(item) !== id));
                 setSelectedItemId(null);
                 setEditingItemId(null);
                 toast({ title: "Item removed" });

@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { useGenerateRoom, getDisplaySize } from "@/hooks/useGenerateRoom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+import { getItemKey } from "@/lib/edgeFunctions";
 import { RotateCcw, RotateCw } from "lucide-react";
 
 function detectWebGL(): boolean {
@@ -48,6 +49,7 @@ interface RoomCanvasProps {
   flooring?: { path: string } | null;
   onSelectItem?: (id: string) => void;
   onEditItem?: (id: string) => void;
+  onDeselect?: () => void;
   onPositionChange?: (id: string, pos: [number, number, number]) => void;
   onRotationChange?: (id: string, rot: [number, number, number]) => void;
 }
@@ -538,6 +540,7 @@ export default function RoomCanvas({
   editingItemId: controlledEditingId,
   onSelectItem: externalOnSelect,
   onEditItem: externalOnEdit,
+  onDeselect: externalOnDeselect,
   onPositionChange: externalOnPositionChange,
   onRotationChange: externalOnRotationChange,
 }: RoomCanvasProps) {
@@ -618,11 +621,12 @@ export default function RoomCanvas({
     if (!isViewerMode) return [];
     return items.map((item) => {
       const detail = furniture.find((f) => f.id === item.id);
+      const key = getItemKey(item);
       const width  = Math.max(detail?.real_width  ?? 0.8, 0.4);
       const height = Math.max(detail?.real_height ?? 0.8, 0.2);
       const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
       return {
-        id: item.id,
+        id: key,
         name: detail?.name,
         position: [item.x, 0, item.z] as [number, number, number],
         rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
@@ -696,10 +700,9 @@ export default function RoomCanvas({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (isControlled) {
-          if (externalOnEdit && editId) externalOnEdit(editId);
-          if (externalOnSelect && selectedId) externalOnSelect(selectedId);
-        } else {
+        if (isControlled && externalOnDeselect) {
+          externalOnDeselect();
+        } else if (!isControlled) {
           setInternalEditId(null);
           setInternalSelectedId(null);
         }
@@ -707,7 +710,7 @@ export default function RoomCanvas({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [editId, selectedId, isControlled, externalOnEdit, externalOnSelect]);
+  }, [isControlled, externalOnDeselect]);
 
   return (
     <div
@@ -826,7 +829,9 @@ export default function RoomCanvas({
             shadows
             style={{ width: "100%", height: "100%" }}
             onPointerMissed={() => {
-              if (!isControlled) {
+              if (isControlled && externalOnDeselect) {
+                externalOnDeselect();
+              } else if (!isControlled) {
                 setInternalSelectedId(null);
                 setInternalEditId(null);
               }
