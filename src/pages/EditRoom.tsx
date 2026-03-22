@@ -507,6 +507,17 @@ export default function EditRoom() {
     toast({ title: "Item added", description: "Reposition it in the room." });
   };
 
+  const handleAddAnother = (furnitureId: string) => {
+    const instanceId = `${furnitureId}_${Date.now()}`;
+    setUndoStack((prev) => [...prev, roomItems]);
+    setRoomItems((prev) => [
+      ...prev,
+      { id: furnitureId, instanceId, x: 0, y: 0, z: 0, rotation: 0, scale: 1 },
+    ]);
+    setSelectedItemId(instanceId);
+    toast({ title: "Item added" });
+  };
+
   const filteredPicker =
     activeCategory === "All"
       ? pickerItems
