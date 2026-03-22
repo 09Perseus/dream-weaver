@@ -216,6 +216,25 @@ export default function Cart() {
       }
 
       if (data?.success) {
+        // Send orders to ModuLiving
+        for (const item of items) {
+          try {
+            await fetch(import.meta.env.VITE_ECOMMERCE_ORDER_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': import.meta.env.VITE_ECOMMERCE_API_KEY
+              },
+              body: JSON.stringify({
+                productName: item.name,
+                quantity: item.quantity ?? 1,
+                customerInfo: { email: 'guest@dreamweaver.com' }
+              })
+            });
+          } catch (e) {
+            console.error('ModuLiving order failed for:', item.name, e);
+          }
+        }
         clearCart();
         navigate("/order-confirmation", {
           state: {
@@ -227,6 +246,8 @@ export default function Cart() {
           },
         });
       }
+
+
     } catch (err: any) {
       console.error("Checkout error:", err);
       toast({

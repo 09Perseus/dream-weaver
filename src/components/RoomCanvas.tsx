@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback, Suspense, Component, type ReactNode } from "react";
+import { PlaceOrderButton } from "@/components/PlaceOrderButton";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
@@ -65,6 +66,7 @@ export interface FurnitureItem {
   rotation?: [number, number, number];
   displaySize?: number;
   size?: [number, number, number];
+  price?: number;
 }
 
 function Model({
@@ -427,7 +429,17 @@ function InfoCard({
 
         <div className="flex items-center justify-between py-3 border-t border-border">
           <span className="font-body text-[0.75rem] text-muted-foreground uppercase tracking-wide">Price</span>
-          <span className="font-heading text-xl text-accent">$1.00</span>
+          <span className="font-heading text-xl text-accent">
+            {furniture.price ? `$${furniture.price}` : "$1.00"}
+          </span>
+        </div>
+        <div className="py-3 border-t border-border">
+          <PlaceOrderButton
+            furniture={{ name: displayName, quantity: 1 }}
+            customer={{ email: "guest@dreamweaver.com" }}
+            onSuccess={(orderId) => alert(`Order placed! 🎉 ID: ${orderId}`)}
+            onError={(err) => alert(`Error: ${err}`)}
+          />
         </div>
 
         <div className="py-3 border-t border-border space-y-1">
