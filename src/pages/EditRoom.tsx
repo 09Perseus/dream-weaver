@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { Save, Undo, Trash2, Share2, Plus } from "lucide-react";
+import { Save, Undo, Trash2, Share2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
@@ -608,6 +608,28 @@ export default function EditRoom() {
           <Button variant="outline" size="sm" onClick={() => setPickerDrawerOpen(true)} className="min-h-[44px]">
             <Plus className="h-4 w-4" />
             <span className="text-[0.7rem]">ADD</span>
+          </Button>
+        )}
+
+        {/* Selection status + cancel */}
+        {selectedItemId && (
+          <span className="font-body text-[0.75rem] text-muted-foreground tracking-[0.05em] hidden md:inline truncate max-w-[200px]">
+            {furniture.find(f => f.id === selectedItemId)?.name ?? "Item"}
+            {editingItemId === selectedItemId ? " — MOVING" : " — SELECTED"}
+          </span>
+        )}
+        {(selectedItemId || editingItemId) && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-[44px]"
+            onClick={() => {
+              setSelectedItemId(null);
+              setEditingItemId(null);
+            }}
+          >
+            <X className="h-4 w-4" />
+            <span className="hidden md:inline">Cancel</span>
           </Button>
         )}
 
