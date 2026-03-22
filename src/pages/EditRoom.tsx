@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { Save, Undo, Trash2, Share2, Plus, X } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useParams, useLocation, useNavigate, useBlocker } from "react-router-dom";
+import { Undo, Trash2, Share2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
