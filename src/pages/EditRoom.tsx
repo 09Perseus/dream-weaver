@@ -1104,6 +1104,10 @@ export default function EditRoom() {
                     setEditingItemId(null);
                   }}
                   onClearPreview={() => setPreviewItem(null)}
+                  floorTexturePath={floorTexturePath}
+                  wallTexturePath={wallTexturePath}
+                  onFloorTextureChange={setFloorTexturePath}
+                  onWallTextureChange={setWallTexturePath}
                 />
               </div>
             </aside>
