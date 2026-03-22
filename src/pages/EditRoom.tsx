@@ -165,6 +165,7 @@ function RightPanel({
   onSelectItem,
   onDeleteItem,
   onAddAnother,
+  onAddToCart,
   onBack,
 }: {
   roomItems: PlacedItem[];
@@ -175,6 +176,7 @@ function RightPanel({
   onSelectItem: (key: string) => void;
   onDeleteItem: (key: string) => void;
   onAddAnother: (furnitureId: string) => void;
+  onAddToCart: (furnitureId: string) => void;
   onBack: () => void;
 }) {
   const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
