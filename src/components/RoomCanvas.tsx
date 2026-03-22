@@ -605,39 +605,34 @@ export default function RoomCanvas({
   // ── Load wallpaper texture ─────────────────────────────────────────────────
   // Priority: prop (viewer mode) → generated texture (standalone mode)
   useEffect(() => {
-    // Determine which path to load
     const rawPath = wallpaper?.path ?? (isViewerMode ? null : textures.wallpaper);
+    console.log("[RoomCanvas] wallpaper effect — rawPath:", rawPath, "prop:", wallpaper?.path);
     if (!rawPath) return;
 
-    // Textures from the hook are relative (e.g. "wallpapers/foo.png"), so prefix with /furnitures/
-    // Prop paths from viewer mode are already absolute URLs — don't double-prefix them
-    const fullPath = wallpaper?.path
-      ? rawPath                          // viewer mode: already a full URL/path
-      : `/furnitures/${rawPath}`;        // standalone: relative path from catalogue
+    const fullPath = wallpaper?.path ? rawPath : `/furnitures/${rawPath}`;
+    console.log("[RoomCanvas] Loading wall texture:", fullPath);
 
-    const cancel = loadTexture(fullPath, 4, (texture) => {
+    const cancel = loadTexture(fullPath, 3, (texture) => {
+      console.log("[RoomCanvas] Wall texture loaded successfully");
       setWallTexture((prev) => { prev?.dispose(); return texture; });
     });
-    return () => {
-      cancel();
-    };
+    return () => { cancel(); };
   }, [wallpaper?.path, textures.wallpaper, isViewerMode]);
 
   // ── Load floor texture ─────────────────────────────────────────────────────
   useEffect(() => {
     const rawPath = flooring?.path ?? (isViewerMode ? null : textures.floor);
+    console.log("[RoomCanvas] flooring effect — rawPath:", rawPath, "prop:", flooring?.path);
     if (!rawPath) return;
 
-    const fullPath = flooring?.path
-      ? rawPath
-      : `/furnitures/${rawPath}`;
+    const fullPath = flooring?.path ? rawPath : `/furnitures/${rawPath}`;
+    console.log("[RoomCanvas] Loading floor texture:", fullPath);
 
     const cancel = loadTexture(fullPath, 4, (texture) => {
+      console.log("[RoomCanvas] Floor texture loaded successfully");
       setFloorTexture((prev) => { prev?.dispose(); return texture; });
     });
-    return () => {
-      cancel();
-    };
+    return () => { cancel(); };
   }, [flooring?.path, textures.floor, isViewerMode]);
 
   // ── Map viewer data ────────────────────────────────────────────────────────
