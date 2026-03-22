@@ -257,6 +257,15 @@ export default function Index() {
     loadCount();
   }, [user]);
 
+  // Restore pending description after login redirect
+  useEffect(() => {
+    const pending = localStorage.getItem("roomai_pending_description");
+    if (pending && user) {
+      setPrompt(pending);
+      localStorage.removeItem("roomai_pending_description");
+    }
+  }, [user]);
+
   useEffect(() => {
     supabase
       .from("community_posts")
