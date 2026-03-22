@@ -179,8 +179,24 @@ export default function MyRooms() {
             return (
               <div
                 key={room.id}
-                className="border border-border bg-surface animate-reveal-up overflow-hidden min-w-0"
-                style={{ animationDelay: `${i * 80}ms` }}
+                onClick={() => navigate(`/room/${room.id}/edit`)}
+                className="animate-reveal-up overflow-hidden min-w-0"
+                style={{
+                  cursor: "pointer",
+                  position: "relative",
+                  background: "hsl(var(--surface))",
+                  border: "1px solid hsl(var(--border))",
+                  transition: "border-color 200ms ease, box-shadow 200ms ease",
+                  animationDelay: `${i * 80}ms`,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = "hsl(var(--accent))";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.15)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = "hsl(var(--border))";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               >
                 <div className="relative h-[200px] bg-surface border-b border-border overflow-hidden">
                   {room.is_copy && (
@@ -217,7 +233,7 @@ export default function MyRooms() {
                     style={{ justifyContent: "space-around" }}
                   >
                     <button
-                      onClick={() => navigate(`/room/${room.id}/edit`)}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/room/${room.id}/edit`); }}
                       title="Edit Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
                       style={{ background: buttonColors.edit, border: "none" }}
@@ -226,7 +242,7 @@ export default function MyRooms() {
                     </button>
                     {!room.is_copy && (
                       <button
-                        onClick={() => isPosted ? handleUnpost(room.id) : setPostDialogRoomId(room.id)}
+                        onClick={(e) => { e.stopPropagation(); isPosted ? handleUnpost(room.id) : setPostDialogRoomId(room.id); }}
                         disabled={unposting === room.id}
                         title={isPosted ? "Remove from Community" : "Post to Community"}
                         className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
@@ -236,7 +252,7 @@ export default function MyRooms() {
                       </button>
                     )}
                     <button
-                      onClick={() => handleDelete(room.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(room.id); }}
                       disabled={deleting === room.id}
                       title="Delete Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
