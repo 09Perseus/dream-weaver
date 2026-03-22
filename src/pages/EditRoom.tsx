@@ -415,16 +415,13 @@ export default function EditRoom() {
   };
 
   const handleAddFromPicker = async (pickerItem: PickerItem) => {
-    if (roomItems.some((ri) => ri.id === pickerItem.id)) {
-      toast({ title: "Already added", description: "This item is already in the room." });
-      return;
-    }
+    const instanceId = `${pickerItem.id}_${Date.now()}`;
     setUndoStack((prev) => [...prev, roomItems]);
     setRoomItems((prev) => [
       ...prev,
-      { id: pickerItem.id, x: 0, y: 0, z: 0, rotation: 0, scale: 1 },
+      { id: pickerItem.id, instanceId, x: 0, y: 0, z: 0, rotation: 0, scale: 1 },
     ]);
-    setSelectedItemId(pickerItem.id);
+    setSelectedItemId(instanceId);
 
     // Fetch full furniture detail (including file_url) from DB
     if (!furniture.find((f) => f.id === pickerItem.id)) {
