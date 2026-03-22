@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+
+const FurnitureShowcase = lazy(() => import("@/components/FurnitureShowcase"));
 
 interface FeaturedPost {
   id: string;
@@ -42,25 +44,6 @@ const RoomIllustration = () => (
   </svg>
 );
 
-/* ── Mock product card ── */
-const MockProductCard = () => (
-  <div className="border border-border bg-surface p-6 max-w-[280px] mx-auto">
-    <div className="aspect-square bg-background border border-border flex items-center justify-center mb-4">
-      <svg viewBox="0 0 100 80" fill="none" className="w-2/3 opacity-40" xmlns="http://www.w3.org/2000/svg">
-        <rect x="10" y="30" width="80" height="35" rx="4" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="10" y="20" width="25" height="15" rx="3" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="65" y="20" width="25" height="15" rx="3" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="15" y="65" width="6" height="8" rx="1" stroke="hsl(var(--border))" strokeWidth="1" />
-        <rect x="79" y="65" width="6" height="8" rx="1" stroke="hsl(var(--border))" strokeWidth="1" />
-      </svg>
-    </div>
-    <p className="font-heading text-[1.1rem] font-normal text-foreground">Oslo Corner Sofa</p>
-    <p className="font-body text-[0.85rem] text-accent mt-1">$1,299</p>
-    <button className="mt-4 font-body text-[0.7rem] tracking-[0.1em] uppercase text-accent hover:underline cursor-pointer">
-      ADD TO CART →
-    </button>
-  </div>
-);
 
 /* ── Section divider ── */
 const Divider = () => (
@@ -212,6 +195,7 @@ export default function Index() {
   const [inputFocused, setInputFocused] = useState(false);
   const [generationsUsed, setGenerationsUsed] = useState(0);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showcaseItems, setShowcaseItems] = useState<any[]>([]);
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const remaining = Math.max(0, 3 - generationsUsed);
@@ -266,6 +250,19 @@ export default function Index() {
       localStorage.removeItem("roomai_pending_description");
     }
   }, [user]);
+
+  useEffect(() => {
+    supabase
+      .from("furniture_items")
+      .select("id, name, price, file_url, thumbnail_url, category")
+      .not("file_url", "is", null)
+      .limit(8)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setShowcaseItems([...data].sort(() => Math.random() - 0.5));
+        }
+      });
+  }, []);
 
   useEffect(() => {
     supabase
@@ -581,9 +578,21 @@ export default function Index() {
         <div className="container py-20 md:py-28">
           <RevealSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
-              {/* Visual */}
+              {/* Visual — 3D Furniture Showcase */}
               <div className="flex justify-center">
-                <MockProductCard />
+                {showcaseItems.length > 0 ? (
+                  <Suspense fallback={
+                    <div className="max-w-[320px] w-full mx-auto">
+                      <div className="aspect-square border border-border bg-background animate-pulse" />
+                    </div>
+                  }>
+                    <FurnitureShowcase items={showcaseItems} />
+                  </Suspense>
+                ) : (
+                  <div className="max-w-[320px] w-full mx-auto">
+                    <div className="aspect-square border border-border bg-background animate-pulse" />
+                  </div>
+                )}
               </div>
 
               {/* Text */}
