@@ -155,7 +155,7 @@ function PromptInput({
           onClick={onGenerate}
           disabled={loading}
         >
-          {loading ? "Generating…" : "Generate Room"}
+          {loading ? "Generating…" : !isAuthenticated ? "Sign In to Generate" : "Generate Room"}
         </Button>
         {showBadge && (
           <span
