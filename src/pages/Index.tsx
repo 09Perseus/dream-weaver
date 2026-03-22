@@ -514,6 +514,7 @@ export default function Index() {
               onFocusChange={setInputFocused}
               remaining={remaining}
               showBadge={remaining > 0}
+              isAuthenticated={!!user}
             />
           </div>
         </div>
