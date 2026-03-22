@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+import { getItemKey } from "@/lib/edgeFunctions";
 
 interface LocationState {
   items?: PlacedItem[];
