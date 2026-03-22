@@ -526,6 +526,11 @@ export default function EditRoom() {
     toast({ title: "Item removed" });
   }, [selectedItemId, roomItems]);
 
+  // Clear preview when canvas item is selected
+  useEffect(() => {
+    if (selectedItemId) setPreviewItem(null);
+  }, [selectedItemId]);
+
   // Keyboard delete
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
