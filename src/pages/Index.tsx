@@ -242,16 +242,15 @@ export default function Index() {
   // Load generation count from profiles.total_rooms_generated
   useEffect(() => {
     const loadCount = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      if (user) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("total_rooms_generated")
-          .eq("id", session.user.id)
+          .eq("id", user.id)
           .single();
         setGenerationsUsed(profile?.total_rooms_generated ?? 0);
       } else {
-        setGenerationsUsed(parseInt(localStorage.getItem("roomai_guest_generations") ?? "0"));
+        setGenerationsUsed(0);
       }
     };
     loadCount();
