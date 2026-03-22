@@ -208,8 +208,11 @@ export default function Index() {
   const [loading, setLoading] = useState(false);
   const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
   const [inputFocused, setInputFocused] = useState(false);
+  const [generationsUsed, setGenerationsUsed] = useState(0);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const remaining = Math.max(0, 3 - generationsUsed);
 
   // Typing animation
   const roomTypes = ["BEDROOM.", "LIVING ROOM.", "HOME OFFICE.", "DINING ROOM.", "STUDIO.", "SANCTUARY."];
