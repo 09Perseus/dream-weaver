@@ -449,6 +449,8 @@ export default function Index() {
               loading={loading}
               onGenerate={handleGenerate}
               onFocusChange={setInputFocused}
+              remaining={remaining}
+              showBadge={remaining > 0}
             />
           </div>
         </div>
