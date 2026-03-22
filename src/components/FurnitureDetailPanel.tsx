@@ -1,4 +1,5 @@
 import type { FurnitureDetail } from "@/lib/edgeFunctions";
+import { bustCache } from "@/utils/imageUrl";
 import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { toast } from "@/hooks/use-toast";
