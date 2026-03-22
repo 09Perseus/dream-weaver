@@ -80,6 +80,7 @@ function PromptInput({
   onFocusChange,
   remaining,
   showBadge = false,
+  isAuthenticated = true,
 }: {
   prompt: string;
   setPrompt: (v: string) => void;
@@ -90,6 +91,7 @@ function PromptInput({
   onFocusChange?: (focused: boolean) => void;
   remaining?: number;
   showBadge?: boolean;
+  isAuthenticated?: boolean;
 }) {
   return (
     <div className="space-y-4 max-w-[600px] w-full mx-auto" style={{ marginTop: "1.5rem" }}>
