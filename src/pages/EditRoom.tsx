@@ -611,7 +611,10 @@ export default function EditRoom() {
         {/* Selection status + cancel */}
         {selectedItemId && (
           <span className="font-body text-[0.75rem] text-muted-foreground tracking-[0.05em] hidden md:inline truncate max-w-[200px]">
-            {furniture.find(f => f.id === selectedItemId)?.name ?? "Item"}
+            {(() => {
+              const item = roomItems.find(i => getItemKey(i) === selectedItemId);
+              return item ? (furniture.find(f => f.id === item.id)?.name ?? "Item") : "Item";
+            })()}
             {editingItemId === selectedItemId ? " — MOVING" : " — SELECTED"}
           </span>
         )}
