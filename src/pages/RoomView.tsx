@@ -19,6 +19,8 @@ interface LocationState {
   items?: PlacedItem[];
   furniture?: FurnitureDetail[];
   description?: string;
+  floor_texture?: string;
+  wall_texture?: string;
 }
 
 export default function RoomView() {
