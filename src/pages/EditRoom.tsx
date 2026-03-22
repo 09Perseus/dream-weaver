@@ -316,7 +316,10 @@ export default function EditRoom() {
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
   const [description, setDescription] = useState(navState?.description ?? "");
   const [loading, setLoading] = useState(!navState?.items);
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const lastSavedItems = useRef<PlacedItem[]>(navState?.items ?? []);
+  const lastSavedName = useRef(navState?.description || "My Room");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // selectedItemId — right panel shows info card
   // editingItemId  — item is in drag mode (double click in canvas)
