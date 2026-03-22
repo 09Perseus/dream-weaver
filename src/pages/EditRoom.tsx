@@ -1174,13 +1174,14 @@ export default function EditRoom() {
                     }
                     const entries = Object.values(groupMap);
                     entries.forEach(({ detail, count }) => {
-                      addToCart({
-                        id: detail.id,
-                        name: detail.name,
-                        price: detail.price ?? 0,
-                        quantity: count,
-                        thumbnail_url: detail.thumbnail_url,
-                      });
+                      for (let i = 0; i < count; i++) {
+                        addToCart({
+                          id: detail.id,
+                          name: detail.name,
+                          price: detail.price ?? 0,
+                          thumbnailUrl: detail.thumbnail_url ?? "",
+                        });
+                      }
                     });
                     toast({ title: `${entries.length} items added to cart` });
                   }}
