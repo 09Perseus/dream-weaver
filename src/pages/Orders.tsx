@@ -7,8 +7,11 @@ import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 
 interface OrderItem {
+  id?: string;
   name?: string;
   quantity?: number;
+  price?: number;
+  thumbnail_url?: string;
 }
 
 interface Order {
@@ -46,12 +49,13 @@ export default function Orders() {
         .select("*")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false })
-        .then(({ data, error: fetchError }) => {
+        .then(async ({ data, error: fetchError }) => {
           console.log("Orders:", data?.length, fetchError);
           if (fetchError) {
             setError(true);
           } else {
-            setOrders((data as unknown as Order[]) ?? []);
+            const enriched = await enrichOrderItems((data as unknown as Order[]) ?? []);
+            setOrders(enriched);
           }
           setLoading(false);
         });
@@ -59,6 +63,32 @@ export default function Orders() {
 
     return () => clearTimeout(timeout);
   }, []);
+
+  const enrichOrderItems = async (orders: Order[]): Promise<Order[]> => {
+    const allItemIds = orders.flatMap(o =>
+      (o.items ?? []).map((i) => i.id).filter(Boolean)
+    );
+    const uniqueIds = [...new Set(allItemIds)];
+    if (uniqueIds.length === 0) return orders;
+
+    const { data: furnitureItems } = await supabase
+      .from("furniture_items")
+      .select("id, thumbnail_url, name")
+      .in("id", uniqueIds);
+
+    const furnitureMap = Object.fromEntries(
+      (furnitureItems ?? []).map(f => [f.id, f])
+    );
+
+    return orders.map(order => ({
+      ...order,
+      items: (order.items ?? []).map((item) => ({
+        ...item,
+        thumbnail_url: item.thumbnail_url ?? furnitureMap[item.id ?? ""]?.thumbnail_url,
+        name: item.name ?? furnitureMap[item.id ?? ""]?.name ?? item.id,
+      })),
+    }));
+  };
 
   const formatJPY = (amount: number) =>
     "¥" + Math.round(amount).toLocaleString();
@@ -163,9 +193,34 @@ export default function Orders() {
                 {items.length > 0 && (
                   <div className="mb-3">
                     {items.map((item, i) => (
-                      <p key={i} className="font-body text-[0.8rem] text-foreground">
-                        {item.name ?? "Item"} × {item.quantity ?? 1}
-                      </p>
+                      <div key={i} className="flex items-center gap-3 py-3 border-b border-border last:border-b-0">
+                        <div className="w-12 h-12 flex-shrink-0 border border-border bg-muted overflow-hidden">
+                          {item.thumbnail_url ? (
+                            <img
+                              src={item.thumbnail_url}
+                              alt={item.name ?? "Item"}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center font-body text-[0.6rem] text-muted-foreground">
+                              3D
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-body text-[0.85rem] text-foreground truncate">
+                            {item.name ?? "Item"}
+                          </p>
+                          <p className="font-body text-[0.75rem] text-muted-foreground">
+                            ×{item.quantity ?? 1}
+                          </p>
+                        </div>
+                        {item.price !== undefined && (
+                          <p className="font-body text-[0.85rem] text-accent flex-shrink-0">
+                            {formatPrice(item.price)}
+                          </p>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
