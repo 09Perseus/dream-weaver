@@ -469,6 +469,8 @@ export default function EditRoom() {
           .maybeSingle();
         if (error || !room) { setLoading(false); return; }
         setIsCopy(!!room.is_copy);
+        setFloorTexturePath((room as any).floor_texture ?? null);
+        setWallTexturePath((room as any).wall_texture ?? null);
         setDescription(room.description ?? "");
         setRoomName(room.description || "My Room");
         const rawItems = (room.items as any as PlacedItem[]) ?? [];
