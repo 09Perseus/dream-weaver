@@ -157,7 +157,6 @@ function MovableFurniture({
   const groupRef = useRef<THREE.Group>(null);
   const isDragging = useRef(false);
   const dragOffset = useRef(new THREE.Vector3());
-  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
   const intersection = useMemo(() => new THREE.Vector3(), []);
   const { camera, gl, raycaster, pointer } = useThree();
