@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Plus, Pencil, Check, Share2, Copy } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
