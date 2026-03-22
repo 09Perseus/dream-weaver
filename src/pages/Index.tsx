@@ -309,6 +309,13 @@ export default function Index() {
   const handleGenerate = async () => {
     if (!validate()) return;
 
+    // Require authentication
+    if (!user) {
+      localStorage.setItem("roomai_pending_description", prompt.trim());
+      navigate("/sign-in?redirect=/&reason=generate");
+      return;
+    }
+
     const canGenerate = await checkGenerationLimit();
     if (!canGenerate) {
       setShowUpgradeDialog(true);
