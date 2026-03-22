@@ -735,7 +735,36 @@ export default function RoomCanvas({
           </div>
         )}
 
+        {/* Model loading overlay */}
+        {webglSupported && !allLoaded && totalModels > 0 && (
+          <div
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6"
+            style={{ background: "hsl(var(--bg))" }}
+          >
+            <div
+              style={{ width: "200px", height: "1px", background: "hsl(var(--border))", overflow: "hidden" }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  background: "hsl(var(--accent))",
+                  width: `${totalModels > 0 ? (loadedCount / totalModels) * 100 : 0}%`,
+                  transition: "width 400ms ease",
+                }}
+              />
+            </div>
+            <p className="font-heading text-base italic font-light text-muted-foreground tracking-wide">
+              {loadedCount === 0
+                ? "Designing your room..."
+                : loadedCount < totalModels
+                  ? `Placing furniture... ${loadedCount}/${totalModels}`
+                  : "Welcome home."}
+            </p>
+          </div>
+        )}
+
         {webglSupported && (
+          <div style={{ opacity: allLoaded ? 1 : 0, transition: "opacity 600ms ease", width: "100%", height: "100%" }}>
           <Canvas
             shadows
             style={{ width: "100%", height: "100%" }}
