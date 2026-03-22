@@ -711,25 +711,29 @@ export default function EditRoom() {
               furniture={furniture}
               selectedItemId={selectedItemId}
               editingItemId={editingItemId}
-              onSelectItem={(id) => {
-                setSelectedItemId((prev) => prev === id ? null : id);
+              onSelectItem={(key) => {
+                setSelectedItemId((prev) => prev === key ? null : key);
                 setEditingItemId(null);
               }}
-              onEditItem={(id) => {
-                setSelectedItemId(id);
-                setEditingItemId((prev) => prev === id ? null : id);
+              onEditItem={(key) => {
+                setSelectedItemId(key);
+                setEditingItemId((prev) => prev === key ? null : key);
               }}
-              onPositionChange={(id, pos) => {
+              onDeselect={() => {
+                setSelectedItemId(null);
+                setEditingItemId(null);
+              }}
+              onPositionChange={(key, pos) => {
                 setRoomItems((prev) =>
                   prev.map((item) =>
-                    item.id === id ? { ...item, x: pos[0], y: pos[1], z: pos[2] } : item
+                    getItemKey(item) === key ? { ...item, x: pos[0], y: pos[1], z: pos[2] } : item
                   )
                 );
               }}
-              onRotationChange={(id, rot) => {
+              onRotationChange={(key, rot) => {
                 setRoomItems((prev) =>
                   prev.map((item) =>
-                    item.id === id ? { ...item, rotation: (rot[1] * 180) / Math.PI } : item
+                    getItemKey(item) === key ? { ...item, rotation: (rot[1] * 180) / Math.PI } : item
                   )
                 );
               }}
