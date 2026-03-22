@@ -830,7 +830,9 @@ export default function RoomCanvas({
             shadows
             style={{ width: "100%", height: "100%" }}
             onPointerMissed={() => {
-              if (!isControlled) {
+              if (isControlled && externalOnDeselect) {
+                externalOnDeselect();
+              } else if (!isControlled) {
                 setInternalSelectedId(null);
                 setInternalEditId(null);
               }
