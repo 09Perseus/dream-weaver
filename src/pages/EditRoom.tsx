@@ -269,6 +269,7 @@ function RightPanel({
   onDeleteItem,
   onAddAnother,
   onAddToCart,
+  onAddAllToCart,
   onAddPreviewToRoom,
   onBack,
   onClearPreview,
@@ -283,6 +284,7 @@ function RightPanel({
   onDeleteItem: (key: string) => void;
   onAddAnother: (furnitureId: string) => void;
   onAddToCart: (furnitureId: string) => void;
+  onAddAllToCart: () => void;
   onAddPreviewToRoom: () => void;
   onBack: () => void;
   onClearPreview: () => void;
@@ -333,6 +335,30 @@ function RightPanel({
               Room Items ({roomItems.length})
             </h3>
           </div>
+
+          {groupedItems.length > 0 && (
+            <button
+              onClick={onAddAllToCart}
+              style={{
+                width: "100%",
+                background: "hsl(var(--accent))",
+                border: "none",
+                color: "hsl(var(--background))",
+                fontFamily: "var(--font-body)",
+                fontSize: "0.7rem",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase" as const,
+                padding: "0.65rem",
+                cursor: "pointer",
+                flexShrink: 0,
+                transition: "opacity 150ms ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+            >
+              ADD ALL TO CART ({groupedItems.length} items)
+            </button>
+          )}
 
           <div className="flex-1 overflow-y-auto min-h-0">
             {roomItems.length === 0 ? (
@@ -1137,6 +1163,28 @@ export default function EditRoom() {
                   }}
                   onAddAnother={handleAddAnother}
                   onAddToCart={handleAddToCart}
+                  onAddAllToCart={() => {
+                    const groupMap: Record<string, { detail: FurnitureDetail; count: number }> = {};
+                    for (const item of roomItems) {
+                      if (!groupMap[item.id]) {
+                        const detail = furniture.find((f) => f.id === item.id);
+                        if (detail) groupMap[item.id] = { detail, count: 0 };
+                      }
+                      if (groupMap[item.id]) groupMap[item.id].count++;
+                    }
+                    const entries = Object.values(groupMap);
+                    entries.forEach(({ detail, count }) => {
+                      for (let i = 0; i < count; i++) {
+                        addToCart({
+                          id: detail.id,
+                          name: detail.name,
+                          price: detail.price ?? 0,
+                          thumbnailUrl: detail.thumbnail_url ?? "",
+                        });
+                      }
+                    });
+                    toast({ title: `${entries.length} items added to cart` });
+                  }}
                   onAddPreviewToRoom={() => {
                     if (previewItem) {
                       handleAddFromPicker(previewItem);
@@ -1178,6 +1226,28 @@ export default function EditRoom() {
               }}
               onAddAnother={handleAddAnother}
               onAddToCart={handleAddToCart}
+              onAddAllToCart={() => {
+                const groupMap: Record<string, { detail: FurnitureDetail; count: number }> = {};
+                for (const item of roomItems) {
+                  if (!groupMap[item.id]) {
+                    const detail = furniture.find((f) => f.id === item.id);
+                    if (detail) groupMap[item.id] = { detail, count: 0 };
+                  }
+                  if (groupMap[item.id]) groupMap[item.id].count++;
+                }
+                const entries = Object.values(groupMap);
+                entries.forEach(({ detail, count }) => {
+                  for (let i = 0; i < count; i++) {
+                    addToCart({
+                      id: detail.id,
+                      name: detail.name,
+                      price: detail.price ?? 0,
+                      thumbnailUrl: detail.thumbnail_url ?? "",
+                    });
+                  }
+                });
+                toast({ title: `${entries.length} items added to cart` });
+              }}
               onAddPreviewToRoom={() => {
                 if (previewItem) {
                   handleAddFromPicker(previewItem);
