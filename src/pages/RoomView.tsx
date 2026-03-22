@@ -36,6 +36,8 @@ export default function RoomView() {
   const [items, setItems] = useState<PlacedItem[]>(navState?.items ?? []);
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
   const [description, setDescription] = useState(navState?.description ?? "");
+  const [floorTexturePath, setFloorTexturePath] = useState<string | null>(navState?.floor_texture ?? null);
+  const [wallTexturePath, setWallTexturePath] = useState<string | null>(navState?.wall_texture ?? null);
   const [loading, setLoading] = useState(!navState?.items);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
