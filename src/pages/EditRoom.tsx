@@ -40,6 +40,7 @@ const CATEGORY_MAP: Record<string, string> = {
   "Plants": "plant",
   "Rugs": "rug",
   "Shelves": "shelf",
+  "Textures": "texture",
 };
 
 // ── Item Info Card ────────────────────────────────────────────────────────────
