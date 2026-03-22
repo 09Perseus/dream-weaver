@@ -272,10 +272,6 @@ function RightPanel({
   onAddPreviewToRoom,
   onBack,
   onClearPreview,
-  floorTexturePath,
-  wallTexturePath,
-  onFloorTextureChange,
-  onWallTextureChange,
 }: {
   roomItems: PlacedItem[];
   furniture: FurnitureDetail[];
