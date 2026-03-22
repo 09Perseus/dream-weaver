@@ -245,7 +245,7 @@ function RightPanel({
                     <div className="flex items-center gap-3">
                       {group.detail?.thumbnail_url && group.detail.thumbnail_url !== "PENDING_UPLOAD" ? (
                         <img
-                          src={group.detail.thumbnail_url}
+                          src={bustCache(group.detail.thumbnail_url)}
                           alt={group.detail?.name ?? group.furnitureId}
                           className="h-10 w-10 object-cover flex-shrink-0 rounded"
                         />
