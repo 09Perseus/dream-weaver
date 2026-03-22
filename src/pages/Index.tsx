@@ -356,11 +356,6 @@ export default function Index() {
         return;
       }
 
-      if (!user?.id) {
-        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
-        return;
-      }
-
       const { data: roomRows, error: insertError } = await supabase
         .from("room_designs")
         .insert({ description: prompt.trim(), items: items as any, user_id: user.id, share_token: crypto.randomUUID() })
