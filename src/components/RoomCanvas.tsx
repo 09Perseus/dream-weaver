@@ -67,7 +67,21 @@ export interface FurnitureItem {
   size?: [number, number, number];
 }
 
-function Model({ path, displaySize = 1, onLoad, onError, isSelected, isMoving }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void; isSelected?: boolean; isMoving?: boolean }) {
+function Model({
+  path,
+  displaySize = 1,
+  onLoad,
+  onError,
+  isSelected,
+  isMoving,
+}: {
+  path: string;
+  displaySize?: number;
+  onLoad?: () => void;
+  onError?: () => void;
+  isSelected?: boolean;
+  isMoving?: boolean;
+}) {
   const cleanPath = path
     .replace(/^\/+/, "")
     .replace(/^furnitures\//, "")
@@ -85,7 +99,7 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected, isMoving }:
           cameras.push(node as THREE.Camera);
         }
       });
-      cameras.forEach(cam => cam.removeFromParent());
+      cameras.forEach((cam) => cam.removeFromParent());
 
       // Deep-clone materials so emissive changes don't bleed across instances
       c.traverse((node) => {
@@ -99,7 +113,10 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected, isMoving }:
       });
 
       const box = new THREE.Box3().setFromObject(c);
-      if (box.isEmpty()) { onLoad?.(); return c; }
+      if (box.isEmpty()) {
+        onLoad?.();
+        return c;
+      }
 
       const size = box.getSize(new THREE.Vector3());
       const longestSide = Math.max(size.x, size.y, size.z);
@@ -150,7 +167,10 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected, isMoving }:
   return <primitive object={cloned} />;
 }
 
-class ModelErrorBoundary extends Component<{ children: ReactNode; itemId: string; onError?: () => void }, { hasError: boolean }> {
+class ModelErrorBoundary extends Component<
+  { children: ReactNode; itemId: string; onError?: () => void },
+  { hasError: boolean }
+> {
   state = { hasError: false };
   static getDerivedStateFromError() {
     return { hasError: true };
@@ -305,13 +325,24 @@ function MovableFurniture({
               </mesh>
             }
           >
-            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} isSelected={isSelected} isMoving={isEditMode} />
+            <Model
+              path={furniture.path}
+              displaySize={furniture.displaySize}
+              onLoad={onModelLoad}
+              onError={onModelLoad}
+              isSelected={isSelected}
+              isMoving={isEditMode}
+            />
           </Suspense>
         </ModelErrorBoundary>
       ) : (
         <mesh castShadow receiveShadow>
           <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-          <meshStandardMaterial color={furniture.color || "white"} emissive={isEditMode ? "#00BFFF" : (isSelected ? "#FFD700" : "#000000")} emissiveIntensity={isEditMode ? 0.5 : (isSelected ? 0.4 : 0)} />
+          <meshStandardMaterial
+            color={furniture.color || "white"}
+            emissive={isEditMode ? "#00BFFF" : isSelected ? "#FFD700" : "#000000"}
+            emissiveIntensity={isEditMode ? 0.5 : isSelected ? 0.4 : 0}
+          />
         </mesh>
       )}
     </group>
@@ -390,9 +421,7 @@ function InfoCard({
         <div>
           <p className="font-heading text-lg text-foreground capitalize">{displayName}</p>
           {furniture?.description && (
-            <p className="font-body text-[0.75rem] text-muted-foreground mt-1">
-              {furniture.description}
-            </p>
+            <p className="font-body text-[0.75rem] text-muted-foreground mt-1">{furniture.description}</p>
           )}
         </div>
 
@@ -500,23 +529,16 @@ function CameraController({ editId }: { editId: string | null }) {
     camera.position.set(3, 3, 5);
   }, [camera]);
 
-  return (
-    <OrbitControls
-      ref={controlsRef}
-      makeDefault
-      enableZoom
-      enabled={!editId}
-      maxDistance={40}
-      minDistance={2}
-    />
-  );
+  return <OrbitControls ref={controlsRef} makeDefault enableZoom enabled={!editId} maxDistance={40} minDistance={2} />;
 }
 
 function StoreExposer() {
   const state = useThree();
   useEffect(() => {
     (window as any).__r3f_store = { getState: () => state };
-    return () => { delete (window as any).__r3f_store; };
+    return () => {
+      delete (window as any).__r3f_store;
+    };
   }, [state]);
   return null;
 }
@@ -524,11 +546,7 @@ function StoreExposer() {
 // ── Texture loader helper ─────────────────────────────────────────────────────
 // Loads a texture from a path, sets repeat wrapping, and calls back with the result.
 
-function loadTexture(
-  path: string,
-  repeat: number,
-  onLoad: (texture: THREE.Texture) => void
-): () => void {
+function loadTexture(path: string, repeat: number, onLoad: (texture: THREE.Texture) => void): () => void {
   let cancelled = false;
   const loader = new THREE.TextureLoader();
   loader.load(
@@ -547,9 +565,11 @@ function loadTexture(
     undefined,
     (err) => {
       console.warn("[RoomCanvas] Failed to load texture:", path, err);
-    }
+    },
   );
-  return () => { cancelled = true; };
+  return () => {
+    cancelled = true;
+  };
 }
 
 // ── Room Floor component ─────────────────────────────────────────────────────
@@ -558,57 +578,71 @@ function RoomFloor({ textureUrl, texture }: { textureUrl?: string; texture: THRE
 
   // Load texture directly if no preloaded texture is provided but a URL is
   useEffect(() => {
-    if (texture) { setLocalTexture(null); return; }
+    if (texture) {
+      setLocalTexture(null);
+      return;
+    }
     const url = textureUrl ?? "/furnitures/Flooring/darkoak.png";
     const cancel = loadTexture(url, 4, (t) => setLocalTexture(t));
-    return () => { cancel(); };
+    return () => {
+      cancel();
+    };
   }, [textureUrl, texture]);
 
   const activeTexture = texture ?? localTexture;
 
   return (
-    <mesh
-      rotation={[-Math.PI / 2, 0, 0]}
-      position={[0, 0, 0]}
-      receiveShadow
-      raycast={() => null}
-    >
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow raycast={() => null}>
       <planeGeometry args={[7.5, 7.5]} />
       <meshStandardMaterial
         map={activeTexture ?? undefined}
         color={activeTexture ? "#ffffff" : "#8B6914"}
         roughness={0.8}
-        side={THREE.DoubleSide}
       />
     </mesh>
   );
 }
 
 // ── Room Walls component ─────────────────────────────────────────────────────
-function RoomWalls({ textureUrl, texture, roomSize, roomHeight }: { textureUrl?: string; texture: THREE.Texture | null; roomSize: number; roomHeight: number }) {
+function RoomWalls({
+  textureUrl,
+  texture,
+  roomSize,
+  roomHeight,
+}: {
+  textureUrl?: string;
+  texture: THREE.Texture | null;
+  roomSize: number;
+  roomHeight: number;
+}) {
   const [localTexture, setLocalTexture] = useState<THREE.Texture | null>(null);
   const halfW = roomSize / 2;
   const halfH = roomHeight / 2;
 
   useEffect(() => {
-    if (texture) { setLocalTexture(null); return; }
+    if (texture) {
+      setLocalTexture(null);
+      return;
+    }
     const url = textureUrl ?? "/furnitures/wallpapers/japanese_shoji_pattern.png";
     const cancel = loadTexture(url, 3, (t) => {
       t.repeat.set(3, 2);
       t.needsUpdate = true;
       setLocalTexture(t);
     });
-    return () => { cancel(); };
+    return () => {
+      cancel();
+    };
   }, [textureUrl, texture]);
 
   const activeTexture = texture ?? localTexture;
 
-  const mat = (
+  const WallMaterial = () => (
     <meshStandardMaterial
       map={activeTexture ?? undefined}
       color={activeTexture ? "#ffffff" : "#D4C5A9"}
       roughness={0.9}
-      side={THREE.DoubleSide}
+      side={THREE.FrontSide}
     />
   );
 
@@ -617,22 +651,22 @@ function RoomWalls({ textureUrl, texture, roomSize, roomHeight }: { textureUrl?:
       {/* Back Wall (-Z) */}
       <mesh position={[0, halfH, -halfW]} raycast={() => null} receiveShadow>
         <planeGeometry args={[roomSize, roomHeight]} />
-        {mat}
+        <WallMaterial />
       </mesh>
       {/* Front Wall (+Z) */}
       <mesh position={[0, halfH, halfW]} rotation={[0, Math.PI, 0]} raycast={() => null} receiveShadow>
         <planeGeometry args={[roomSize, roomHeight]} />
-        {mat}
+        <WallMaterial />
       </mesh>
       {/* Left Wall (-X) */}
       <mesh position={[-halfW, halfH, 0]} rotation={[0, Math.PI / 2, 0]} raycast={() => null} receiveShadow>
         <planeGeometry args={[roomSize, roomHeight]} />
-        {mat}
+        <WallMaterial />
       </mesh>
       {/* Right Wall (+X) */}
       <mesh position={[halfW, halfH, 0]} rotation={[0, -Math.PI / 2, 0]} raycast={() => null} receiveShadow>
         <planeGeometry args={[roomSize, roomHeight]} />
-        {mat}
+        <WallMaterial />
       </mesh>
     </>
   );
@@ -681,7 +715,7 @@ export default function RoomCanvas({
   const {
     furnitures: generatedFurnitures,
     setFurnitures,
-    textures,         // { floor: string|null, wallpaper: string|null }
+    textures, // { floor: string|null, wallpaper: string|null }
     isGenerating,
     loadingMessage,
     error,
@@ -691,65 +725,89 @@ export default function RoomCanvas({
   // ── Load wallpaper texture ─────────────────────────────────────────────────
   useEffect(() => {
     const rawPath = wallpaper?.path ?? (isViewerMode ? null : textures.wallpaper);
-    if (!rawPath) { setWallTexture((prev) => { prev?.dispose(); return null; }); return; }
+    if (!rawPath) {
+      setWallTexture((prev) => {
+        prev?.dispose();
+        return null;
+      });
+      return;
+    }
 
     const fullPath = wallpaper?.path ? rawPath : `/furnitures/${rawPath}`;
 
     const cancel = loadTexture(fullPath, 3, (texture) => {
-      setWallTexture((prev) => { prev?.dispose(); return texture; });
+      setWallTexture((prev) => {
+        prev?.dispose();
+        return texture;
+      });
     });
-    return () => { cancel(); };
+    return () => {
+      cancel();
+    };
   }, [wallpaper?.path, textures.wallpaper, isViewerMode]);
 
   // ── Load floor texture ─────────────────────────────────────────────────────
   useEffect(() => {
     const rawPath = flooring?.path ?? (isViewerMode ? null : textures.floor);
-    if (!rawPath) { setFloorTexture((prev) => { prev?.dispose(); return null; }); return; }
+    if (!rawPath) {
+      setFloorTexture((prev) => {
+        prev?.dispose();
+        return null;
+      });
+      return;
+    }
 
     const fullPath = flooring?.path ? rawPath : `/furnitures/${rawPath}`;
 
     const cancel = loadTexture(fullPath, 4, (texture) => {
-      setFloorTexture((prev) => { prev?.dispose(); return texture; });
+      setFloorTexture((prev) => {
+        prev?.dispose();
+        return texture;
+      });
     });
-    return () => { cancel(); };
+    return () => {
+      cancel();
+    };
   }, [flooring?.path, textures.floor, isViewerMode]);
 
   // ── Map viewer data ────────────────────────────────────────────────────────
   const viewerFurnitures: FurnitureItem[] = useMemo(() => {
     if (!isViewerMode) return [];
-    return items.filter((item) => {
-      const detail = furniture.find((f) => f.id === item.id);
-      return detail?.category !== "texture";
-    }).map((item) => {
-      const detail = furniture.find((f) => f.id === item.id);
-      const key = getItemKey(item);
-      const width  = Math.max(detail?.real_width  ?? 0.8, 0.4);
-      const height = Math.max(detail?.real_height ?? 0.8, 0.2);
-      const depth  = Math.max(detail?.real_depth  ?? 0.8, 0.4);
-      return {
-        id: key,
-        name: detail?.name,
-        position: [item.x, 0, item.z] as [number, number, number],
-        rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
-        path: detail?.file_url && detail.file_url !== "PENDING_UPLOAD" ? detail.file_url : undefined,
-        displaySize:
-          detail?.file_url && detail.file_url !== "PENDING_UPLOAD"
-            ? getDisplaySize(detail.file_url)
-            : Math.max(width, height, depth),
-        size: [width, height, depth] as [number, number, number],
-        color: "#d4d4d8",
-      };
-    });
+    return items
+      .filter((item) => {
+        const detail = furniture.find((f) => f.id === item.id);
+        return detail?.category !== "texture";
+      })
+      .map((item) => {
+        const detail = furniture.find((f) => f.id === item.id);
+        const key = getItemKey(item);
+        const width = Math.max(detail?.real_width ?? 0.8, 0.4);
+        const height = Math.max(detail?.real_height ?? 0.8, 0.2);
+        const depth = Math.max(detail?.real_depth ?? 0.8, 0.4);
+        return {
+          id: key,
+          name: detail?.name,
+          position: [item.x, 0, item.z] as [number, number, number],
+          rotation: [0, (item.rotation * Math.PI) / 180, 0] as [number, number, number],
+          path: detail?.file_url && detail.file_url !== "PENDING_UPLOAD" ? detail.file_url : undefined,
+          displaySize:
+            detail?.file_url && detail.file_url !== "PENDING_UPLOAD"
+              ? getDisplaySize(detail.file_url)
+              : Math.max(width, height, depth),
+          size: [width, height, depth] as [number, number, number],
+          color: "#d4d4d8",
+        };
+      });
   }, [isViewerMode, items, furniture]);
 
   const activeFurnitures = isViewerMode
     ? viewerFurnitures
-    : generatedFurnitures.map(f => ({
+    : generatedFurnitures.map((f) => ({
         ...f,
         position: [f.position[0], 0, f.position[2]] as [number, number, number],
       }));
 
-  const totalModels = activeFurnitures.filter(f => f.path && f.path !== "PENDING_UPLOAD").length;
+  const totalModels = activeFurnitures.filter((f) => f.path && f.path !== "PENDING_UPLOAD").length;
   const allLoaded = totalModels === 0 || loadedCount >= totalModels;
 
   const allLoadedFiredRef = useRef(false);
@@ -769,9 +827,7 @@ export default function RoomCanvas({
     if (externalOnPositionChange) {
       externalOnPositionChange(id, [newPos[0], 0, newPos[2]]);
     } else {
-      setFurnitures((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f))
-      );
+      setFurnitures((prev) => prev.map((f) => (f.id === id ? { ...f, position: [newPos[0], 0, newPos[2]] } : f)));
     }
   };
 
@@ -914,9 +970,7 @@ export default function RoomCanvas({
             className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6"
             style={{ background: "hsl(var(--bg))" }}
           >
-            <div
-              style={{ width: "200px", height: "1px", background: "hsl(var(--border))", overflow: "hidden" }}
-            >
+            <div style={{ width: "200px", height: "1px", background: "hsl(var(--border))", overflow: "hidden" }}>
               <div
                 style={{
                   height: "100%",
@@ -938,64 +992,65 @@ export default function RoomCanvas({
 
         {webglSupported && (
           <div style={{ opacity: allLoaded ? 1 : 0, transition: "opacity 600ms ease", width: "100%", height: "100%" }}>
-          <Canvas
-            shadows
-            style={{ width: "100%", height: "100%" }}
-            onPointerMissed={() => {
-              if (isControlled && externalOnDeselect) {
-                externalOnDeselect();
-              } else if (!isControlled) {
-                setInternalSelectedId(null);
-                setInternalEditId(null);
-              }
-            }}
-            gl={{ antialias: true, preserveDrawingBuffer: true }}
-          >
-            <ambientLight intensity={0.7} />
-            <directionalLight position={[0, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
-            <directionalLight position={[0, 4, 8]} intensity={0.5} />
-
-            {/* ── Floor ── */}
-            <RoomFloor textureUrl={flooring?.path} texture={floorTexture} />
-
-            {/* ── Ceiling ── */}
-            <mesh
-              position={[0, roomHeight, 0]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              raycast={() => null}
+            <Canvas
+              shadows
+              style={{ width: "100%", height: "100%" }}
+              onPointerMissed={() => {
+                if (isControlled && externalOnDeselect) {
+                  externalOnDeselect();
+                } else if (!isControlled) {
+                  setInternalSelectedId(null);
+                  setInternalEditId(null);
+                }
+              }}
+              gl={{ antialias: true, preserveDrawingBuffer: true }}
             >
-              <planeGeometry args={[roomSize, roomSize]} />
-              <meshStandardMaterial color="#faf7f2" side={THREE.BackSide} transparent opacity={0.9} />
-            </mesh>
+              <ambientLight intensity={0.7} />
+              <directionalLight position={[0, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
+              <directionalLight position={[0, 4, 8]} intensity={0.5} />
 
-            {/* ── Walls ── */}
-            <RoomWalls textureUrl={wallpaper?.path} texture={wallTexture} roomSize={roomSize} roomHeight={roomHeight} />
+              {/* ── Floor ── */}
+              <RoomFloor textureUrl={flooring?.path} texture={floorTexture} />
 
-            <gridHelper
-              args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]}
-              position={[0, 0.01, 0]}
-              raycast={() => null}
-            />
+              {/* ── Ceiling ── */}
+              <mesh position={[0, roomHeight, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
+                <planeGeometry args={[roomSize, roomSize]} />
+                <meshStandardMaterial color="#faf7f2" side={THREE.BackSide} transparent opacity={0.9} />
+              </mesh>
 
-            {/* ── Furniture ── */}
-            {activeFurnitures.map((f) => (
-              <MovableFurniture
-                key={f.id}
-                furniture={f}
-                isSelected={selectedId === f.id}
-                isEditMode={editId === f.id}
-                activeRotationDir={editId === f.id ? rotationDir : 0}
-                onSingleClick={() => handleSingleClick(f.id)}
-                onDoubleClick={() => handleDoubleClick(f.id)}
-                onPositionChange={(pos) => handlePositionChange(f.id, pos)}
-                onRotationChange={(rot) => handleRotationChange(f.id, rot)}
-                onModelLoad={() => setLoadedCount(prev => prev + 1)}
+              {/* ── Walls ── */}
+              <RoomWalls
+                textureUrl={wallpaper?.path}
+                texture={wallTexture}
+                roomSize={roomSize}
+                roomHeight={roomHeight}
               />
-            ))}
 
-            <StoreExposer />
-            <CameraController editId={editId} />
-          </Canvas>
+              <gridHelper
+                args={[roomSize, roomSize, "#c4bdb4", "#dbd5cc"]}
+                position={[0, 0.01, 0]}
+                raycast={() => null}
+              />
+
+              {/* ── Furniture ── */}
+              {activeFurnitures.map((f) => (
+                <MovableFurniture
+                  key={f.id}
+                  furniture={f}
+                  isSelected={selectedId === f.id}
+                  isEditMode={editId === f.id}
+                  activeRotationDir={editId === f.id ? rotationDir : 0}
+                  onSingleClick={() => handleSingleClick(f.id)}
+                  onDoubleClick={() => handleDoubleClick(f.id)}
+                  onPositionChange={(pos) => handlePositionChange(f.id, pos)}
+                  onRotationChange={(rot) => handleRotationChange(f.id, rot)}
+                  onModelLoad={() => setLoadedCount((prev) => prev + 1)}
+                />
+              ))}
+
+              <StoreExposer />
+              <CameraController editId={editId} />
+            </Canvas>
           </div>
         )}
       </div>
