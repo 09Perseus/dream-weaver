@@ -692,21 +692,22 @@ export default function RoomCanvas({
 
   const webglSupported = useMemo(() => detectWebGL(), []);
 
-  // Escape to exit move mode
+  // Escape to exit move mode and deselect
   useEffect(() => {
-    if (!editId) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (isControlled && externalOnEdit) {
-          externalOnEdit(editId); // toggle off
+        if (isControlled) {
+          if (externalOnEdit && editId) externalOnEdit(editId);
+          if (externalOnSelect && selectedId) externalOnSelect(selectedId);
         } else {
           setInternalEditId(null);
+          setInternalSelectedId(null);
         }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [editId, isControlled, externalOnEdit]);
+  }, [editId, selectedId, isControlled, externalOnEdit, externalOnSelect]);
 
   return (
     <div

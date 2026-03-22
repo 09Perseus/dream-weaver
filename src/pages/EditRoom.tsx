@@ -611,6 +611,28 @@ export default function EditRoom() {
           </Button>
         )}
 
+        {/* Selection status + cancel */}
+        {selectedItemId && (
+          <span className="font-body text-[0.75rem] text-muted-foreground tracking-[0.05em] hidden md:inline truncate max-w-[200px]">
+            {furniture.find(f => f.id === selectedItemId)?.name ?? "Item"}
+            {editingItemId === selectedItemId ? " — MOVING" : " — SELECTED"}
+          </span>
+        )}
+        {(selectedItemId || editingItemId) && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-[44px]"
+            onClick={() => {
+              setSelectedItemId(null);
+              setEditingItemId(null);
+            }}
+          >
+            <X className="h-4 w-4" />
+            <span className="hidden md:inline">Cancel</span>
+          </Button>
+        )}
+
         <div className="flex-1" />
 
         {!isCopy && (
