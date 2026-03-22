@@ -282,28 +282,42 @@ export default function Index() {
     return true;
   };
 
+  const checkGenerationLimit = async (): Promise<boolean> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const guestCount = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
+      return guestCount < 3;
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("total_rooms_generated")
+      .eq("id", session.user.id)
+      .single();
+    return (profile?.total_rooms_generated ?? 0) < 3;
+  };
+
+  const incrementGenerationCount = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const current = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
+      localStorage.setItem("roomai_guest_generations", String(current + 1));
+      return;
+    }
+    await supabase.rpc("increment_room_generation_count", { user_id_input: session.user.id });
+  };
+
   const handleGenerate = async () => {
     if (!validate()) return;
 
-    // Check generation limit
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { count } = await supabase
-        .from("room_designs")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", session.user.id)
-        .eq("is_copy", false);
-      if ((count ?? 0) >= 3) {
-        setShowUpgradeDialog(true);
-        return;
-      }
-    } else {
-      const guestCount = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
-      if (guestCount >= 3) {
-        setShowUpgradeDialog(true);
-        return;
-      }
+    const canGenerate = await checkGenerationLimit();
+    if (!canGenerate) {
+      setShowUpgradeDialog(true);
+      return;
     }
+
+    // Increment FIRST before generating
+    await incrementGenerationCount();
+    setGenerationsUsed(prev => prev + 1);
 
     setLoading(true);
     try {
@@ -335,10 +349,6 @@ export default function Index() {
       }
 
       if (!user?.id) {
-        // Increment guest counter
-        const current = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
-        localStorage.setItem("roomai_guest_generations", String(current + 1));
-        setGenerationsUsed(current + 1);
         navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
         return;
       }
@@ -358,7 +368,6 @@ export default function Index() {
         return;
       }
 
-      setGenerationsUsed(prev => prev + 1);
       navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
     } catch (err: any) {
       console.error("Unexpected error:", err);
