@@ -44,25 +44,6 @@ const RoomIllustration = () => (
   </svg>
 );
 
-/* ── Mock product card ── */
-const MockProductCard = () => (
-  <div className="border border-border bg-surface p-6 max-w-[280px] mx-auto">
-    <div className="aspect-square bg-background border border-border flex items-center justify-center mb-4">
-      <svg viewBox="0 0 100 80" fill="none" className="w-2/3 opacity-40" xmlns="http://www.w3.org/2000/svg">
-        <rect x="10" y="30" width="80" height="35" rx="4" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="10" y="20" width="25" height="15" rx="3" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="65" y="20" width="25" height="15" rx="3" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="15" y="65" width="6" height="8" rx="1" stroke="hsl(var(--border))" strokeWidth="1" />
-        <rect x="79" y="65" width="6" height="8" rx="1" stroke="hsl(var(--border))" strokeWidth="1" />
-      </svg>
-    </div>
-    <p className="font-heading text-[1.1rem] font-normal text-foreground">Oslo Corner Sofa</p>
-    <p className="font-body text-[0.85rem] text-accent mt-1">$1,299</p>
-    <button className="mt-4 font-body text-[0.7rem] tracking-[0.1em] uppercase text-accent hover:underline cursor-pointer">
-      ADD TO CART →
-    </button>
-  </div>
-);
 
 /* ── Section divider ── */
 const Divider = () => (
