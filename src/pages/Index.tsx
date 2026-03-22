@@ -581,8 +581,8 @@ export default function Index() {
               </div>
 
               {/* Visual */}
-              <div className="relative border border-border bg-surface p-6 aspect-[4/3] flex items-center justify-center order-1 md:order-2">
-                <RoomIllustration />
+              <div className="relative border border-border bg-surface overflow-hidden aspect-[4/3] flex items-center justify-center order-1 md:order-2">
+                <img src={roomPreview} alt="AI-generated 3D room preview" className="w-full h-full object-cover" />
                 <span className="absolute top-3 right-3 font-body text-[0.6rem] tracking-[0.1em] uppercase text-accent">
                   AI
                 </span>
