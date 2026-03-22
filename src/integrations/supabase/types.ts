@@ -223,6 +223,7 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          floor_texture: string | null
           id: string
           is_copy: boolean | null
           is_shared: boolean
@@ -231,10 +232,12 @@ export type Database = {
           source_room_id: string | null
           thumbnail_url: string | null
           user_id: string
+          wall_texture: string | null
         }
         Insert: {
           created_at?: string | null
           description?: string | null
+          floor_texture?: string | null
           id?: string
           is_copy?: boolean | null
           is_shared?: boolean
@@ -243,10 +246,12 @@ export type Database = {
           source_room_id?: string | null
           thumbnail_url?: string | null
           user_id: string
+          wall_texture?: string | null
         }
         Update: {
           created_at?: string | null
           description?: string | null
+          floor_texture?: string | null
           id?: string
           is_copy?: boolean | null
           is_shared?: boolean
@@ -255,6 +260,7 @@ export type Database = {
           source_room_id?: string | null
           thumbnail_url?: string | null
           user_id?: string
+          wall_texture?: string | null
         }
         Relationships: [
           {
