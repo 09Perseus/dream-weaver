@@ -269,6 +269,7 @@ function RightPanel({
   onDeleteItem,
   onAddAnother,
   onAddToCart,
+  onAddAllToCart,
   onAddPreviewToRoom,
   onBack,
   onClearPreview,
@@ -283,6 +284,7 @@ function RightPanel({
   onDeleteItem: (key: string) => void;
   onAddAnother: (furnitureId: string) => void;
   onAddToCart: (furnitureId: string) => void;
+  onAddAllToCart: () => void;
   onAddPreviewToRoom: () => void;
   onBack: () => void;
   onClearPreview: () => void;
