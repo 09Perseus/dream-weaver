@@ -239,17 +239,17 @@ export default function Index() {
     return () => clearTimeout(timeout);
   }, [typedText, isDeleting, currentIndex]);
 
-  // Load generation count
+  // Load generation count from profiles.total_rooms_generated
   useEffect(() => {
     const loadCount = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const { count } = await supabase
-          .from("room_designs")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", session.user.id)
-          .eq("is_copy", false);
-        setGenerationsUsed(count ?? 0);
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("total_rooms_generated")
+          .eq("id", session.user.id)
+          .single();
+        setGenerationsUsed(profile?.total_rooms_generated ?? 0);
       } else {
         setGenerationsUsed(parseInt(localStorage.getItem("roomai_guest_generations") ?? "0"));
       }
