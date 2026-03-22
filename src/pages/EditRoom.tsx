@@ -793,7 +793,7 @@ export default function EditRoom() {
                   }}
                   onDeleteItem={(id) => {
                     setUndoStack((prev) => [...prev, roomItems]);
-                    setRoomItems((prev) => prev.filter((item) => item.id !== id));
+                    setRoomItems((prev) => prev.filter((item) => getItemKey(item) !== id));
                     setSelectedItemId(null);
                     setEditingItemId(null);
                     toast({ title: "Item removed" });
@@ -823,7 +823,7 @@ export default function EditRoom() {
               }}
               onDeleteItem={(id) => {
                 setUndoStack((prev) => [...prev, roomItems]);
-                setRoomItems((prev) => prev.filter((item) => item.id !== id));
+                setRoomItems((prev) => prev.filter((item) => getItemKey(item) !== id));
                 setSelectedItemId(null);
                 setEditingItemId(null);
                 toast({ title: "Item removed" });
