@@ -43,6 +43,10 @@ export default function RoomView() {
   const [isLiked, setIsLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState<FurnitureDetail | null>(null);
+  const isMobile = useIsMobile();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    typeof window !== "undefined" && window.innerWidth < 768
+  );
 
   useEffect(() => {
     if (!id || !user) return;
