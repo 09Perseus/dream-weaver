@@ -360,6 +360,8 @@ export default function EditRoom() {
         setRoomName(room.description || "My Room");
         const items = (room.items as any as PlacedItem[]) ?? [];
         setRoomItems(items);
+        lastSavedItems.current = items;
+        lastSavedName.current = room.description || "My Room";
         const itemIds = items.map((i) => i.id);
         if (itemIds.length > 0) {
           const { data: fd } = await supabase
