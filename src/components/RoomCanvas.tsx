@@ -619,6 +619,9 @@ export default function RoomCanvas({
         position: [f.position[0], 0, f.position[2]] as [number, number, number],
       }));
 
+  const totalModels = activeFurnitures.filter(f => f.path && f.path !== "PENDING_UPLOAD").length;
+  const allLoaded = totalModels === 0 || loadedCount >= totalModels;
+
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handlePositionChange = (id: string, newPos: [number, number, number]) => {
     if (externalOnPositionChange) {
