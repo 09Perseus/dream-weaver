@@ -603,17 +603,13 @@ export default function RoomCanvas({
   } = useGenerateRoom({ roomSize, roomHeight });
 
   // ── Load wallpaper texture ─────────────────────────────────────────────────
-  // Priority: prop (viewer mode) → generated texture (standalone mode)
   useEffect(() => {
     const rawPath = wallpaper?.path ?? (isViewerMode ? null : textures.wallpaper);
-    console.log("[RoomCanvas] wallpaper effect — rawPath:", rawPath, "prop:", wallpaper?.path);
-    if (!rawPath) return;
+    if (!rawPath) { setWallTexture((prev) => { prev?.dispose(); return null; }); return; }
 
     const fullPath = wallpaper?.path ? rawPath : `/furnitures/${rawPath}`;
-    console.log("[RoomCanvas] Loading wall texture:", fullPath);
 
     const cancel = loadTexture(fullPath, 3, (texture) => {
-      console.log("[RoomCanvas] Wall texture loaded successfully");
       setWallTexture((prev) => { prev?.dispose(); return texture; });
     });
     return () => { cancel(); };
@@ -622,14 +618,11 @@ export default function RoomCanvas({
   // ── Load floor texture ─────────────────────────────────────────────────────
   useEffect(() => {
     const rawPath = flooring?.path ?? (isViewerMode ? null : textures.floor);
-    console.log("[RoomCanvas] flooring effect — rawPath:", rawPath, "prop:", flooring?.path);
-    if (!rawPath) return;
+    if (!rawPath) { setFloorTexture((prev) => { prev?.dispose(); return null; }); return; }
 
     const fullPath = flooring?.path ? rawPath : `/furnitures/${rawPath}`;
-    console.log("[RoomCanvas] Loading floor texture:", fullPath);
 
     const cancel = loadTexture(fullPath, 4, (texture) => {
-      console.log("[RoomCanvas] Floor texture loaded successfully");
       setFloorTexture((prev) => { prev?.dispose(); return texture; });
     });
     return () => { cancel(); };
