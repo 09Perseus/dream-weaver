@@ -284,6 +284,27 @@ export default function Index() {
 
   const handleGenerate = async () => {
     if (!validate()) return;
+
+    // Check generation limit
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { count } = await supabase
+        .from("room_designs")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", session.user.id)
+        .eq("is_copy", false);
+      if ((count ?? 0) >= 3) {
+        setShowUpgradeDialog(true);
+        return;
+      }
+    } else {
+      const guestCount = parseInt(localStorage.getItem("roomai_guest_generations") ?? "0");
+      if (guestCount >= 3) {
+        setShowUpgradeDialog(true);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("generate-room", {
