@@ -190,7 +190,11 @@ function PreviewInfoCard({
           <img
             src={bustCache(item.thumbnail_url)}
             alt={item.name}
-            className="w-full aspect-square object-cover rounded-lg border border-border"
+            className={`w-full rounded-lg border border-border ${
+              item.category?.toLowerCase() === 'texture'
+                ? 'aspect-auto object-contain'
+                : 'aspect-square object-cover'
+            }`}
           />
         ) : (
           <div className="w-full aspect-square bg-muted rounded-lg border border-border flex items-center justify-center">
