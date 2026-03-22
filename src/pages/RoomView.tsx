@@ -67,7 +67,7 @@ export default function RoomView() {
     if (!id) return;
     supabase
       .from("community_posts")
-      .select("*")
+      .select("*, profiles:user_id(display_name, avatar_url, avatar_color)")
       .eq("room_design_id", id)
       .eq("is_visible", true)
       .maybeSingle()
