@@ -1074,10 +1074,12 @@ export default function EditRoom() {
               furniture={furniture}
               selectedItemId={selectedItemId}
               editingItemId={editingItemId}
+              previewItem={previewItem}
               formatPrice={formatPrice}
               onSelectItem={(id) => {
                 setSelectedItemId((prev) => prev === id ? null : id);
                 setEditingItemId(null);
+                setPreviewItem(null);
               }}
               onDeleteItem={(id) => {
                 setUndoStack((prev) => [...prev, roomItems]);
@@ -1088,10 +1090,17 @@ export default function EditRoom() {
               }}
               onAddAnother={handleAddAnother}
               onAddToCart={handleAddToCart}
+              onAddPreviewToRoom={() => {
+                if (previewItem) {
+                  handleAddFromPicker(previewItem);
+                  setPreviewItem(null);
+                }
+              }}
               onBack={() => {
                 setSelectedItemId(null);
                 setEditingItemId(null);
               }}
+              onClearPreview={() => setPreviewItem(null)}
             />
           </div>
         )}
