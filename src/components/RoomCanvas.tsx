@@ -52,6 +52,7 @@ interface RoomCanvasProps {
   onDeselect?: () => void;
   onPositionChange?: (id: string, pos: [number, number, number]) => void;
   onRotationChange?: (id: string, rot: [number, number, number]) => void;
+  onAllModelsLoaded?: () => void;
 }
 
 export interface FurnitureItem {
