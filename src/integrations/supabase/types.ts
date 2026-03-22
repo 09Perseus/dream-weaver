@@ -80,6 +80,13 @@ export type Database = {
             referencedRelation: "room_designs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "community_posts_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       furniture_items: {
