@@ -358,6 +358,7 @@ export default function Index() {
         return;
       }
 
+      setGenerationsUsed(prev => prev + 1);
       navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
     } catch (err: any) {
       console.error("Unexpected error:", err);
