@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { useGenerateRoom, getDisplaySize } from "@/hooks/useGenerateRoom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+import { getItemKey } from "@/lib/edgeFunctions";
 import { RotateCcw, RotateCw } from "lucide-react";
 
 function detectWebGL(): boolean {
