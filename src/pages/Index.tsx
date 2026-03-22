@@ -253,6 +253,19 @@ export default function Index() {
 
   useEffect(() => {
     supabase
+      .from("furniture_items")
+      .select("id, name, price, file_url, thumbnail_url, category")
+      .not("file_url", "is", null)
+      .limit(8)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setShowcaseItems([...data].sort(() => Math.random() - 0.5));
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+    supabase
       .from("community_posts")
       .select("*")
       .eq("is_visible", true)
