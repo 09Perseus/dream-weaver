@@ -13,104 +13,113 @@ interface ShowcaseItem {
   category: string;
 }
 
-/* ── Auto-rotating 3D model with wireframe-to-solid reveal ── */
+/* ── Auto-rotating 3D model with wireframe-to-solid crossfade ── */
 
 function AutoRotatingModel({ url, revealKey }: { url: string; revealKey: number }) {
   const { scene } = useGLTF(url);
   const groupRef = useRef<THREE.Group>(null);
   const progressRef = useRef(0);
-  const originalMaterials = useRef<Map<THREE.Mesh, THREE.Material | THREE.Material[]>>(new Map());
-  const wireframeMaterials = useRef<Map<THREE.Mesh, THREE.Material>>(new Map());
-  const initialized = useRef(false);
+  const solidMaterials = useRef<Map<string, { mat: THREE.Material; original: THREE.Material }>>(new Map());
+  const wireMaterials = useRef<Map<string, THREE.MeshBasicMaterial>>(new Map());
 
-  const clonedScene = useMemo(() => {
-    // Reset on new scene
-    initialized.current = false;
+  // Clone and normalize the scene, create both wireframe + solid layers
+  const { wireClone, solidClone } = useMemo(() => {
     progressRef.current = 0;
-    originalMaterials.current.clear();
-    wireframeMaterials.current.clear();
+    solidMaterials.current.clear();
+    wireMaterials.current.clear();
 
-    try {
-      const cloned = scene.clone(true);
-
-      const box = new THREE.Box3().setFromObject(cloned);
+    const normalize = (obj: THREE.Object3D) => {
+      const box = new THREE.Box3().setFromObject(obj);
       const size = box.getSize(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z);
-
-      if (maxDim > 0) {
-        const scale = 1.5 / maxDim;
-        cloned.scale.setScalar(scale);
-      }
-
-      const newBox = new THREE.Box3().setFromObject(cloned);
+      if (maxDim > 0) obj.scale.setScalar(1.5 / maxDim);
+      const newBox = new THREE.Box3().setFromObject(obj);
       const centre = newBox.getCenter(new THREE.Vector3());
-      cloned.position.sub(centre);
+      obj.position.sub(centre);
+    };
 
-      return cloned;
-    } catch {
-      return scene.clone(true);
-    }
+    // Solid clone — starts fully transparent, fades in
+    const solid = scene.clone(true);
+    normalize(solid);
+    let meshIdx = 0;
+    solid.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const id = `mesh_${meshIdx++}`;
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        const clonedMats = mats.map((m) => {
+          const c = m.clone();
+          c.transparent = true;
+          c.opacity = 0;
+          c.needsUpdate = true;
+          return c;
+        });
+        const result = Array.isArray(mesh.material) ? clonedMats : clonedMats[0];
+        solidMaterials.current.set(id, { mat: result as THREE.Material, original: mats[0] });
+        mesh.material = result as any;
+      }
+    });
+
+    // Wireframe clone — starts fully visible, fades out
+    const wire = scene.clone(true);
+    normalize(wire);
+    meshIdx = 0;
+    wire.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const id = `mesh_${meshIdx++}`;
+        const origMat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+        const color = (origMat as THREE.MeshStandardMaterial).color?.clone?.() ?? new THREE.Color(0xc8b89a);
+        const wireMat = new THREE.MeshBasicMaterial({
+          color,
+          wireframe: true,
+          transparent: true,
+          opacity: 1,
+          depthWrite: false,
+        });
+        wireMaterials.current.set(id, wireMat);
+        mesh.material = wireMat;
+      }
+    });
+
+    return { wireClone: wire, solidClone: solid };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, revealKey]);
 
   useFrame((_, delta) => {
+    // Rotate both clones together
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.4;
     }
 
-    // Initialize wireframe materials on first frame
-    if (!initialized.current && clonedScene) {
-      clonedScene.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          // Store original
-          originalMaterials.current.set(mesh, mesh.material);
-
-          // Create wireframe version
-          const origMat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
-          const color = (origMat as THREE.MeshStandardMaterial).color?.clone?.() ?? new THREE.Color("hsl(36, 45%, 70%)");
-          const wireMat = new THREE.MeshBasicMaterial({
-            color,
-            wireframe: true,
-            transparent: true,
-            opacity: 1,
-          });
-          wireframeMaterials.current.set(mesh, wireMat);
-          mesh.material = wireMat;
-        }
-      });
-      initialized.current = true;
-    }
-
-    // Animate transition: 0 → 1 over ~1.5 seconds
+    // Crossfade: wireframe out, solid in over ~2s
     if (progressRef.current < 1) {
-      progressRef.current = Math.min(1, progressRef.current + delta / 1.5);
+      progressRef.current = Math.min(1, progressRef.current + delta / 2);
       const t = progressRef.current;
-      // Smooth ease-in-out
       const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
-      clonedScene.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          const wireMat = wireframeMaterials.current.get(mesh);
-          const origMats = originalMaterials.current.get(mesh);
-
-          if (wireMat && origMats && ease >= 1) {
-            // Fully revealed — swap to original
-            mesh.material = origMats;
-            wireMat.dispose();
-          } else if (wireMat) {
-            // Fade wireframe opacity down as we approach solid
-            (wireMat as THREE.MeshBasicMaterial).opacity = 1 - ease * 0.7;
-          }
+      // Fade solid materials in
+      solidMaterials.current.forEach(({ mat }) => {
+        if (Array.isArray(mat)) {
+          (mat as THREE.Material[]).forEach((m) => { m.opacity = ease; m.needsUpdate = true; });
+        } else {
+          mat.opacity = ease;
+          mat.needsUpdate = true;
         }
+      });
+
+      // Fade wireframe materials out
+      wireMaterials.current.forEach((wireMat) => {
+        wireMat.opacity = 1 - ease;
+        wireMat.needsUpdate = true;
       });
     }
   });
 
   return (
     <group ref={groupRef}>
-      <primitive object={clonedScene} />
+      <primitive object={wireClone} />
+      <primitive object={solidClone} />
     </group>
   );
 }
