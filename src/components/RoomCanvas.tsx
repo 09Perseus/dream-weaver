@@ -221,16 +221,7 @@ function MovableFurniture({
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (clickTimer.current) {
-      clearTimeout(clickTimer.current);
-      clickTimer.current = null;
-      onDoubleClick();
-    } else {
-      clickTimer.current = setTimeout(() => {
-        clickTimer.current = null;
-        onSingleClick();
-      }, 220);
-    }
+    onSingleClick();
   };
 
   return (
