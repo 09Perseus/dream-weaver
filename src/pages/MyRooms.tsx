@@ -70,14 +70,46 @@ export default function MyRooms() {
     return () => clearTimeout(timeout);
   }, []);
 
-  const handleDelete = async (roomId: string) => {
-    setDeleting(roomId);
-    const { error } = await supabase.from("room_designs").delete().eq("id", roomId);
-    if (error) {
-      toast({ title: "Error", description: "Failed to delete room.", variant: "destructive" });
-    } else {
-      setRooms((prev) => prev.filter((r) => r.id !== roomId));
+  const handleDelete = async (room: Room) => {
+    setDeleting(room.id);
+    try {
+      // 1. Delete room thumbnail from storage
+      if (room.thumbnail_url) {
+        const cleanFilename = room.thumbnail_url.split("/").pop()?.split("?")[0];
+        if (cleanFilename) {
+          const { error: storageErr } = await supabase.storage.from("thumbnails").remove([cleanFilename]);
+          if (storageErr) console.warn("Thumbnail delete failed:", storageErr);
+        }
+      }
+
+      // 2. Delete associated community post thumbnails
+      const { data: posts } = await supabase
+        .from("community_posts")
+        .select("thumbnail_url")
+        .eq("room_design_id", room.id);
+
+      if (posts?.length) {
+        const filenames = posts
+          .map((p) => p.thumbnail_url?.split("/").pop()?.split("?")[0])
+          .filter((f): f is string => !!f);
+        if (filenames.length) {
+          await supabase.storage.from("thumbnails").remove(filenames);
+        }
+      }
+
+      // 3. Delete community posts manually (in case no cascade FK)
+      await supabase.from("community_posts").delete().eq("room_design_id", room.id);
+
+      // 4. Delete the room record
+      const { error } = await supabase.from("room_designs").delete().eq("id", room.id);
+      if (error) throw error;
+
+      setRooms((prev) => prev.filter((r) => r.id !== room.id));
+      setPostedRoomIds((prev) => { const next = new Set(prev); next.delete(room.id); return next; });
       toast({ title: "Room deleted" });
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      toast({ title: "Error", description: "Failed to delete room.", variant: "destructive" });
     }
     setDeleting(null);
   };
@@ -253,7 +285,7 @@ export default function MyRooms() {
                       </button>
                     )}
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDelete(room.id); }}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(room); }}
                       disabled={deleting === room.id}
                       title="Delete Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
