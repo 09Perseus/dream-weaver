@@ -285,7 +285,7 @@ export default function MyRooms() {
                       </button>
                     )}
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDelete(room.id); }}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(room); }}
                       disabled={deleting === room.id}
                       title="Delete Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
