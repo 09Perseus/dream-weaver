@@ -675,6 +675,18 @@ export default function RoomCanvas({
   const totalModels = activeFurnitures.filter(f => f.path && f.path !== "PENDING_UPLOAD").length;
   const allLoaded = totalModels === 0 || loadedCount >= totalModels;
 
+  const allLoadedFiredRef = useRef(false);
+  useEffect(() => {
+    if (allLoaded && totalModels > 0 && !allLoadedFiredRef.current) {
+      allLoadedFiredRef.current = true;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          onAllModelsLoaded?.();
+        });
+      });
+    }
+  }, [allLoaded, totalModels, onAllModelsLoaded]);
+
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handlePositionChange = (id: string, newPos: [number, number, number]) => {
     if (externalOnPositionChange) {
