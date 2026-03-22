@@ -885,6 +885,7 @@ export default function RoomCanvas({
 
             <CameraController editId={editId} />
           </Canvas>
+          </div>
         )}
       </div>
 
