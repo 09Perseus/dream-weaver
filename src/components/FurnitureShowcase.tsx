@@ -156,7 +156,7 @@ export default function FurnitureShowcase({ items }: { items: ShowcaseItem[] }) 
           <directionalLight position={[3, 5, 3]} intensity={0.8} />
           <directionalLight position={[-3, 2, -2]} intensity={0.3} />
           <Suspense fallback={null}>
-            <AutoRotatingModel url={currentItem.file_url} />
+            <AutoRotatingModel url={currentItem.file_url} revealKey={currentIndex} />
           </Suspense>
           <OrbitControls
             enableZoom={false}
