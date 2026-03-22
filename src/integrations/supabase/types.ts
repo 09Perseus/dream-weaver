@@ -80,6 +80,13 @@ export type Database = {
             referencedRelation: "room_designs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "community_posts_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       furniture_items: {
@@ -198,6 +205,7 @@ export type Database = {
           avatar_url: string | null
           display_name: string | null
           id: string
+          total_rooms_generated: number | null
           updated_at: string | null
         }
         Insert: {
@@ -205,6 +213,7 @@ export type Database = {
           avatar_url?: string | null
           display_name?: string | null
           id: string
+          total_rooms_generated?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -212,6 +221,7 @@ export type Database = {
           avatar_url?: string | null
           display_name?: string | null
           id?: string
+          total_rooms_generated?: number | null
           updated_at?: string | null
         }
         Relationships: []
@@ -220,6 +230,7 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          floor_texture: string | null
           id: string
           is_copy: boolean | null
           is_shared: boolean
@@ -228,10 +239,12 @@ export type Database = {
           source_room_id: string | null
           thumbnail_url: string | null
           user_id: string
+          wall_texture: string | null
         }
         Insert: {
           created_at?: string | null
           description?: string | null
+          floor_texture?: string | null
           id?: string
           is_copy?: boolean | null
           is_shared?: boolean
@@ -240,10 +253,12 @@ export type Database = {
           source_room_id?: string | null
           thumbnail_url?: string | null
           user_id: string
+          wall_texture?: string | null
         }
         Update: {
           created_at?: string | null
           description?: string | null
+          floor_texture?: string | null
           id?: string
           is_copy?: boolean | null
           is_shared?: boolean
@@ -252,6 +267,7 @@ export type Database = {
           source_room_id?: string | null
           thumbnail_url?: string | null
           user_id?: string
+          wall_texture?: string | null
         }
         Relationships: [
           {
@@ -268,7 +284,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_room_generation_count: {
+        Args: { user_id_input: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useGLTF } from "@react-three/drei";
+import roomPreview from "@/assets/room-preview.png";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CommunityCard from "@/components/CommunityCard";
@@ -8,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
+
+const FurnitureShowcase = lazy(() => import("@/components/FurnitureShowcase"));
 
 interface FeaturedPost {
   id: string;
@@ -42,25 +46,6 @@ const RoomIllustration = () => (
   </svg>
 );
 
-/* ── Mock product card ── */
-const MockProductCard = () => (
-  <div className="border border-border bg-surface p-6 max-w-[280px] mx-auto">
-    <div className="aspect-square bg-background border border-border flex items-center justify-center mb-4">
-      <svg viewBox="0 0 100 80" fill="none" className="w-2/3 opacity-40" xmlns="http://www.w3.org/2000/svg">
-        <rect x="10" y="30" width="80" height="35" rx="4" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="10" y="20" width="25" height="15" rx="3" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="65" y="20" width="25" height="15" rx="3" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <rect x="15" y="65" width="6" height="8" rx="1" stroke="hsl(var(--border))" strokeWidth="1" />
-        <rect x="79" y="65" width="6" height="8" rx="1" stroke="hsl(var(--border))" strokeWidth="1" />
-      </svg>
-    </div>
-    <p className="font-heading text-[1.1rem] font-normal text-foreground">Oslo Corner Sofa</p>
-    <p className="font-body text-[0.85rem] text-accent mt-1">$1,299</p>
-    <button className="mt-4 font-body text-[0.7rem] tracking-[0.1em] uppercase text-accent hover:underline cursor-pointer">
-      ADD TO CART →
-    </button>
-  </div>
-);
 
 /* ── Section divider ── */
 const Divider = () => (
@@ -78,6 +63,9 @@ function PromptInput({
   loading,
   onGenerate,
   onFocusChange,
+  remaining,
+  showBadge = false,
+  isAuthenticated = true,
 }: {
   prompt: string;
   setPrompt: (v: string) => void;
@@ -86,6 +74,9 @@ function PromptInput({
   loading: boolean;
   onGenerate: () => void;
   onFocusChange?: (focused: boolean) => void;
+  remaining?: number;
+  showBadge?: boolean;
+  isAuthenticated?: boolean;
 }) {
   return (
     <div className="space-y-4 max-w-[600px] w-full mx-auto" style={{ marginTop: "1.5rem" }}>
@@ -140,16 +131,42 @@ function PromptInput({
         </p>
       )}
 
-      <Button
-        variant="amber"
-        size="lg"
-        className={`w-full ${loading ? "button-loading" : ""}`}
-        style={{ borderRadius: "8px", marginTop: "0.5rem" }}
-        onClick={onGenerate}
-        disabled={loading}
-      >
-        {loading ? "Generating…" : "Generate Room"}
-      </Button>
+      <div className="relative inline-block w-full" style={{ marginTop: "0.5rem" }}>
+        <Button
+          variant="amber"
+          size="lg"
+          className={`w-full ${loading ? "button-loading" : ""}`}
+          style={{ borderRadius: "8px" }}
+          onClick={onGenerate}
+          disabled={loading}
+        >
+          {loading ? "Generating…" : !isAuthenticated ? "Sign In to Generate" : "Generate Room"}
+        </Button>
+        {showBadge && (
+          <span
+            className="absolute font-body font-bold text-[0.55rem] tracking-[0.1em]"
+            style={{
+              top: "-8px",
+              right: "-8px",
+              background: "hsl(var(--accent))",
+              color: "hsl(var(--background))",
+              padding: "0.15rem 0.35rem",
+              borderRadius: "2px",
+            }}
+          >
+            FREE
+          </span>
+        )}
+      </div>
+
+      {/* Monetization hint — only for logged-in users */}
+      {isAuthenticated && remaining !== undefined && (
+        <p className="font-body text-[0.75rem] text-muted-foreground text-center tracking-[0.05em]" style={{ marginTop: "0.75rem" }}>
+          {remaining > 0
+            ? `${remaining} free ${remaining === 1 ? "room" : "rooms"} remaining · Pro plans coming soon`
+            : "Free limit reached · Pro plans coming soon"}
+        </p>
+      )}
     </div>
   );
 }
@@ -178,8 +195,24 @@ export default function Index() {
   const [loading, setLoading] = useState(false);
   const [featuredPosts, setFeaturedPosts] = useState<FeaturedPost[]>([]);
   const [inputFocused, setInputFocused] = useState(false);
-  const { user, loading: authLoading } = useAuth();
+  const [generationsUsed, setGenerationsUsed] = useState(0);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showcaseItems, setShowcaseItems] = useState<any[]>([]);
+  const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const remaining = Math.max(0, 3 - generationsUsed);
+
+  // Preload common furniture models so they're cached when user generates a room
+  useEffect(() => {
+    const COMMON_ITEMS = [
+      "/furnitures/Chair/chair.glb",
+      "/furnitures/Plants/low-poly_snake_plant.glb",
+      "/furnitures/Plants/airport_plant.glb",
+      "/furnitures/Lamps/retro_lowpoly_lamp.glb",
+      "/furnitures/Carpet/mat.glb",
+    ];
+    COMMON_ITEMS.forEach((url) => useGLTF.preload(url));
+  }, []);
 
   // Typing animation
   const roomTypes = ["BEDROOM.", "LIVING ROOM.", "HOME OFFICE.", "DINING ROOM.", "STUDIO.", "SANCTUARY."];
@@ -206,6 +239,45 @@ export default function Index() {
     return () => clearTimeout(timeout);
   }, [typedText, isDeleting, currentIndex]);
 
+  // Load generation count from profiles.total_rooms_generated
+  useEffect(() => {
+    const loadCount = async () => {
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("total_rooms_generated")
+          .eq("id", user.id)
+          .single();
+        setGenerationsUsed(profile?.total_rooms_generated ?? 0);
+      } else {
+        setGenerationsUsed(0);
+      }
+    };
+    loadCount();
+  }, [user]);
+
+  // Restore pending description after login redirect
+  useEffect(() => {
+    const pending = localStorage.getItem("roomai_pending_description");
+    if (pending && user) {
+      setPrompt(pending);
+      localStorage.removeItem("roomai_pending_description");
+    }
+  }, [user]);
+
+  useEffect(() => {
+    supabase
+      .from("furniture_items")
+      .select("id, name, price, file_url, thumbnail_url, category")
+      .not("file_url", "is", null)
+      .limit(8)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setShowcaseItems([...data].sort(() => Math.random() - 0.5));
+        }
+      });
+  }, []);
+
   useEffect(() => {
     supabase
       .from("community_posts")
@@ -231,8 +303,41 @@ export default function Index() {
     return true;
   };
 
+  const checkGenerationLimit = async (): Promise<boolean> => {
+    if (!user) return false;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("total_rooms_generated")
+      .eq("id", user.id)
+      .single();
+    return (profile?.total_rooms_generated ?? 0) < 3;
+  };
+
+  const incrementGenerationCount = async () => {
+    if (!user) return;
+    await supabase.rpc("increment_room_generation_count", { user_id_input: user.id });
+  };
+
   const handleGenerate = async () => {
     if (!validate()) return;
+
+    // Require authentication
+    if (!user) {
+      localStorage.setItem("roomai_pending_description", prompt.trim());
+      navigate("/sign-in?redirect=/&reason=generate");
+      return;
+    }
+
+    const canGenerate = await checkGenerationLimit();
+    if (!canGenerate) {
+      setShowUpgradeDialog(true);
+      return;
+    }
+
+    // Increment FIRST before generating
+    await incrementGenerationCount();
+    setGenerationsUsed(prev => prev + 1);
+
     setLoading(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("generate-room", {
@@ -256,20 +361,24 @@ export default function Index() {
 
       const items: PlacedItem[] = data.items;
       const furniture: FurnitureDetail[] = data.furniture;
+      const floor_texture: string | undefined = data.floor_texture;
+      const wall_texture: string | undefined = data.wall_texture;
 
       if (authLoading) {
         toast({ title: "Still loading session", description: "Please try again in a moment.", variant: "destructive" });
         return;
       }
 
-      if (!user?.id) {
-        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
-        return;
-      }
-
       const { data: roomRows, error: insertError } = await supabase
         .from("room_designs")
-        .insert({ description: prompt.trim(), items: items as any, user_id: user.id, share_token: crypto.randomUUID() })
+        .insert({
+          description: prompt.trim(),
+          items: items as any,
+          user_id: user.id,
+          share_token: crypto.randomUUID(),
+          floor_texture: floor_texture ?? null,
+          wall_texture: wall_texture ?? null,
+        })
         .select("id")
         .limit(1);
 
@@ -278,11 +387,11 @@ export default function Index() {
       if (insertError || !room?.id) {
         console.error("Room save error:", insertError);
         toast({ title: "Room generated!", description: "Could not save to your account, but you can still view it." });
-        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim() } });
+        navigate(`/room/new`, { state: { items, furniture, description: prompt.trim(), floor_texture, wall_texture } });
         return;
       }
 
-      navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
+      navigate(`/room/${room.id}/edit`, { state: { items, furniture, description: prompt.trim(), floor_texture, wall_texture } });
     } catch (err: any) {
       console.error("Unexpected error:", err);
       toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
@@ -300,9 +409,64 @@ export default function Index() {
     <div>
       {loading && <GeneratingOverlay />}
 
+      {/* ═══ UPGRADE DIALOG ═══ */}
+      {showUpgradeDialog && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+          onClick={() => setShowUpgradeDialog(false)}
+        >
+          <div
+            className="bg-card border border-border text-center"
+            style={{ padding: "2.5rem", maxWidth: "400px", width: "90%" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="font-body text-[0.7rem] tracking-[0.15em] uppercase text-accent" style={{ marginBottom: "0.75rem" }}>
+              FREE LIMIT REACHED
+            </p>
+            <h2 className="font-heading text-[1.5rem] font-semibold text-foreground" style={{ marginBottom: "0.75rem" }}>
+              You've used your 3 free rooms
+            </h2>
+            <p className="font-body text-[0.85rem] text-muted-foreground leading-relaxed" style={{ marginBottom: "2rem" }}>
+              Pro plans are coming soon with unlimited room generations, priority rendering, and exclusive styles.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setShowUpgradeDialog(false)}
+                className="w-full font-body text-[0.75rem] tracking-[0.1em] uppercase cursor-pointer transition-opacity hover:opacity-90"
+                style={{
+                  background: "hsl(var(--accent))",
+                  border: "none",
+                  color: "hsl(var(--background))",
+                  padding: "0.85rem 2rem",
+                }}
+              >
+                NOTIFY ME WHEN PRO LAUNCHES
+              </button>
+              <button
+                onClick={() => setShowUpgradeDialog(false)}
+                className="w-full font-body text-[0.7rem] tracking-[0.1em] text-muted-foreground cursor-pointer border border-border bg-transparent hover:border-accent transition-colors"
+                style={{ padding: "0.6rem" }}
+              >
+                MAYBE LATER
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══ HERO ═══ */}
-      <section className="hero-section relative flex flex-col items-center justify-center px-4 min-h-[100vh]" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
-        <div className="max-w-3xl w-full text-center space-y-4">
+      <section className="hero-section relative flex flex-col items-center justify-center px-4 min-h-[100vh] overflow-hidden" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
+        {/* Furniture outline pattern background */}
+        <div
+          className="absolute inset-0 z-0 pointer-events-none dark:opacity-[0.12] opacity-[0.08]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect x='20' y='80' width='60' height='40' rx='4' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='25' y='120' width='8' height='30' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='67' y='120' width='8' height='30' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='20' y='40' width='60' height='40' rx='4' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='140' y='100' width='100' height='12' rx='2' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='148' y='112' width='8' height='35' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='224' y='112' width='8' height='35' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Cellipse cx='320' cy='60' rx='25' ry='12' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='318' y='72' width='4' height='60' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Cellipse cx='320' cy='135' rx='18' ry='6' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='20' y='250' width='120' height='50' rx='8' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='20' y='220' width='120' height='32' rx='6' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='20' y='250' width='22' height='50' rx='6' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='118' y='250' width='22' height='50' rx='6' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Cellipse cx='240' cy='260' rx='30' ry='40' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='228' y='295' width='24' height='30' rx='4' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Cline x1='240' y1='260' x2='220' y2='230' stroke='%23888' stroke-width='2.5'/%3E%3Cline x1='240' y1='260' x2='260' y2='235' stroke='%23888' stroke-width='2.5'/%3E%3Cline x1='240' y1='270' x2='215' y2='255' stroke='%23888' stroke-width='2.5'/%3E%3Crect x='310' y='200' width='80' height='120' rx='2' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Cline x1='310' y1='240' x2='390' y2='240' stroke='%23888' stroke-width='2.5'/%3E%3Cline x1='310' y1='280' x2='390' y2='280' stroke='%23888' stroke-width='2.5'/%3E%3Cellipse cx='190' cy='370' rx='80' ry='25' fill='none' stroke='%23888' stroke-width='2.5'/%3E%3Cellipse cx='190' cy='370' rx='60' ry='18' fill='none' stroke='%23888' stroke-width='1.5'/%3E%3Cellipse cx='190' cy='370' rx='40' ry='12' fill='none' stroke='%23888' stroke-width='1.5'/%3E%3C/svg%3E")`,
+            backgroundSize: "400px 400px",
+            backgroundRepeat: "repeat",
+          }}
+        />
+        <div className="relative z-[1] max-w-3xl w-full text-center space-y-4">
           {/* Eyebrow */}
           <div className="animate-reveal-up flex items-center justify-center gap-0">
             <span
@@ -372,6 +536,9 @@ export default function Index() {
               loading={loading}
               onGenerate={handleGenerate}
               onFocusChange={setInputFocused}
+              remaining={remaining}
+              showBadge={remaining > 0}
+              isAuthenticated={!!user}
             />
           </div>
         </div>
@@ -427,8 +594,8 @@ export default function Index() {
               </div>
 
               {/* Visual */}
-              <div className="relative border border-border bg-surface p-6 aspect-[4/3] flex items-center justify-center order-1 md:order-2">
-                <RoomIllustration />
+              <div className="relative border border-border bg-surface overflow-hidden aspect-[4/3] flex items-center justify-center order-1 md:order-2">
+                <img src={roomPreview} alt="AI-generated 3D room preview" className="w-full h-full object-cover" />
                 <span className="absolute top-3 right-3 font-body text-[0.6rem] tracking-[0.1em] uppercase text-accent">
                   AI
                 </span>
@@ -439,13 +606,25 @@ export default function Index() {
       </section>
 
       {/* ═══ FEATURE 2 — Shop the Room ═══ */}
-      <section className="feature-section feature-pattern-2 min-h-[80vh] flex items-center">
+      <section className="feature-section feature-pattern-2 relative overflow-hidden flex items-center" style={{ minHeight: "80vh" }}>
         <div className="container py-20 md:py-28">
           <RevealSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
-              {/* Visual */}
+              {/* Visual — 3D Furniture Showcase */}
               <div className="flex justify-center">
-                <MockProductCard />
+                {showcaseItems.length > 0 ? (
+                  <Suspense fallback={
+                    <div className="max-w-[320px] w-full mx-auto">
+                      <div className="aspect-square border border-border bg-background animate-pulse" />
+                    </div>
+                  }>
+                    <FurnitureShowcase items={showcaseItems} />
+                  </Suspense>
+                ) : (
+                  <div className="max-w-[320px] w-full mx-auto">
+                    <div className="aspect-square border border-border bg-background animate-pulse" />
+                  </div>
+                )}
               </div>
 
               {/* Text */}
@@ -538,6 +717,9 @@ export default function Index() {
             setError={setError}
             loading={loading}
             onGenerate={handleGenerate}
+            remaining={remaining}
+            showBadge={remaining > 0}
+            isAuthenticated={!!user}
           />
         </RevealSection>
       </section>

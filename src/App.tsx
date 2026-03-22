@@ -42,6 +42,7 @@ const App = React.forwardRef<HTMLDivElement>((_, ref) => (
             <Layout ref={ref}>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/room/new" element={<EditRoom />} />
                 <Route path="/room/:id" element={<RoomView />} />
                 <Route path="/room/:id/edit" element={<EditRoom />} />
                 <Route path="/community" element={<Community />} />

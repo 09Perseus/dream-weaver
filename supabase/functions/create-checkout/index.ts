@@ -98,12 +98,18 @@ serve(async (req) => {
 
     // 6. Insert order if charge succeeded
     if (charge.paid === true) {
+      // Calculate original USD total from cart items (not the JPY charge amount)
+      const originalTotal = items.reduce(
+        (sum: number, item: any) => sum + ((item.price ?? 0) * (item.quantity ?? 1)),
+        0
+      );
+
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
           user_id: user?.id ?? null,
           items,
-          total_usd: amount,
+          total_usd: originalTotal,
           stripe_payment_intent_id: charge.id,
           status: "completed",
         })
@@ -140,7 +146,7 @@ serve(async (req) => {
   } catch (err) {
     console.error("create-checkout error:", err);
     return new Response(
-      JSON.stringify({ error: "Payment processing failed", details: err.message }),
+      JSON.stringify({ error: "Payment processing failed", details: (err as Error).message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { bustCache } from "@/utils/imageUrl";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -215,6 +216,26 @@ export default function Cart() {
       }
 
       if (data?.success) {
+        // Send each item to ModuLiving ecommerce endpoint
+        for (const item of items) {
+          try {
+            await fetch('https://zmhyyicipqqapvniihjw.supabase.co/functions/v1/receive-order', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': 'hackathon123'
+              },
+              body: JSON.stringify({
+                productName: item.name,
+                quantity: item.quantity ?? 1,
+                customerInfo: { email: session?.user?.email ?? 'guest@dreamweaver.com' }
+              })
+            });
+          } catch (e) {
+            console.error('ModuLiving order failed:', e);
+          }
+        }
+
         clearCart();
         navigate("/order-confirmation", {
           state: {
@@ -291,10 +312,18 @@ export default function Cart() {
                 key={item.id}
                 className="flex items-center gap-4 py-5 border-b border-border"
               >
-                <div className="h-14 w-14 bg-surface border border-border flex items-center justify-center flex-shrink-0">
-                  <span className="font-body text-[0.6rem] text-muted-foreground">
-                    3D
-                  </span>
+                <div className="h-14 w-14 bg-surface border border-border flex-shrink-0 overflow-hidden">
+                  {item.thumbnailUrl ? (
+                    <img
+                      src={bustCache(item.thumbnailUrl)}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-body text-[0.85rem] text-foreground truncate">

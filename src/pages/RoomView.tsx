@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Plus, Pencil, Check, Share2, Copy } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import FurnitureDetailPanel from "@/components/FurnitureDetailPanel";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
@@ -10,13 +11,16 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
+import { bustCache } from "@/utils/imageUrl";
+
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
 
 interface LocationState {
   items?: PlacedItem[];
   furniture?: FurnitureDetail[];
   description?: string;
+  floor_texture?: string;
+  wall_texture?: string;
 }
 
 export default function RoomView() {
@@ -32,6 +36,8 @@ export default function RoomView() {
   const [items, setItems] = useState<PlacedItem[]>(navState?.items ?? []);
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
   const [description, setDescription] = useState(navState?.description ?? "");
+  const [floorTexturePath, setFloorTexturePath] = useState<string | null>(navState?.floor_texture ?? null);
+  const [wallTexturePath, setWallTexturePath] = useState<string | null>(navState?.wall_texture ?? null);
   const [loading, setLoading] = useState(!navState?.items);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [posted, setPosted] = useState(false);
@@ -42,6 +48,10 @@ export default function RoomView() {
   const [isLiked, setIsLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState<FurnitureDetail | null>(null);
+  const isMobile = useIsMobile();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    typeof window !== "undefined" && window.innerWidth < 768
+  );
 
   useEffect(() => {
     if (!id || !user) return;
@@ -57,7 +67,7 @@ export default function RoomView() {
     if (!id) return;
     supabase
       .from("community_posts")
-      .select("*")
+      .select("*, profiles:user_id(display_name, avatar_url, avatar_color)")
       .eq("room_design_id", id)
       .eq("is_visible", true)
       .maybeSingle()
@@ -95,12 +105,15 @@ export default function RoomView() {
         setDescription(room.description ?? "");
         setRoomOwnerId(room.user_id);
         setRoomIsCopy(!!room.is_copy);
+        setFloorTexturePath((room as any).floor_texture ?? null);
+        setWallTexturePath((room as any).wall_texture ?? null);
         const roomItems = (room.items as any as PlacedItem[]) ?? [];
         setItems(roomItems);
 
         const itemIds = roomItems.map((i) => i.id);
         if (itemIds.length > 0) {
           const { data: furnitureData } = await supabase.from("furniture_items").select("*").in("id", itemIds);
+          console.log("Furniture items from DB:", furnitureData);
           if (furnitureData) setFurniture(furnitureData as unknown as FurnitureDetail[]);
         }
       } catch (err) {
@@ -112,12 +125,72 @@ export default function RoomView() {
     fetchRoom();
   }, [id, navState]);
 
-  // Capture thumbnail after render
-  useEffect(() => {
-    if (!id || loading) return;
-    const timer = setTimeout(() => { captureRoomThumbnail(id); }, 3000);
-    return () => clearTimeout(timer);
-  }, [id, loading]);
+  // Thumbnail capture triggered by RoomCanvas callback
+  const handleAllModelsLoaded = useCallback(async () => {
+    if (!id) return;
+
+    const container = document.getElementById("room-canvas");
+    const canvas = container?.querySelector("canvas") as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const uploadThumbnail = async (blob: Blob, roomId: string) => {
+      const filename = `room-${roomId}-${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("thumbnails")
+        .upload(filename, blob, { contentType: "image/jpeg", upsert: true });
+      if (uploadError) { console.error("Thumbnail upload error:", uploadError); return; }
+
+      const { data: { publicUrl } } = supabase.storage.from("thumbnails").getPublicUrl(filename);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error: updateError } = await supabase
+        .from("room_designs")
+        .update({ thumbnail_url: publicUrl })
+        .eq("id", roomId)
+        .eq("user_id", session.user.id);
+      if (updateError) console.error("Thumbnail DB update error:", updateError);
+      else console.log("Thumbnail saved successfully:", publicUrl);
+    };
+
+    try {
+      const r3fState = (window as any).__r3f_store?.getState?.();
+      const camera = r3fState?.camera;
+      const controls = r3fState?.controls;
+
+      if (camera && controls) {
+        const savedPosition = camera.position.clone();
+        const savedTarget = controls.target?.clone();
+
+        camera.position.set(8, 10, 8);
+        if (controls.target) controls.target.set(0, 0, 0);
+        controls.update?.();
+
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+
+        const blob = await new Promise<Blob | null>(resolve => {
+          canvas.toBlob(resolve, "image/jpeg", 0.9);
+        });
+
+        camera.position.copy(savedPosition);
+        if (savedTarget && controls.target) controls.target.copy(savedTarget);
+        controls.update?.();
+
+        if (blob) await uploadThumbnail(blob, id);
+      } else {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const blob = await new Promise<Blob | null>(resolve => {
+          canvas.toBlob(resolve, "image/jpeg", 0.9);
+        });
+        if (blob) await uploadThumbnail(blob, id);
+      }
+    } catch (err: any) {
+      console.error("Thumbnail capture error:", err.message);
+    }
+  }, [id]);
 
   const handleAddItem = (item: FurnitureDetail) => {
     addItem({ id: item.id, name: item.name, price: item.price, thumbnailUrl: item.thumbnail_url ?? "" });
@@ -150,12 +223,17 @@ export default function RoomView() {
   };
 
   const performCopy = async () => {
+    // Use post title if available, otherwise fall back to room description
+    const copyDescription = communityPost?.title || description || "Copied Room";
+    console.log("Copying room with name:", copyDescription, "| Post title:", communityPost?.title, "| Original description:", description);
     const { data, error } = await (supabase as any)
       .from("room_designs")
       .insert({
         user_id: user!.id,
-        description,
+        description: copyDescription,
         items: items as any,
+        floor_texture: floorTexturePath,
+        wall_texture: wallTexturePath,
         share_token: crypto.randomUUID(),
         source_room_id: id,
         is_copy: true,
@@ -163,8 +241,8 @@ export default function RoomView() {
       .select("id")
       .single();
     if (error) throw error;
-    toast({ title: "Room copied to your account!" });
-    navigate(`/room/${data.id}/edit`);
+    toast({ title: `"${copyDescription}" saved to My Rooms` });
+    navigate(`/room/${data.id}`, { replace: true });
   };
 
   const handleCopyRoom = async () => {
@@ -233,12 +311,50 @@ export default function RoomView() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
       {/* Canvas */}
-      <div className="flex-1 p-4 lg:p-6">
-        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} />
+      <div id="room-canvas" className="flex-1 p-4 lg:p-6" style={{ transition: "flex 300ms ease" }}>
+        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} wallpaper={wallTexturePath ? { path: wallTexturePath } : null} flooring={floorTexturePath ? { path: floorTexturePath } : null} onAllModelsLoaded={handleAllModelsLoaded} />
       </div>
 
       {/* Sidebar */}
-      <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-border bg-surface">
+      <div className="relative" style={{ flexShrink: 0 }}>
+        {/* Toggle button */}
+        <button
+          onClick={() => setSidebarCollapsed(prev => !prev)}
+          className="absolute top-1/2 -translate-y-1/2 z-20 hidden lg:flex items-center justify-center cursor-pointer"
+          style={{
+            left: "-16px",
+            width: "16px",
+            height: "48px",
+            background: "hsl(var(--surface))",
+            border: "1px solid hsl(var(--border))",
+            borderRadius: "4px 0 0 4px",
+            color: "hsl(var(--text-muted))",
+            fontSize: "0.7rem",
+          }}
+        >
+          {sidebarCollapsed ? "‹" : "›"}
+        </button>
+
+        <aside
+          className="bg-surface"
+          style={{
+            width: isMobile ? "100%" : (sidebarCollapsed ? "0px" : "384px"),
+            minWidth: isMobile ? undefined : (sidebarCollapsed ? "0px" : "384px"),
+            transition: "width 300ms ease, min-width 300ms ease",
+            overflow: "hidden",
+            borderLeft: sidebarCollapsed && !isMobile ? "none" : "1px solid hsl(var(--border))",
+            borderTop: isMobile ? "1px solid hsl(var(--border))" : undefined,
+          }}
+        >
+          <div
+            style={{
+              width: isMobile ? "100%" : "384px",
+              height: "100%",
+              overflowY: "auto",
+              opacity: sidebarCollapsed && !isMobile ? 0 : 1,
+              transition: "opacity 200ms ease",
+            }}
+          >
         {selectedItem ? (
           <FurnitureDetailPanel item={selectedItem} onBack={() => setSelectedItem(null)} />
         ) : (
@@ -290,7 +406,7 @@ export default function RoomView() {
                   {furniture.map((item) => (
                     <div key={item.id} className="flex items-center gap-3 py-4 border-b border-border last:border-b-0">
                       {item.thumbnail_url && item.thumbnail_url !== "PENDING_UPLOAD" ? (
-                        <img src={item.thumbnail_url} alt={item.name} className="h-12 w-12 object-cover bg-surface flex-shrink-0" />
+                        <img src={bustCache(item.thumbnail_url)} alt={item.name} className="h-12 w-12 object-cover bg-surface flex-shrink-0" />
                       ) : (
                         <div className="h-12 w-12 bg-surface border border-border flex items-center justify-center flex-shrink-0">
                           <span className="font-body text-[0.6rem] text-muted-foreground">3D</span>
@@ -331,18 +447,31 @@ export default function RoomView() {
                 </Button>
               )}
 
+              {roomIsCopy && (
+                <div className="p-4 border border-border bg-muted/50">
+                  <p className="font-body text-[0.8rem] text-foreground mb-3">
+                    This is a saved room. Generate your own to customize it.
+                  </p>
+                  <Button variant="amber" className="w-full" onClick={() => navigate("/")}>
+                    Generate My Own
+                  </Button>
+                </div>
+              )}
+
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    if (!user) { toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" }); return; }
-                    navigate(`/room/${id}/edit`);
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </Button>
+                {!roomIsCopy && (
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      if (!user) { toast({ title: "Sign in required", description: "Please sign in to edit rooms.", variant: "destructive" }); return; }
+                      navigate(`/room/${id}/edit`);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </Button>
+                )}
                 {!roomIsCopy && (
                   <Button
                     variant="outline"
@@ -360,7 +489,9 @@ export default function RoomView() {
             </div>
           </>
         )}
-      </aside>
+          </div>
+        </aside>
+      </div>
 
       {id && (
         <PostToCommunityDialog open={postDialogOpen} onOpenChange={setPostDialogOpen} roomId={id} onPosted={() => setPosted(true)} />

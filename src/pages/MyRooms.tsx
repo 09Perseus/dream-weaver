@@ -6,8 +6,9 @@ import PostToCommunityDialog from "@/components/PostToCommunityDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Eye, Pencil, Share2, EyeOff, Trash2 } from "lucide-react";
+import { Pencil, Share2, EyeOff, Trash2 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { bustCache } from "@/utils/imageUrl";
 
 interface Room {
   id: string;
@@ -31,7 +32,6 @@ export default function MyRooms() {
   const { theme } = useTheme();
 
   const buttonColors = {
-    view: "#4A90D9",
     edit: theme === "dark" ? "#C8B89A" : "#E16F24",
     post: theme === "dark" ? "#2EA043" : "#0969DA",
     unpost: theme === "dark" ? "#1F6E2E" : "#6E7781",
@@ -70,14 +70,46 @@ export default function MyRooms() {
     return () => clearTimeout(timeout);
   }, []);
 
-  const handleDelete = async (roomId: string) => {
-    setDeleting(roomId);
-    const { error } = await supabase.from("room_designs").delete().eq("id", roomId);
-    if (error) {
-      toast({ title: "Error", description: "Failed to delete room.", variant: "destructive" });
-    } else {
-      setRooms((prev) => prev.filter((r) => r.id !== roomId));
+  const handleDelete = async (room: Room) => {
+    setDeleting(room.id);
+    try {
+      // 1. Delete room thumbnail from storage
+      if (room.thumbnail_url) {
+        const cleanFilename = room.thumbnail_url.split("/").pop()?.split("?")[0];
+        if (cleanFilename) {
+          const { error: storageErr } = await supabase.storage.from("thumbnails").remove([cleanFilename]);
+          if (storageErr) console.warn("Thumbnail delete failed:", storageErr);
+        }
+      }
+
+      // 2. Delete associated community post thumbnails
+      const { data: posts } = await supabase
+        .from("community_posts")
+        .select("thumbnail_url")
+        .eq("room_design_id", room.id);
+
+      if (posts?.length) {
+        const filenames = posts
+          .map((p) => p.thumbnail_url?.split("/").pop()?.split("?")[0])
+          .filter((f): f is string => !!f);
+        if (filenames.length) {
+          await supabase.storage.from("thumbnails").remove(filenames);
+        }
+      }
+
+      // 3. Delete community posts manually (in case no cascade FK)
+      await supabase.from("community_posts").delete().eq("room_design_id", room.id);
+
+      // 4. Delete the room record
+      const { error } = await supabase.from("room_designs").delete().eq("id", room.id);
+      if (error) throw error;
+
+      setRooms((prev) => prev.filter((r) => r.id !== room.id));
+      setPostedRoomIds((prev) => { const next = new Set(prev); next.delete(room.id); return next; });
       toast({ title: "Room deleted" });
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      toast({ title: "Error", description: "Failed to delete room.", variant: "destructive" });
     }
     setDeleting(null);
   };
@@ -173,15 +205,29 @@ export default function MyRooms() {
           {rooms.map((room, i) => {
             const isPosted = postedRoomIds.has(room.id);
             const desc = room.description ?? "Untitled Room";
-            const displayDesc = room.is_copy
-              ? (desc.startsWith("Copy of") ? desc : `Copy of ${desc}`).slice(0, 60)
-              : desc.length > 60 ? desc.slice(0, 60) + "…" : desc;
+            const displayDesc = desc.length > 60 ? desc.slice(0, 60) + "…" : desc;
 
             return (
               <div
                 key={room.id}
-                className="border border-border bg-surface animate-reveal-up overflow-hidden min-w-0"
-                style={{ animationDelay: `${i * 80}ms` }}
+                onClick={() => navigate(room.is_copy ? `/room/${room.id}` : `/room/${room.id}/edit`)}
+                className="animate-reveal-up overflow-hidden min-w-0"
+                style={{
+                  cursor: "pointer",
+                  position: "relative",
+                  background: "hsl(var(--surface))",
+                  border: "1px solid hsl(var(--border))",
+                  transition: "border-color 200ms ease, box-shadow 200ms ease",
+                  animationDelay: `${i * 80}ms`,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = "hsl(var(--accent))";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.15)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = "hsl(var(--border))";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               >
                 <div className="relative h-[200px] bg-surface border-b border-border overflow-hidden">
                   {room.is_copy && (
@@ -191,7 +237,7 @@ export default function MyRooms() {
                   )}
                   {(room as any).thumbnail_url ? (
                     <img
-                      src={(room as any).thumbnail_url}
+                      src={bustCache((room as any).thumbnail_url)}
                       alt={displayDesc}
                       className="w-full h-full object-cover"
                     />
@@ -215,27 +261,21 @@ export default function MyRooms() {
                   </p>
                   <div
                     className="flex items-center px-4 py-3 border-t border-border"
-                    style={{ justifyContent: room.is_copy ? "space-around" : "space-between" }}
+                    style={{ justifyContent: "space-around" }}
                   >
-                    <button
-                      onClick={() => navigate(`/room/${room.id}`)}
-                      title="View Room"
-                      className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: buttonColors.view, border: "none" }}
-                    >
-                      <Eye size={16} color="white" />
-                    </button>
-                    <button
-                      onClick={() => navigate(`/room/${room.id}/edit`)}
-                      title="Edit Room"
-                      className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
-                      style={{ background: buttonColors.edit, border: "none" }}
-                    >
-                      <Pencil size={16} color={theme === "dark" ? "#0D1117" : "white"} />
-                    </button>
                     {!room.is_copy && (
                       <button
-                        onClick={() => isPosted ? handleUnpost(room.id) : setPostDialogRoomId(room.id)}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/room/${room.id}/edit`); }}
+                        title="Edit Room"
+                        className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity"
+                        style={{ background: buttonColors.edit, border: "none" }}
+                      >
+                        <Pencil size={16} color={theme === "dark" ? "#0D1117" : "white"} />
+                      </button>
+                    )}
+                    {!room.is_copy && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); isPosted ? handleUnpost(room.id) : setPostDialogRoomId(room.id); }}
                         disabled={unposting === room.id}
                         title={isPosted ? "Remove from Community" : "Post to Community"}
                         className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"
@@ -245,7 +285,7 @@ export default function MyRooms() {
                       </button>
                     )}
                     <button
-                      onClick={() => handleDelete(room.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(room); }}
                       disabled={deleting === room.id}
                       title="Delete Room"
                       className="w-9 h-9 flex items-center justify-center rounded cursor-pointer shrink-0 hover:opacity-80 transition-opacity disabled:opacity-50"

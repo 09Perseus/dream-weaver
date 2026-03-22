@@ -18,9 +18,10 @@ interface CommunityPost {
   style_tags: string[] | null;
   created_at: string | null;
   room_design_id: string;
-  room_designs: {
-    id: string;
-    description: string | null;
+  profiles: {
+    display_name: string | null;
+    avatar_url: string | null;
+    avatar_color: string | null;
   } | null;
 }
 
@@ -45,7 +46,7 @@ export default function Community() {
 
     supabase
       .from("community_posts")
-      .select("*")
+      .select("*, profiles:user_id(display_name, avatar_url, avatar_color)")
       .eq("is_visible", true)
       .order(activeFilter === "Most Liked" ? "like_count" : "created_at", { ascending: false })
       .limit(12)
@@ -197,7 +198,9 @@ export default function Community() {
               roomDesignId={post.room_design_id}
               title={post.title}
               description={post.description}
-              author={post.user_id === user?.id ? "You" : "Community Member"}
+              author={post.user_id === user?.id ? "You" : (post.profiles?.display_name ?? "Anonymous")}
+              authorAvatarUrl={post.profiles?.avatar_url}
+              authorAvatarColor={post.profiles?.avatar_color}
               thumbnailUrl={post.thumbnail_url ?? undefined}
               likeCount={post.like_count}
               liked={likedIds.has(post.id)}

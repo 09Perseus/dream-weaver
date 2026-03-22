@@ -162,6 +162,19 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px hsl(var(--bg)) inset !important;
+    -webkit-text-fill-color: hsl(var(--text-primary)) !important;
+    caret-color: hsl(var(--text-primary)) !important;
+    border-color: hsl(var(--border)) !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+  }
+
   h1 {
     font-family: var(--font-heading), sans-serif;
     font-weight: 300;

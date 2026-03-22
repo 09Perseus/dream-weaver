@@ -4,11 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface PlacedItem {
   id: string;
+  instanceId?: string;
   x: number;
   y: number;
   z: number;
   rotation: number;
   scale: number;
+}
+
+/** Returns the unique key for a placed item (instanceId if present, else id) */
+export function getItemKey(item: PlacedItem): string {
+  return item.instanceId || item.id;
 }
 
 export interface FurnitureDetail {
@@ -24,6 +30,7 @@ export interface FurnitureDetail {
   floor_offset: number | null;
   style_tags: string[] | null;
   buy_url: string | null;
+  description: string | null;
 }
 
 export interface GenerateRoomResponse {

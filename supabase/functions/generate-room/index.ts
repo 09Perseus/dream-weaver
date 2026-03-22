@@ -10,6 +10,14 @@ const corsHeaders = {
 
 const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 
+const validFloorTextures = ["chess", "darkoak", "marble", "tatami"];
+const validWallTextures = [
+  "japanese_bamboo_pattern",
+  "japanese_sakura_pattern",
+  "japanese_seigaiha_pattern",
+  "japanese_shoji_pattern",
+];
+
 async function callClaudeWithTimeout(prompt: string, apiKey: string): Promise<string> {
   const timeout = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error("Claude API timeout")), 25000)
@@ -76,7 +84,8 @@ serve(async (req) => {
 
     const { data: furnitureItems, error: dbError } = await sb
       .from("furniture_items")
-      .select("*");
+      .select("*")
+      .neq("category", "texture");
 
     if (dbError || !furnitureItems) {
       throw new Error(`Failed to fetch furniture: ${dbError?.message}`);
@@ -111,7 +120,7 @@ serve(async (req) => {
 Available furniture library:
 ${catalogue}
 
-Select 6 to 8 items from the library that best match the user's description and style. Return their placement in the room as a JSON array.
+Select 6 to 8 items from the library that best match the user's description and style. Return their placement in the room as a JSON object.
 
 ROOM RULES:
 - The room is 10 x 10 metres. The centre is x=0, z=0.
@@ -139,11 +148,31 @@ STYLE MATCHING:
 - Mix categories naturally — a bedroom needs a bed, lamp, plant, rug at minimum
 - A living room needs a sofa, coffee table, lamp, plant, rug at minimum
 
-Return ONLY a raw JSON array. No explanation, no markdown, no code fences. Exactly this format:
-[
-  { "id": "bed_001", "x": 0, "y": 0, "z": -3.5, "rotation": 0, "scale": 1 },
-  { "id": "lamp_001", "x": 1.5, "y": 0, "z": -3, "rotation": 0, "scale": 1 }
-]`;
+TEXTURE SELECTION (REQUIRED):
+You MUST also select a floor texture and a wall texture that best match the room style.
+
+floor_texture must be exactly one of: chess, darkoak, marble, tatami
+wall_texture must be exactly one of: japanese_bamboo_pattern, japanese_sakura_pattern, japanese_seigaiha_pattern, japanese_shoji_pattern
+
+Style guidance for textures:
+- Japanese / zen rooms: tatami floor, japanese_shoji_pattern or japanese_bamboo_pattern wall
+- Luxury / modern rooms: marble floor, japanese_shoji_pattern wall
+- Rustic / farmhouse rooms: darkoak floor, japanese_bamboo_pattern wall
+- Scandinavian / minimalist rooms: darkoak floor, japanese_shoji_pattern wall
+- Romantic / feminine rooms: marble floor, japanese_sakura_pattern wall
+- Traditional / classic rooms: chess floor, japanese_seigaiha_pattern wall
+- Cozy / warm rooms: darkoak floor, japanese_seigaiha_pattern wall
+- Nature / botanical rooms: tatami floor, japanese_bamboo_pattern wall
+
+Return ONLY a raw JSON object (no explanation, no markdown, no code fences) in exactly this format:
+{
+  "items": [
+    { "id": "bed_001", "x": 0, "y": 0, "z": -3.5, "rotation": 0, "scale": 1 },
+    { "id": "lamp_001", "x": 1.5, "y": 0, "z": -3, "rotation": 0, "scale": 1 }
+  ],
+  "floor_texture": "darkoak",
+  "wall_texture": "japanese_shoji_pattern"
+}`;
 
     // Retry logic: up to 2 attempts
     let rawText = "";
@@ -154,7 +183,7 @@ Return ONLY a raw JSON array. No explanation, no markdown, no code fences. Exact
       try {
         const promptToSend = attempt === 1
           ? basePrompt
-          : basePrompt + "\n\nIMPORTANT: Return ONLY a raw JSON array. No markdown, no code fences, no explanation.";
+          : basePrompt + "\n\nIMPORTANT: Return ONLY a raw JSON object. No markdown, no code fences, no explanation.";
 
         console.log("Calling Claude API...");
         rawText = await callClaudeWithTimeout(promptToSend, anthropicKey);
@@ -190,28 +219,31 @@ Return ONLY a raw JSON array. No explanation, no markdown, no code fences. Exact
       .replace(/```/g, "")
       .trim();
 
-    let parsed: any[];
+    let parsed: any;
     try {
       parsed = JSON.parse(cleaned);
     } catch {
       throw new Error("Claude returned invalid JSON");
     }
 
-    if (!Array.isArray(parsed)) {
-      throw new Error("Claude response is not an array");
+    // Support both old array format and new object format
+    const itemsArray = Array.isArray(parsed) ? parsed : parsed.items;
+
+    if (!Array.isArray(itemsArray)) {
+      throw new Error("Claude response does not contain an items array");
     }
 
     // Validate and sanitize items
     const validIds = new Set(furnitureItems.map((f) => f.id));
 
-    const validated = parsed
-      .filter((item) => {
+    const validated = itemsArray
+      .filter((item: any) => {
         if (!item.id || !validIds.has(item.id)) return false;
         if (typeof item.x !== "number" || typeof item.z !== "number") return false;
         if (item.x < -5 || item.x > 5 || item.z < -5 || item.z > 5) return false;
         return true;
       })
-      .map((item) => ({
+      .map((item: any) => ({
         id: item.id,
         x: Math.max(-4, Math.min(4, item.x)),
         y: 0,
@@ -229,11 +261,26 @@ Return ONLY a raw JSON array. No explanation, no markdown, no code fences. Exact
       );
     }
 
+    // Extract and validate textures with safe defaults
+    const floorTexture = validFloorTextures.includes(parsed.floor_texture)
+      ? parsed.floor_texture
+      : "darkoak";
+    const wallTexture = validWallTextures.includes(parsed.wall_texture)
+      ? parsed.wall_texture
+      : "japanese_shoji_pattern";
+
+    console.log("Floor texture:", floorTexture, "Wall texture:", wallTexture);
+
     // Build furniture detail map for selected items
-    const selectedIds = new Set(validated.map((i) => i.id));
+    const selectedIds = new Set(validated.map((i: any) => i.id));
     const furniture = furnitureItems.filter((f) => selectedIds.has(f.id));
 
-    return new Response(JSON.stringify({ items: validated, furniture }), {
+    return new Response(JSON.stringify({
+      items: validated,
+      furniture,
+      floor_texture: `/furnitures/Flooring/${floorTexture}.png`,
+      wall_texture: `/furnitures/wallpapers/${wallTexture}.png`,
+    }), {
       status: 200, headers: jsonHeaders,
     });
   } catch (error) {

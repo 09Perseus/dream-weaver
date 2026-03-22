@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { bustCache } from "@/utils/imageUrl";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import UserAvatar from "@/components/UserAvatar";
@@ -54,7 +55,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({
             )}
             {thumbnailUrl ? (
               <img
-                src={thumbnailUrl}
+                src={bustCache(thumbnailUrl)}
                 alt={title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />

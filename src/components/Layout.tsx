@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
 
 const navLinks = [
+  { label: "Home", to: "/" },
   { label: "Community", to: "/community" },
   { label: "My Rooms", to: "/my-rooms" },
 ];
@@ -77,13 +78,13 @@ const Layout = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ chil
             </button>
             <Link to="/" className="flex items-center">
               <span className="font-heading text-[1.25rem] tracking-[0.2em] uppercase text-accent">
-                ROOMAI
+                DREAM WEAVER
               </span>
             </Link>
           </div>
 
           {/* Desktop nav links */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
