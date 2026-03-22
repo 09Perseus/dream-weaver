@@ -1040,7 +1040,7 @@ export default function EditRoom() {
         )}
 
         {/* Center: 3D Canvas */}
-        <div className="flex-1 min-h-0 min-w-0 relative" style={{ transition: "flex 300ms ease" }}>
+        <div id="room-canvas" className="flex-1 min-h-0 min-w-0 relative" style={{ transition: "flex 300ms ease" }}>
           <div className="absolute inset-0 flex flex-col">
             <RoomCanvas
               className="flex-1"
