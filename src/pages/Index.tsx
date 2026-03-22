@@ -368,7 +368,7 @@ export default function Index() {
         return;
       }
 
-      navigate(`/room/${room.id}`, { state: { items, furniture, description: prompt.trim() } });
+      navigate(`/room/${room.id}/edit`, { state: { items, furniture, description: prompt.trim() } });
     } catch (err: any) {
       console.error("Unexpected error:", err);
       toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
