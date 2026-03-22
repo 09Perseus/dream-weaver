@@ -64,7 +64,7 @@ export interface FurnitureItem {
   size?: [number, number, number];
 }
 
-function Model({ path, displaySize = 1, onLoad, onError, isSelected }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void; isSelected?: boolean }) {
+function Model({ path, displaySize = 1, onLoad, onError, isSelected, isMoving }: { path: string; displaySize?: number; onLoad?: () => void; onError?: () => void; isSelected?: boolean; isMoving?: boolean }) {
   const cleanPath = path
     .replace(/^\/+/, "")
     .replace(/^furnitures\//, "")
@@ -108,7 +108,7 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected }: { path: s
     }
   }, [scene, displaySize]);
 
-  // Apply emissive glow when selected
+  // Apply emissive glow based on state
   useEffect(() => {
     if (!cloned) return;
     cloned.traverse((child: any) => {
@@ -116,14 +116,22 @@ function Model({ path, displaySize = 1, onLoad, onError, isSelected }: { path: s
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         materials.forEach((mat: any) => {
           if (mat.emissive) {
-            mat.emissive = isSelected ? new THREE.Color("#FFD700") : new THREE.Color("#000000");
-            mat.emissiveIntensity = isSelected ? 0.4 : 0;
+            if (isMoving) {
+              mat.emissive = new THREE.Color("#00BFFF");
+              mat.emissiveIntensity = 0.5;
+            } else if (isSelected) {
+              mat.emissive = new THREE.Color("#FFD700");
+              mat.emissiveIntensity = 0.4;
+            } else {
+              mat.emissive = new THREE.Color("#000000");
+              mat.emissiveIntensity = 0;
+            }
             mat.needsUpdate = true;
           }
         });
       }
     });
-  }, [isSelected, cloned]);
+  }, [isSelected, isMoving, cloned]);
 
   return <primitive object={cloned} />;
 }
@@ -175,6 +183,7 @@ function MovableFurniture({
   const isDragging = useRef(false);
   const dragOffset = useRef(new THREE.Vector3());
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
+  const lastClickTime = useRef(0);
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
   const intersection = useMemo(() => new THREE.Vector3(), []);
   const { camera, gl, raycaster, pointer } = useThree();
@@ -219,7 +228,16 @@ function MovableFurniture({
         const dx = Math.abs(e.clientX - pointerDownPos.current.x);
         const dy = Math.abs(e.clientY - pointerDownPos.current.y);
         if (dx < 5 && dy < 5) {
-          onSingleClick();
+          const now = Date.now();
+          if (now - lastClickTime.current < 350) {
+            // Double click — enter move mode
+            onDoubleClick();
+            lastClickTime.current = 0;
+          } else {
+            // Single click — select
+            lastClickTime.current = now;
+            onSingleClick();
+          }
         }
       }
       isDragging.current = false;
@@ -273,13 +291,13 @@ function MovableFurniture({
               </mesh>
             }
           >
-            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} isSelected={isSelected} />
+            <Model path={furniture.path} displaySize={furniture.displaySize} onLoad={onModelLoad} onError={onModelLoad} isSelected={isSelected} isMoving={isEditMode} />
           </Suspense>
         </ModelErrorBoundary>
       ) : (
         <mesh castShadow receiveShadow>
           <boxGeometry args={furniture.size ?? [1, 1, 1]} />
-          <meshStandardMaterial color={furniture.color || "white"} emissive={isSelected ? "#FFD700" : "#000000"} emissiveIntensity={isSelected ? 0.4 : 0} />
+          <meshStandardMaterial color={furniture.color || "white"} emissive={isEditMode ? "#00BFFF" : (isSelected ? "#FFD700" : "#000000")} emissiveIntensity={isEditMode ? 0.5 : (isSelected ? 0.4 : 0)} />
         </mesh>
       )}
     </group>
@@ -674,6 +692,22 @@ export default function RoomCanvas({
 
   const webglSupported = useMemo(() => detectWebGL(), []);
 
+  // Escape to exit move mode
+  useEffect(() => {
+    if (!editId) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isControlled && externalOnEdit) {
+          externalOnEdit(editId); // toggle off
+        } else {
+          setInternalEditId(null);
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [editId, isControlled, externalOnEdit]);
+
   return (
     <div
       className={`relative flex ${isMobile ? "flex-col" : "flex-row"} ${className}`}
@@ -739,6 +773,21 @@ export default function RoomCanvas({
             >
               <RotateCw className="w-5 h-5" />
             </button>
+          </div>
+        )}
+
+        {/* Move mode hint */}
+        {editId && webglSupported && (
+          <div
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none font-body text-[0.75rem] tracking-[0.08em]"
+            style={{
+              background: "hsl(var(--surface))",
+              border: "1px solid hsl(var(--accent))",
+              padding: "0.4rem 1rem",
+              color: "hsl(var(--text-muted))",
+            }}
+          >
+            DRAG TO MOVE · CLICK ANYWHERE TO STOP · ESC TO EXIT
           </div>
         )}
 
