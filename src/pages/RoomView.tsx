@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Plus, Pencil, Check, Share2, Copy } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -119,9 +119,13 @@ export default function RoomView() {
     fetchRoom();
   }, [id, navState]);
 
-  // Capture thumbnail after furniture loads
-  useEffect(() => {
-    if (!id || !furniture || furniture.length === 0) return;
+  // Thumbnail capture triggered by RoomCanvas callback
+  const handleAllModelsLoaded = useCallback(async () => {
+    if (!id) return;
+
+    const container = document.getElementById("room-canvas");
+    const canvas = container?.querySelector("canvas") as HTMLCanvasElement;
+    if (!canvas) return;
 
     const uploadThumbnail = async (blob: Blob, roomId: string) => {
       const filename = `room-${roomId}-${Date.now()}.jpg`;
@@ -143,70 +147,44 @@ export default function RoomView() {
       else console.log("Thumbnail saved successfully:", publicUrl);
     };
 
-    const captureRoomThumbnail = async (roomId: string) => {
-      let attempts = 0;
-      const maxAttempts = 10;
+    try {
+      const r3fState = (window as any).__r3f_store?.getState?.();
+      const camera = r3fState?.camera;
+      const controls = r3fState?.controls;
 
-      const tryCapture = async (): Promise<void> => {
-        attempts++;
-        const container = document.getElementById("room-canvas");
-        const canvas = container?.querySelector("canvas") as HTMLCanvasElement;
+      if (camera && controls) {
+        const savedPosition = camera.position.clone();
+        const savedTarget = controls.target?.clone();
 
-        if (!canvas) {
-          if (attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return tryCapture();
-          }
-          return;
-        }
+        camera.position.set(8, 10, 8);
+        if (controls.target) controls.target.set(0, 0, 0);
+        controls.update?.();
 
-        try {
-          const r3fState = (window as any).__r3f_store?.getState?.();
-          const camera = r3fState?.camera;
-          const controls = r3fState?.controls;
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
 
-          if (camera && controls) {
-            const savedPosition = camera.position.clone();
-            const savedTarget = controls.target?.clone();
+        const blob = await new Promise<Blob | null>(resolve => {
+          canvas.toBlob(resolve, "image/jpeg", 0.9);
+        });
 
-            camera.position.set(8, 10, 8);
-            if (controls.target) controls.target.set(0, 0, 0);
-            controls.update?.();
+        camera.position.copy(savedPosition);
+        if (savedTarget && controls.target) controls.target.copy(savedTarget);
+        controls.update?.();
 
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            await new Promise(resolve => requestAnimationFrame(resolve));
-
-            const blob = await new Promise<Blob | null>(resolve => {
-              canvas.toBlob(resolve, "image/jpeg", 0.9);
-            });
-
-            camera.position.copy(savedPosition);
-            if (savedTarget && controls.target) controls.target.copy(savedTarget);
-            controls.update?.();
-
-            if (!blob) return;
-            await uploadThumbnail(blob, roomId);
-          } else {
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            const blob = await new Promise<Blob | null>(resolve => {
-              canvas.toBlob(resolve, "image/jpeg", 0.9);
-            });
-            if (!blob) return;
-            await uploadThumbnail(blob, roomId);
-          }
-        } catch (err: any) {
-          console.error("Thumbnail capture error:", err.message);
-        }
-      };
-
-      await tryCapture();
-    };
-
-    const timer = setTimeout(() => { captureRoomThumbnail(id); }, 5000);
-    return () => clearTimeout(timer);
-  }, [furniture, id]);
+        if (blob) await uploadThumbnail(blob, id);
+      } else {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const blob = await new Promise<Blob | null>(resolve => {
+          canvas.toBlob(resolve, "image/jpeg", 0.9);
+        });
+        if (blob) await uploadThumbnail(blob, id);
+      }
+    } catch (err: any) {
+      console.error("Thumbnail capture error:", err.message);
+    }
+  }, [id]);
 
   const handleAddItem = (item: FurnitureDetail) => {
     addItem({ id: item.id, name: item.name, price: item.price, thumbnailUrl: item.thumbnail_url ?? "" });
@@ -323,7 +301,7 @@ export default function RoomView() {
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
       {/* Canvas */}
       <div id="room-canvas" className="flex-1 p-4 lg:p-6" style={{ transition: "flex 300ms ease" }}>
-        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} />
+        <RoomCanvas className="w-full h-[50vh] lg:h-[calc(100vh-5rem)]" items={items} furniture={furniture} onAllModelsLoaded={handleAllModelsLoaded} />
       </div>
 
       {/* Sidebar */}
