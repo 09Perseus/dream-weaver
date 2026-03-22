@@ -271,7 +271,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_room_generation_count: {
+        Args: { user_id_input: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
