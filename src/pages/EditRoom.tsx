@@ -974,6 +974,8 @@ export default function EditRoom() {
               style={{ minHeight: isMobile ? '60vh' : '100%' }}
               items={roomItems}
               furniture={furniture}
+              wallpaper={wallTexturePath ? { path: wallTexturePath } : null}
+              flooring={floorTexturePath ? { path: floorTexturePath } : null}
               selectedItemId={selectedItemId}
               editingItemId={editingItemId}
               onSelectItem={(key) => {
