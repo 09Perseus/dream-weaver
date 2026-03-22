@@ -179,8 +179,24 @@ export default function MyRooms() {
             return (
               <div
                 key={room.id}
-                className="border border-border bg-surface animate-reveal-up overflow-hidden min-w-0"
-                style={{ animationDelay: `${i * 80}ms` }}
+                onClick={() => navigate(`/room/${room.id}/edit`)}
+                className="animate-reveal-up overflow-hidden min-w-0"
+                style={{
+                  cursor: "pointer",
+                  position: "relative",
+                  background: "hsl(var(--surface))",
+                  border: "1px solid hsl(var(--border))",
+                  transition: "border-color 200ms ease, box-shadow 200ms ease",
+                  animationDelay: `${i * 80}ms`,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = "hsl(var(--accent))";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.15)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = "hsl(var(--border))";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               >
                 <div className="relative h-[200px] bg-surface border-b border-border overflow-hidden">
                   {room.is_copy && (
