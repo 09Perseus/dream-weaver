@@ -30,6 +30,7 @@ export interface FurnitureDetail {
   floor_offset: number | null;
   style_tags: string[] | null;
   buy_url: string | null;
+  description: string | null;
 }
 
 export interface GenerateRoomResponse {

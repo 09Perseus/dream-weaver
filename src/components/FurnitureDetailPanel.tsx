@@ -99,9 +99,11 @@ export default function FurnitureDetailPanel({ item, onBack }: Props) {
           </div>
         )}
 
-        <p className="font-body text-[0.8rem] text-muted-foreground leading-relaxed mb-6 italic">
-          Detailed description coming soon.
-        </p>
+        {item.description && (
+          <p className="font-body text-[0.85rem] text-muted-foreground leading-relaxed mb-6">
+            {item.description}
+          </p>
+        )}
       </div>
 
       {/* Add to cart pinned */}
