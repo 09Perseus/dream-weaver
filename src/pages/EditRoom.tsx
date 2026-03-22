@@ -540,6 +540,17 @@ export default function EditRoom() {
     toast({ title: "Item added", description: "Reposition it in the room." });
   };
 
+  const handleAddToCart = (furnitureId: string) => {
+    const detail = furniture.find((f) => f.id === furnitureId);
+    addToCart({
+      id: furnitureId,
+      name: detail?.name ?? furnitureId,
+      price: detail?.price ?? 0,
+      thumbnailUrl: detail?.thumbnail_url ?? "",
+    });
+    toast({ title: "Added to cart" });
+  };
+
   const handleAddAnother = (furnitureId: string) => {
     const instanceId = `${furnitureId}_${Date.now()}`;
     setUndoStack((prev) => [...prev, roomItems]);
