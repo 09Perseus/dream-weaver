@@ -634,7 +634,12 @@ export default function EditRoom() {
       if (!session) { setSaveStatus("unsaved"); return; }
       const { error } = await supabase
         .from("room_designs")
-        .update({ items: roomItems as any, description: roomName })
+        .update({
+          items: roomItems as any,
+          description: roomName,
+          floor_texture: floorTexturePath,
+          wall_texture: wallTexturePath,
+        } as any)
         .eq("id", roomId)
         .eq("user_id", session.user.id);
       if (error) {
@@ -649,9 +654,9 @@ export default function EditRoom() {
     } catch {
       setSaveStatus("unsaved");
     }
-  }, [roomId, roomItems, roomName]);
+  }, [roomId, roomItems, roomName, floorTexturePath, wallTexturePath]);
 
-  // Debounced autosave on roomItems or roomName change
+  // Debounced autosave on roomItems, roomName, or texture change
   useEffect(() => {
     const itemsSame = JSON.stringify(roomItems) === JSON.stringify(lastSavedItems.current);
     const nameSame = roomName === lastSavedName.current;
@@ -661,6 +666,15 @@ export default function EditRoom() {
     saveTimerRef.current = setTimeout(() => { performSave(); }, 2000);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
   }, [roomItems, roomName, performSave]);
+
+  // Trigger save on texture changes
+  useEffect(() => {
+    if (!roomId) return;
+    setSaveStatus("unsaved");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => { performSave(); }, 1000);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [floorTexturePath, wallTexturePath]);
 
   // Warn on browser close
   useEffect(() => {
