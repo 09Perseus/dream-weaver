@@ -7,8 +7,11 @@ import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 
 interface OrderItem {
+  id?: string;
   name?: string;
   quantity?: number;
+  price?: number;
+  thumbnail_url?: string;
 }
 
 interface Order {
