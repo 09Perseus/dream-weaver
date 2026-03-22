@@ -107,6 +107,7 @@ export default function RoomView() {
         const itemIds = roomItems.map((i) => i.id);
         if (itemIds.length > 0) {
           const { data: furnitureData } = await supabase.from("furniture_items").select("*").in("id", itemIds);
+          console.log("Furniture items from DB:", furnitureData);
           if (furnitureData) setFurniture(furnitureData as unknown as FurnitureDetail[]);
         }
       } catch (err) {

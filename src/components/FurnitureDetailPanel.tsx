@@ -23,6 +23,8 @@ export default function FurnitureDetailPanel({ item, onBack }: Props) {
     toast({ title: "Added to cart" });
   };
 
+  console.log("FurnitureDetailPanel item:", JSON.stringify(item));
+
   return (
     <div className="h-full flex flex-col">
       {/* Back button */}
