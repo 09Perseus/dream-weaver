@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { Save, Undo, Trash2, Share2, Plus, X } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useParams, useLocation, useNavigate, useBlocker } from "react-router-dom";
+import { Undo, Trash2, Share2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RoomCanvas from "@/components/RoomCanvas";
 import PostToCommunityDialog from "@/components/PostToCommunityDialog";
@@ -316,7 +316,10 @@ export default function EditRoom() {
   const [furniture, setFurniture] = useState<FurnitureDetail[]>(navState?.furniture ?? []);
   const [description, setDescription] = useState(navState?.description ?? "");
   const [loading, setLoading] = useState(!navState?.items);
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const lastSavedItems = useRef<PlacedItem[]>(navState?.items ?? []);
+  const lastSavedName = useRef(navState?.description || "My Room");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // selectedItemId — right panel shows info card
   // editingItemId  — item is in drag mode (double click in canvas)
@@ -357,6 +360,8 @@ export default function EditRoom() {
         setRoomName(room.description || "My Room");
         const items = (room.items as any as PlacedItem[]) ?? [];
         setRoomItems(items);
+        lastSavedItems.current = items;
+        lastSavedName.current = room.description || "My Room";
         const itemIds = items.map((i) => i.id);
         if (itemIds.length > 0) {
           const { data: fd } = await supabase
@@ -436,33 +441,58 @@ export default function EditRoom() {
     toast({ title: "Undo successful" });
   };
 
-  const handleSave = async () => {
+  // ── Autosave logic ──────────────────────────────────────────────────────────
+  const performSave = useCallback(async () => {
     if (!roomId) return;
-    setSaving(true);
+    setSaveStatus("saving");
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({ title: "Sign in required", variant: "destructive" });
-        return;
-      }
+      if (!session) { setSaveStatus("unsaved"); return; }
       const { error } = await supabase
         .from("room_designs")
         .update({ items: roomItems as any, description: roomName })
         .eq("id", roomId)
         .eq("user_id", session.user.id);
       if (error) {
-        toast({ title: "Failed to save", description: error.message, variant: "destructive" });
+        console.error("Autosave error:", error);
+        setSaveStatus("unsaved");
         return;
       }
-      toast({ title: "Room saved!" });
-      setUndoStack([]);
+      lastSavedItems.current = roomItems;
+      lastSavedName.current = roomName;
+      setSaveStatus("saved");
       setTimeout(() => { if (roomId) captureRoomThumbnail(roomId); }, 1500);
-    } catch (err) {
-      toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
-    } finally {
-      setSaving(false);
+    } catch {
+      setSaveStatus("unsaved");
     }
-  };
+  }, [roomId, roomItems, roomName]);
+
+  // Debounced autosave on roomItems or roomName change
+  useEffect(() => {
+    const itemsSame = JSON.stringify(roomItems) === JSON.stringify(lastSavedItems.current);
+    const nameSame = roomName === lastSavedName.current;
+    if (itemsSame && nameSame) return;
+    setSaveStatus("unsaved");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => { performSave(); }, 2000);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [roomItems, roomName, performSave]);
+
+  // Warn on browser close
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (saveStatus !== "saved") { e.preventDefault(); e.returnValue = ""; }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [saveStatus]);
+
+  // Block React Router navigation
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      saveStatus === "unsaved" &&
+      currentLocation.pathname !== nextLocation.pathname
+  );
 
   const handleAddFromPicker = async (pickerItem: PickerItem) => {
     const instanceId = `${pickerItem.id}_${Date.now()}`;
@@ -647,10 +677,27 @@ export default function EditRoom() {
 
         <div className="w-px h-6 bg-border shrink-0" />
 
-        <Button variant="amber" size="sm" onClick={handleSave} disabled={saving} className="min-h-[44px]">
-          <Save className="h-4 w-4" />
-          <span className="hidden md:inline">{saving ? "Saving…" : "Save"}</span>
-        </Button>
+        {/* Autosave status indicator */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {saveStatus === "saving" && (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              <span className="font-body text-[0.7rem] tracking-[0.08em] text-muted-foreground">SAVING…</span>
+            </>
+          )}
+          {saveStatus === "saved" && (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="font-body text-[0.7rem] tracking-[0.08em] text-muted-foreground">SAVED</span>
+            </>
+          )}
+          {saveStatus === "unsaved" && (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span className="font-body text-[0.7rem] tracking-[0.08em] text-muted-foreground hidden md:inline">UNSAVED</span>
+            </>
+          )}
+        </div>
 
         <Button variant="outline" size="sm" onClick={handleUndo} disabled={undoStack.length === 0} className="min-h-[44px]">
           <Undo className="h-4 w-4" />
@@ -928,6 +975,28 @@ export default function EditRoom() {
           roomId={roomId}
           onPosted={() => setPosted(true)}
         />
+      )}
+
+      {/* Unsaved changes blocker dialog */}
+      {blocker.state === "blocked" && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <div className="bg-surface border border-border p-8 max-w-[360px] w-[90%] rounded-lg">
+            <h2 className="font-heading text-lg font-semibold text-foreground mb-3">
+              Unsaved Changes
+            </h2>
+            <p className="font-body text-[0.85rem] text-muted-foreground mb-6 leading-relaxed">
+              You have unsaved changes that are still saving. Are you sure you want to leave?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" size="sm" onClick={() => blocker.reset?.()}>
+                Stay
+              </Button>
+              <Button variant="destructive" size="sm" onClick={() => blocker.proceed?.()}>
+                Leave
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
