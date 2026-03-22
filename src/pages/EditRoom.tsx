@@ -9,6 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { captureRoomThumbnail } from "@/utils/captureRoomThumbnail";
 import type { PlacedItem, FurnitureDetail } from "@/lib/edgeFunctions";
@@ -46,6 +47,7 @@ function ItemInfoCard({
   detail,
   isEditMode,
   onDelete,
+  onAddToCart,
   onBack,
   formatPrice,
 }: {
@@ -53,6 +55,7 @@ function ItemInfoCard({
   detail: FurnitureDetail | undefined;
   isEditMode: boolean;
   onDelete: () => void;
+  onAddToCart: () => void;
   onBack: () => void;
   formatPrice: (price: number) => string;
 }) {
@@ -134,7 +137,9 @@ function ItemInfoCard({
 
         {/* Buttons */}
         <div className="space-y-2 pt-1">
-          <button className="w-full py-2 px-4 bg-accent text-white text-sm
+          <button
+            onClick={onAddToCart}
+            className="w-full py-2 px-4 bg-accent text-white text-sm
                              font-body rounded-lg hover:opacity-90 transition-opacity">
             Add to Cart
           </button>
@@ -161,6 +166,7 @@ function RightPanel({
   onSelectItem,
   onDeleteItem,
   onAddAnother,
+  onAddToCart,
   onBack,
 }: {
   roomItems: PlacedItem[];
@@ -171,6 +177,7 @@ function RightPanel({
   onSelectItem: (key: string) => void;
   onDeleteItem: (key: string) => void;
   onAddAnother: (furnitureId: string) => void;
+  onAddToCart: (furnitureId: string) => void;
   onBack: () => void;
 }) {
   const selectedItem = roomItems.find((i) => getItemKey(i) === selectedItemId);
@@ -200,6 +207,7 @@ function RightPanel({
           detail={selectedDetail}
           isEditMode={editingItemId === selectedItemId}
           onDelete={() => onDeleteItem(selectedItemId!)}
+          onAddToCart={() => onAddToCart(selectedItem.id)}
           onBack={onBack}
           formatPrice={formatPrice}
         />
@@ -308,6 +316,7 @@ export default function EditRoom() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addItem: addToCart } = useCart();
   const navState = location.state as LocationState | null;
   const isMobile = useIsMobile();
   const { formatPrice } = useCurrency();
@@ -529,6 +538,17 @@ export default function EditRoom() {
       }
     }
     toast({ title: "Item added", description: "Reposition it in the room." });
+  };
+
+  const handleAddToCart = (furnitureId: string) => {
+    const detail = furniture.find((f) => f.id === furnitureId);
+    addToCart({
+      id: furnitureId,
+      name: detail?.name ?? furnitureId,
+      price: detail?.price ?? 0,
+      thumbnailUrl: detail?.thumbnail_url ?? "",
+    });
+    toast({ title: "Added to cart" });
   };
 
   const handleAddAnother = (furnitureId: string) => {
@@ -905,6 +925,7 @@ export default function EditRoom() {
                     toast({ title: "Item removed" });
                   }}
                   onAddAnother={handleAddAnother}
+                  onAddToCart={handleAddToCart}
                   onBack={() => {
                     setSelectedItemId(null);
                     setEditingItemId(null);
@@ -936,6 +957,7 @@ export default function EditRoom() {
                 toast({ title: "Item removed" });
               }}
               onAddAnother={handleAddAnother}
+                  onAddToCart={handleAddToCart}
               onBack={() => {
                 setSelectedItemId(null);
                 setEditingItemId(null);
