@@ -478,7 +478,9 @@ export default function RoomView() {
             </div>
           </>
         )}
-      </aside>
+          </div>
+        </aside>
+      </div>
 
       {id && (
         <PostToCommunityDialog open={postDialogOpen} onOpenChange={setPostDialogOpen} roomId={id} onPosted={() => setPosted(true)} />
